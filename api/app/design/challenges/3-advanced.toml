@@ -1,0 +1,93 @@
+level = "advanced"
+
+[[challenges]]
+slug = "distributed-payments"
+title = "Design a distributed payment processing system"
+skills = ["distributed-systems", "system-design"]
+competencies = ["consistency", "failure_recovery", "security"]
+prerequisites = ["system-design", "security"]
+business_context = "A marketplace processes payments from buyers and pays out sellers across several payment providers."
+functional = ["Accept payments through multiple providers.", "Record every money movement.", "Handle refunds and chargebacks.", "Pay out sellers on a schedule."]
+non_functional = ["Exactly-once effect for every payment from the user's perspective.", "Full audit trail."]
+scale = ["Hypothetical: 500 payments per second at peak."]
+reliability = ["No payment is lost or applied twice, even across provider outages."]
+security = ["PCI scope minimised.", "Strict access control and tamper-evident records."]
+constraints = ["Providers differ in API semantics and webhook reliability."]
+hints = ["What is the source of truth for whether money moved?", "How do you make retries across your own services safe?"]
+failure_scenarios = ["payment-timeout", "duplicate-delivery", "region-outage", "worker-crash"]
+expected_concepts = ["Payment intent state machine", "Idempotency keys end to end", "Double-entry ledger as source of truth", "Provider abstraction with reconciliation jobs"]
+common_mistakes = ["Updating balances in place instead of recording entries.", "Assuming webhooks arrive once and in order.", "No reconciliation against provider reports."]
+follow_ups = ["How do you route around a failing provider safely?", "How do you prove to auditors that balances are correct?"]
+[challenges.rubric_focus]
+data_consistency = "Ledger entries and idempotency guarantee single application."
+reliability = "Reconciliation recovers from unknown outcomes."
+security = "Minimised card exposure and auditability."
+
+[[challenges]]
+slug = "messaging-platform"
+title = "Design a high-traffic messaging platform"
+skills = ["distributed-systems", "system-design"]
+competencies = ["scalability", "distributed_systems", "data_modeling"]
+prerequisites = ["system-design"]
+business_context = "A consumer chat app supports one-to-one and group conversations with message history on every device."
+functional = ["Send and receive messages in real time.", "Group chats up to 500 members.", "Sync history across devices.", "Delivery and read receipts."]
+non_functional = ["Messages within a conversation appear in a consistent order.", "Messages are durable once acknowledged."]
+scale = ["Hypothetical: 50 million daily users, 2 billion messages per day."]
+reliability = ["An acknowledged message is never lost."]
+security = ["Only conversation members can read messages.", "Abuse reporting without reading everyone's messages."]
+constraints = ["History is kept indefinitely."]
+hints = ["What ordering guarantee do you actually need, and per what?", "How is the message store partitioned?"]
+failure_scenarios = ["traffic-10x", "queue-backlog", "region-outage", "duplicate-delivery"]
+expected_concepts = ["Partitioning by conversation", "Per-conversation sequence numbers", "Fan-out on write vs read for groups", "Client sync cursors"]
+common_mistakes = ["Global ordering of all messages.", "Fan-out on write for very large groups without limits.", "Relying on client timestamps for ordering."]
+follow_ups = ["How would end-to-end encryption change the design?", "How do you delete a message everywhere?"]
+[challenges.rubric_focus]
+scalability = "Partitioning and fan-out strategy fit the scale."
+data_consistency = "Per-conversation ordering and idempotent sends."
+tradeoffs = "Explains fan-out choices for small versus large groups."
+
+[[challenges]]
+slug = "scalable-api-architecture"
+title = "Design a scalable public API architecture"
+skills = ["http", "system-design"]
+competencies = ["api_architecture", "security", "observability"]
+prerequisites = ["http", "system-design"]
+business_context = "A data company is opening its internal APIs to thousands of third-party developers with paid usage tiers."
+functional = ["API keys per developer app.", "Rate limits per plan.", "Usage metering for billing.", "Versioned endpoints."]
+non_functional = ["One noisy customer can't degrade others.", "Breaking changes are rare and announced."]
+scale = ["Hypothetical: 20,000 requests per second across 5,000 customers."]
+reliability = ["Hypothetical target: 99.9% monthly availability for the API."]
+security = ["Keys can be rotated and revoked.", "Customers access only their own data."]
+constraints = ["Internal services were not designed for public traffic."]
+hints = ["Where do authentication, rate limiting and metering happen?", "How do you evolve the API without breaking integrations?"]
+failure_scenarios = ["traffic-10x", "auth-overload", "cache-offline", "incompatible-schema"]
+expected_concepts = ["API gateway with authentication, quotas and rate limiting", "Per-tenant isolation and fairness", "Asynchronous usage metering", "Versioning and deprecation policy"]
+common_mistakes = ["Rate limiting per server instance instead of globally per key.", "Metering synchronously on every request.", "Exposing internal service models directly."]
+follow_ups = ["How do you bill accurately when metering events are delayed?", "How would you add webhooks for customers?"]
+[challenges.rubric_focus]
+security = "Key lifecycle and tenant data isolation."
+reliability = "Fairness and isolation between customers."
+maintainability = "Versioning strategy and an anti-corruption layer."
+
+[[challenges]]
+slug = "multi-tenant-saas"
+title = "Design a multi-tenant SaaS application"
+skills = ["system-design", "security"]
+competencies = ["data_modeling", "security", "cost_optimization"]
+prerequisites = ["system-design", "sql"]
+business_context = "A project-management SaaS serves thousands of small teams and a few large enterprises with strict data requirements."
+functional = ["Tenants manage their own users and projects.", "Enterprises can require data residency.", "Per-tenant configuration and feature flags."]
+non_functional = ["One tenant's load or bug must not expose or degrade others.", "Onboarding a small tenant costs very little."]
+scale = ["Hypothetical: 20,000 tenants, a handful with 50,000 users each."]
+reliability = ["A noisy tenant cannot cause a platform-wide outage."]
+security = ["Strict tenant data isolation.", "Audit logs for enterprise tenants."]
+constraints = ["Two enterprise customers require EU-only data storage."]
+hints = ["Shared tables, schema per tenant, or database per tenant: what does each cost you?", "Where is the tenant boundary enforced in every query?"]
+failure_scenarios = ["traffic-10x", "incompatible-schema", "region-outage", "postgres-unavailable"]
+expected_concepts = ["Tenancy model chosen per tier (pooled vs silo)", "Tenant id enforced at the data layer (row-level security)", "Per-tenant quotas", "Regional deployment for residency"]
+common_mistakes = ["Relying on application code alone to filter by tenant.", "One database per tenant for thousands of tiny tenants.", "Migrations that lock every tenant at once."]
+follow_ups = ["How do you move a growing tenant from pooled to dedicated infrastructure?", "How do you run schema migrations safely across tenants?"]
+[challenges.rubric_focus]
+security = "Isolation enforced in depth, not only in application code."
+cost_awareness = "Tenancy model matches tenant size."
+tradeoffs = "Explains pooled versus siloed trade-offs."

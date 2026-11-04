@@ -1,0 +1,71 @@
+name: Bug report
+description: Report a reproducible problem in your local FORGE installation.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        FORGE 1.0 is local-only and single-user. Do not post vulnerabilities, keys, cookies, learner records or confidential code here. For security issues, follow SECURITY.md and use a private reporting route.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Identify the source revision you ran.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Local setup
+        - Assessments
+        - AI interviewer
+        - Mastery and review
+        - Coding lab
+        - System design lab
+        - FORGE OPS
+        - FORGE Career
+        - FORGE Workspace
+        - Documentation or accessibility
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Local environment and modes
+      description: OS, Python, Node, Docker, AI provider mode and sandbox mode. Include versions; omit keys and private configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Give minimal steps using sample local data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: Include the exact error where useful. Sanitize every pasted value.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized logs or actual screenshots
+      description: Optional. Review attachments for credentials, IDs, private paths and learner history before submitting.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Public report check
+      options:
+        - label: This report contains no credentials or private data and is not a vulnerability disclosure.
+          required: true

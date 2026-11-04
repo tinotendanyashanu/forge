@@ -1,0 +1,39 @@
+name: Curriculum or exercise improvement
+description: Improve a question, rubric, challenge, project or coverage gap.
+title: "[Content] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use original or appropriately licensed material. Do not paste private learner history, employer interview material or confidential code. Keep advisory AI distinct from deterministic assessment evidence.
+  - type: input
+    id: item
+    attributes:
+      label: Skill or content item
+      description: Give the question/challenge/project slug if known, or identify the missing coverage.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current problem
+      description: Explain the incorrect concept, ambiguity, rubric issue or learning gap.
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: Suggested change and expected reasoning
+      description: Include the learning objective, difficulty and relevant misconception.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References and permissions
+      description: Link reliable sources and identify attribution or licensing requirements.
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: For executable exercises, describe reference-solution checks and how the starter should fail. State any AI or runtime limitations.

@@ -1,0 +1,504 @@
+level = "advanced"
+
+[[scenarios]]
+slug = "worker-queue-backlog"
+title = "Notification queue backlog keeps growing"
+summary = "Order confirmations and password-reset emails stopped going out 20 minutes ago. The queue is growing and the workers keep restarting."
+business_context = "Meridian Market sends transactional email (order confirmations, password resets, shipping updates) through a RabbitMQ queue consumed by notify-worker (6 replicas, prefetch 1). Password-reset emails that never arrive lock customers out; missing confirmations trigger support contacts and chargebacks."
+skills = ["distributed-systems", "python", "devops"]
+competencies = ["distributed_systems", "reliability", "observability", "deployment_engineering", "root_cause_analysis"]
+learning_outcomes = [
+  "Recognise a poison message: a few messages redelivered thousands of times while consumers crash-loop.",
+  "Explain why requeue-on-failure without a dead-letter queue turns one bad message into a full outage.",
+  "Trace a consumer failure back to a producer's contract change.",
+  "Drain a backlog safely without losing messages.",
+]
+initial_symptoms = [
+  "Alert: notifications queue depth above 5,000 and rising.",
+  "Alert: notify-worker restarts > 30 in 15 minutes.",
+  "Support: customers aren't receiving password-reset emails.",
+]
+customer_impact = "No transactional email has been delivered for 20 minutes; password resets are blocked and the backlog grows by about 400 messages a minute."
+start_time = "2026-10-12T07:40:00Z"
+history = [[-120, "healthy"], [-21, "stuck"]]
+initial_condition = "stuck"
+verify_minutes = 6
+target_minutes = 25
+
+spoiler_terms = ["poison", "dead-letter", "dead letter", "dlq", "requeue", "requeued", "contact.email", "guest order", "guest checkout", "schema_version"]
+key_evidence = ["log-traceback", "queue-stats", "poison-sample", "producer-diff"]
+contributing_factors = [
+  "The consumer nacks with requeue=true on any exception and the queue has no dead-letter exchange or redelivery limit.",
+  "No message schema contract or consumer-driven contract test between orders-api and notify-worker.",
+  "prefetch=1 means a crashing consumer redelivers the same message to the next worker immediately.",
+  "Alerts cover queue depth but not message age or redelivery count.",
+]
+investigation_path = [
+  "See that workers are crash-looping, not slow: processing rate is near zero while depth grows.",
+  "Read the worker traceback: TypeError on customer email for guest orders.",
+  "Inspect the queue: a few messages with thousands of redeliveries at the head.",
+  "Sample a message: email moved to customer.contact.email and is null at the old path.",
+  "Line up with orders-api v8.1 (guest checkout payload change).",
+  "Dead-letter the poison messages (or ship a tolerant consumer), then drain and replay safely.",
+]
+explanation = "orders-api v8.1 changed the order_confirmed payload for guest checkouts: customer.email became null and the address moved to customer.contact.email. notify-worker indexes customer['email'].lower() and crashes on None. It nacks with requeue=true and the queue has no dead-letter exchange, so the same few poison messages are redelivered to every worker in turn; each crash restarts the pod. With all six workers cycling through poison messages, nothing else is processed and the backlog grows. Dead-lettering after a few attempts lets healthy messages flow; a tolerant consumer (or rolling back the producer) stops new poison."
+prevention = [
+  "Dead-letter exchange with a redelivery limit on every work queue.",
+  "Catch per-message errors in consumers; never crash the process on bad input.",
+  "Versioned message schemas and consumer-driven contract tests between producer and consumer.",
+  "Alert on oldest-message age and redelivery counts, not only depth.",
+  "A replay tool for dead-lettered messages with idempotent consumers.",
+]
+
+[[scenarios.services]]
+id = "api"
+name = "orders-api (producer)"
+kind = "service"
+depends_on = ["mq"]
+
+[[scenarios.services]]
+id = "mq"
+name = "notifications queue (RabbitMQ)"
+kind = "queue"
+description = "Quorum queue, no dead-letter exchange, no delivery limit."
+
+[[scenarios.services]]
+id = "worker"
+name = "notify-worker"
+kind = "worker"
+depends_on = ["mq", "email"]
+description = "6 replicas, prefetch 1, nack(requeue=True) on any exception."
+
+[[scenarios.services]]
+id = "email"
+name = "email provider (external)"
+kind = "notification"
+
+[scenarios.conditions.healthy]
+label = "Healthy"
+phase = "healthy"
+summary = "All services healthy."
+[scenarios.conditions.healthy.metrics]
+"api.throughput" = 900
+"api.error_rate" = { v = 0.2, jitter = 0.3 }
+"mq.queue_depth" = { v = 35, jitter = 0.3 }
+"worker.worker_rate" = 410
+"worker.error_rate" = { v = 0.1, jitter = 0.4 }
+"worker.cpu" = 22
+"worker.memory" = 190
+"email.throughput" = 405
+"email.error_rate" = { v = 0.3, jitter = 0.3 }
+
+[scenarios.conditions.stuck]
+label = "Workers crash-looping"
+phase = "incident"
+symptom = "Notification queue growing about 400/min; notify-worker pods restarting; no emails sent."
+inherit = "healthy"
+health = { worker = "down", mq = "degraded", email = "healthy" }
+summary = "Every worker crashes on the same few messages; nothing is delivered and the queue grows."
+[scenarios.conditions.stuck.metrics]
+"mq.queue_depth" = { linear = [8500, 400], jitter = 0.01 }
+"worker.worker_rate" = { v = 3, jitter = 0.5 }
+"worker.error_rate" = { v = 97, jitter = 0.01 }
+"worker.cpu" = { v = 9, jitter = 0.2 }
+"email.throughput" = { v = 3, jitter = 0.5 }
+
+[scenarios.conditions.scaled]
+label = "More workers, same crash loop"
+phase = "incident"
+symptom = "Queue still growing; worker restarts doubled."
+inherit = "stuck"
+summary = "12 workers now crash on the same poison messages; the restart rate doubled."
+
+[scenarios.conditions.purged]
+label = "Queue purged"
+phase = "recovering"
+symptom = "Queue empty; workers processing again."
+inherit = "healthy"
+auto_after = 3
+auto_to = "stuck"
+health = { worker = "degraded" }
+summary = "The backlog is gone (about 8,500 emails discarded). New guest orders still produce poison messages."
+[scenarios.conditions.purged.metrics]
+"mq.queue_depth" = { linear = [0, 60] }
+"worker.worker_rate" = 380
+
+[scenarios.conditions.no_new_poison]
+label = "Producer fixed, poison still queued"
+phase = "incident"
+symptom = "Queue still growing; workers still restarting."
+inherit = "stuck"
+summary = "No new poison messages, but the ones already queued still crash every worker."
+
+[scenarios.conditions.draining]
+label = "Draining backlog"
+phase = "recovering"
+symptom = "Queue depth falling fast; emails sending."
+inherit = "healthy"
+auto_after = 8
+auto_to = "recovered"
+health = { worker = "degraded", mq = "degraded" }
+summary = "Poison messages go to the dead-letter queue; workers are processing the backlog at full speed."
+[scenarios.conditions.draining.metrics]
+"mq.queue_depth" = { ramp = [9000, 60], minutes = 8 }
+"worker.worker_rate" = { v = 1450, jitter = 0.03 }
+"worker.cpu" = 71
+"worker.error_rate" = { v = 0.4, jitter = 0.3 }
+"email.throughput" = { v = 1440, jitter = 0.03 }
+
+[scenarios.conditions.recovered]
+label = "Recovered"
+phase = "recovered"
+inherit = "healthy"
+summary = "Backlog drained; emails flow normally. Poison messages are parked in the dead-letter queue."
+
+[[scenarios.logs]]
+id = "log-traceback"
+t = -20.8
+service = "worker"
+level = "critical"
+message = "Unhandled exception in handle_order_confirmed: AttributeError: 'NoneType' object has no attribute 'lower' (customer['email'].lower()) -> process exiting"
+fields = { message_id = "m-0a91f", pod = "notify-worker-5c-2" }
+
+[[scenarios.logs]]
+id = "log-nack"
+t = -20.7
+service = "worker"
+level = "warning"
+message = "channel closed with unacked delivery; message m-0a91f requeued (redelivered=true)"
+fields = { message_id = "m-0a91f" }
+
+[[scenarios.logs]]
+id = "log-crashloop"
+t = -12.0
+service = "worker"
+level = "error"
+message = "Back-off restarting failed container notify-worker (CrashLoopBackOff), restarts=14"
+fields = { pod = "notify-worker-5c-4" }
+
+[[scenarios.logs]]
+id = "log-email-ok"
+t = -10.0
+service = "email"
+level = "info"
+message = "provider status: all systems operational; API latency p95 120 ms"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-producer-ok"
+t = -8.0
+service = "api"
+level = "info"
+message = "published order_confirmed for order O-90211 (guest=true)"
+fields = { message_id = "m-0b7c2" }
+
+[[scenarios.logs]]
+id = "log-depth"
+t = -3.0
+service = "mq"
+level = "warning"
+message = "queue notifications: messages_ready=7310, consumers=0 (all consumers disconnected)"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-dlq-on"
+t = 0
+after = "draining"
+service = "mq"
+level = "info"
+message = "policy applied: dead-letter-exchange=notifications.dlx, delivery-limit=3; 6 messages dead-lettered"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-purged"
+t = 0
+after = "purged"
+service = "mq"
+level = "warning"
+message = "queue notifications purged: 8,512 messages deleted"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-poison-again"
+t = 0.5
+after = "stuck"
+service = "worker"
+level = "critical"
+message = "Unhandled exception in handle_order_confirmed: AttributeError: 'NoneType' object has no attribute 'lower' -> process exiting"
+fields = { message_id = "m-0c001" }
+
+[[scenarios.logs]]
+id = "log-drained"
+t = 7
+after = "draining"
+service = "worker"
+level = "info"
+message = "backlog drained; oldest message age 4 s"
+fields = {}
+
+[[scenarios.traces]]
+id = "tr-poison"
+t = -20.8
+request_id = "m-0a91f"
+title = "consume order_confirmed m-0a91f (delivery 2,914)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "mq"
+name = "deliver m-0a91f (redelivered)"
+start_ms = 0
+duration_ms = 2
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "worker"
+name = "handle_order_confirmed"
+start_ms = 3
+duration_ms = 4
+status = "error"
+note = "AttributeError on customer['email'] (None). Process exits before ack."
+
+[[scenarios.traces]]
+id = "tr-ok"
+t = -40
+request_id = "m-07730"
+title = "consume order_confirmed m-07730 (before the incident)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "mq"
+name = "deliver m-07730"
+start_ms = 0
+duration_ms = 2
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "worker"
+name = "handle_order_confirmed"
+start_ms = 3
+duration_ms = 140
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "email"
+name = "POST /v3/mail/send"
+start_ms = 20
+duration_ms = 118
+
+[[scenarios.deployments]]
+id = "dep-api-81"
+t = -23
+service = "api"
+version = "v8.1.0"
+author = "checkout-team"
+summary = "Guest checkout: store contact details separately"
+changes = ["customer.contact = {email, phone}", "customer.email set to null for guests"]
+
+[[scenarios.deployments]]
+id = "dep-worker"
+t = -400
+service = "worker"
+version = "v3.6.2"
+author = "messaging-team"
+summary = "Template tweaks"
+changes = ["Footer copy"]
+
+[[scenarios.artifacts]]
+id = "queue-stats"
+kind = "service_status"
+title = "RabbitMQ: notifications queue"
+reveal = "inspect_queue"
+content = """
+messages_ready       8,610      consumers            0-6 (flapping)
+oldest message age   20m 40s    publish rate         400/min
+dead-letter-exchange none       delivery-limit       none
+head of queue redeliveries:
+  m-0a91f  2,914   m-0a930  2,906   m-0a97b  2,881   m-0aa02  2,850   m-0b7c2  1,210   m-0bb19  601
+"""
+
+[[scenarios.artifacts]]
+id = "poison-sample"
+kind = "other"
+title = "Payload of message m-0a91f"
+reveal = "sample_message"
+content = """
+{"type": "order_confirmed", "order_id": "O-90118", "guest": true,
+ "customer": {"id": null, "email": null, "contact": {"email": "ana@example.org", "phone": null}},
+ "schema_version": 2}
+Messages from registered customers: customer.email is set; schema_version 1.
+"""
+
+[[scenarios.artifacts]]
+id = "producer-diff"
+kind = "config"
+title = "orders-api v8.1.0: event payload diff"
+reveal = "review_diff"
+content = """
+ def order_confirmed_event(order):
+-    return {"customer": {"id": c.id, "email": c.email}, "schema_version": 1, ...}
++    return {"customer": {"id": c.id, "email": None if order.guest else c.email,
++                         "contact": {"email": order.contact_email, ...}},
++            "schema_version": 2, ...}
+"""
+
+[[scenarios.artifacts]]
+id = "email-status"
+kind = "service_status"
+title = "Email provider dashboard"
+reveal = "check_email"
+content = """
+API status operational   p95 118 ms   errors 0.1%   our send rate: 3/min (normally 400/min)
+"""
+
+[[scenarios.actions]]
+id = "worker_logs"
+kind = "investigate"
+label = "Read notify-worker crash logs"
+description = "Tracebacks from the crash-looping pods."
+minutes = 1
+quality = "helpful"
+teach = "The process crashes on customer['email'] being None, then exits without acking."
+
+[[scenarios.actions]]
+id = "inspect_queue"
+kind = "investigate"
+label = "Inspect the notifications queue"
+description = "Depth, consumers, redelivery counts, dead-letter policy."
+minutes = 2
+quality = "helpful"
+teach = "A handful of messages at the head have thousands of redeliveries and there is no dead-letter policy: textbook poison messages."
+
+[[scenarios.actions]]
+id = "sample_message"
+kind = "investigate"
+label = "Read the payload of the most redelivered message"
+description = "Fetch m-0a91f without acking it."
+minutes = 1
+requires_actions = ["inspect_queue"]
+quality = "helpful"
+teach = "Guest orders now carry email under customer.contact; the old field is null."
+
+[[scenarios.actions]]
+id = "review_diff"
+kind = "investigate"
+label = "Review the orders-api v8.1.0 event diff"
+description = "See how the producer's payload changed."
+minutes = 2
+quality = "helpful"
+teach = "A producer contract change without a consumer update."
+
+[[scenarios.actions]]
+id = "check_email"
+kind = "investigate"
+label = "Check the email provider"
+description = "Provider status and our send rate."
+minutes = 1
+teach = "The provider is healthy; we just aren't sending anything."
+
+[[scenarios.actions]]
+id = "enable_dlq"
+kind = "mitigate"
+discovered_by = ["inspect_queue", "worker_logs"]
+label = "Apply a dead-letter policy (delivery-limit 3) to the queue"
+description = "Messages that fail 3 times move to notifications.dlq instead of being requeued."
+minutes = 1
+quality = "correct"
+transitions = { stuck = "draining", scaled = "draining", no_new_poison = "draining" }
+outcome = { default = "Poison messages are dead-lettered after 3 attempts. Workers stop crashing on them and start draining the backlog." }
+teach = "Isolates bad messages without losing them; they can be fixed and replayed later. New guest-order messages will dead-letter too until the consumer is fixed."
+
+[[scenarios.actions]]
+id = "hotfix_consumer"
+kind = "mitigate"
+discovered_by = ["worker_logs", "sample_message"]
+label = "Hotfix notify-worker: read contact.email and catch per-message errors"
+description = "Tolerant consumer that nacks without requeue on bad input (build and roll out)."
+minutes = 4
+requires_actions = ["worker_logs"]
+quality = "correct"
+transitions = { stuck = "draining", scaled = "draining", no_new_poison = "draining" }
+outcome = { default = "Workers on v3.6.3 handle both payload shapes and no longer crash on bad input; the backlog drains." }
+deployment = { service = "worker", version = "v3.6.3", summary = "Tolerant order_confirmed handler" }
+teach = "Fixes the consumer for both payload versions. Slower than a policy change, but it also delivers guest-order emails."
+
+[[scenarios.actions]]
+id = "rollback_producer"
+kind = "mitigate"
+label = "Roll back orders-api to v8.0.4"
+description = "Stop producing the new payload shape."
+minutes = 2
+quality = "helpful"
+transitions = { stuck = "no_new_poison", scaled = "no_new_poison" }
+outcome = { default = "orders-api v8.0.4 is live. notify-worker pods are still restarting and the queue is still growing." }
+deployment = { service = "api", version = "v8.0.4", summary = "Rollback of v8.1.0" }
+teach = "Stops new poison, but doesn't unblock the queue on its own. Also check whether v8.1 wrote data that v8.0 can't read."
+
+[[scenarios.actions]]
+id = "restart_workers"
+kind = "mitigate"
+label = "Restart all notify-worker pods"
+description = "Rolling restart."
+minutes = 1
+once = false
+quality = "risky"
+mistake = "restart-before-diagnosis"
+outcome = { default = "Workers restart, and within a minute they are restarting again." }
+teach = "Restarting a consumer doesn't change the message it will receive next."
+
+[[scenarios.actions]]
+id = "scale_workers"
+kind = "mitigate"
+label = "Scale notify-worker from 6 to 12 replicas"
+description = "More consumers to chew through the backlog."
+minutes = 2
+quality = "risky"
+mistake = "scale-without-bottleneck"
+transitions = { stuck = "scaled" }
+outcome = { default = "12 workers running, all restarting repeatedly. Restart events double." }
+teach = "Throughput isn't the problem: every consumer is blocked by the same message."
+
+[[scenarios.actions]]
+id = "purge_queue"
+kind = "mitigate"
+discovered_by = ["inspect_queue"]
+label = "Purge the notifications queue"
+description = "Delete every message in the queue."
+minutes = 1
+quality = "harmful"
+mistake = "ignore-data-safety"
+transitions = { stuck = "purged", scaled = "purged", no_new_poison = "recovered" }
+outcome = { stuck = "8,512 messages deleted: order confirmations and password resets are lost. New guest orders produce poison again within minutes.", no_new_poison = "Queue purged. Workers recover, but 8,500 customer emails are permanently lost.", default = "Queue purged; messages lost." }
+teach = "Purging 'fixes' the graph by destroying customer messages, and with the producer unchanged the poison comes straight back."
+
+[[scenarios.root_causes]]
+id = "rc-poison"
+text = "orders-api v8.1 sends guest-order events with customer.email = null; notify-worker crashes on them and requeues them forever (no dead-letter queue), so poison messages block every consumer."
+correct = true
+explanation = "Tracebacks show AttributeError on customer['email']; the head of the queue holds a few messages redelivered thousands of times; the payload has email under customer.contact; this started right after v8.1.0."
+
+[[scenarios.root_causes]]
+id = "rc-email-provider"
+text = "The email provider is down, so workers can't send."
+explanation = "The provider is operational; our send rate is near zero because workers crash before calling it."
+
+[[scenarios.root_causes]]
+id = "rc-capacity"
+text = "There aren't enough workers for the publishing rate."
+explanation = "Before the incident 6 workers processed 410 messages/min easily; now they process about 3 because they crash, not because they're slow."
+
+[[scenarios.root_causes]]
+id = "rc-rabbit"
+text = "RabbitMQ is unhealthy and dropping consumer connections."
+explanation = "Consumers disconnect because their processes exit on an exception; the broker is fine."
+
+[[scenarios.misleading_signals]]
+signal = "consumers=0 and channel-closed warnings in the broker"
+why = "Consumers disappear because worker processes crash; the broker is reporting it, not causing it."
+
+[[scenarios.misleading_signals]]
+signal = "Email send rate near zero"
+why = "Workers never reach the provider; the provider itself is healthy."
+
+[scenarios.rubric_focus]
+diagnostic_accuracy = "Poison messages from the producer change, plus infinite requeue without a DLQ."
+evidence_quality = "Traceback, redelivery counts, the payload sample, the producer diff."
+mitigation_safety = "Dead-letter or a tolerant consumer; never purge; restarts and scaling don't help."
+long_term_prevention = "DLQ and delivery limits, per-message error handling, schema contracts, age and redelivery alerts."

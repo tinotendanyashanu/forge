@@ -1,0 +1,93 @@
+slug = "fix-median"
+title = "Debug a median function"
+area = "testing-debugging"
+skill = "testing"
+prerequisites = ["python"]
+difficulty = "beginner"
+entrypoint = "median"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+A reporting job produces wrong medians. Find and fix the bugs in `median(values)`:
+
+* Return the middle value of the sorted list; for an even count, the mean of the two middle values.
+* Raise `ValueError` for an empty list.
+* Do not reorder the caller's list.
+"""
+constraints = ["Keep the function signature.", "Don't use the statistics module."]
+rubric = [
+  "Sorts a copy rather than the caller's list.",
+  "Handles even counts with the two middle elements (indices n//2 - 1 and n//2).",
+  "Raises a clear ValueError for empty input.",
+]
+misconceptions = [
+  "list.sort() returns None and mutates the caller's data.",
+  "Off-by-one: using n//2 and n//2 + 1 for the even case.",
+]
+hints = ["Write the expected answer for [1, 2, 3, 4] by hand and compare.", "sorted(values) returns a new list."]
+
+[languages.python]
+starter = '''
+def median(values):
+    values.sort()
+    n = len(values)
+    if n % 2 == 1:
+        return values[n // 2]
+    return (values[n // 2] + values[n // 2 + 1]) / 2
+'''
+reference = '''
+def median(values):
+    if not values:
+        raise ValueError("median of empty list")
+    ordered = sorted(values)
+    n = len(ordered)
+    mid = n // 2
+    if n % 2 == 1:
+        return ordered[mid]
+    return (ordered[mid - 1] + ordered[mid]) / 2
+'''
+
+[driver.python]
+code = '''
+def keeps_order(solution, values):
+    copy = list(values)
+    solution.median(copy)
+    return copy == values
+'''
+
+[[tests]]
+name = "Odd count"
+visibility = "public"
+args = [[3, 1, 2]]
+expected = 2
+
+[[tests]]
+name = "Even count"
+visibility = "public"
+args = [[4, 1, 3, 2]]
+expected = 2.5
+
+[[tests]]
+name = "Empty list raises"
+visibility = "hidden"
+args = [[]]
+raises = "ValueError"
+
+[[tests]]
+name = "Two elements"
+visibility = "hidden"
+args = [[10, 20]]
+expected = 15.0
+
+[[tests]]
+name = "Negative and duplicate values"
+visibility = "hidden"
+args = [[-5, -5, 0, 7]]
+expected = -2.5
+
+[[tests]]
+name = "Caller's list is not reordered"
+visibility = "hidden"
+call = "driver:keeps_order"
+args = [[9, 1, 5]]
+expected = true

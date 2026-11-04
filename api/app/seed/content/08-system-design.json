@@ -1,0 +1,245 @@
+{
+  "skill": {
+    "slug": "system-design",
+    "title": "System Design",
+    "summary": "Scaling, caching, failure handling and the trade-offs between them.",
+    "description": "Reason about load, failure and consistency. State requirements, estimate capacity, and defend trade-offs between latency, cost and correctness."
+  },
+  "topics": [
+    {
+      "slug": "scaling",
+      "title": "Scaling & capacity"
+    },
+    {
+      "slug": "caching",
+      "title": "Caching"
+    },
+    {
+      "slug": "reliability",
+      "title": "Reliability"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "sd-stateless-scaling",
+      "topic": "scaling",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Scaling out behind a load balancer",
+      "prompt": "You want to run five identical instances of a web API behind a round-robin load balancer. Which property matters most for this to work without sticky sessions?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Each instance has its own local database"
+        },
+        {
+          "key": "b",
+          "text": "Instances keep no per-user state in memory; shared state lives in a database or cache",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Each instance runs on a larger machine than before"
+        },
+        {
+          "key": "d",
+          "text": "The load balancer retries every failed request on all instances"
+        }
+      ],
+      "explanation": "If an instance stores sessions or other per-user state in memory, the next request may land on an instance that doesn't have it. Keeping instances stateless, with shared state in a database or cache, lets any instance serve any request and lets you add or remove instances freely.",
+      "rubric": [
+        "Identifies statelessness of application instances as the key property.",
+        "Explains what breaks when state is held in memory.",
+        "Places shared state in an external store."
+      ],
+      "expected_concepts": [
+        "Horizontal scaling",
+        "Stateless services",
+        "Externalised session state"
+      ],
+      "misconceptions": [
+        "Scaling out is the same as using bigger machines.",
+        "Each instance can safely own a separate copy of the data."
+      ],
+      "resources": [
+        {
+          "title": "The Twelve-Factor App: VI. Processes",
+          "url": "https://12factor.net/processes"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "Identifies stateless instances with shared state kept in an external store."
+    },
+    {
+      "slug": "sd-cache-aside",
+      "topic": "caching",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Cache-aside on a miss",
+      "prompt": "A service uses the cache-aside pattern with Redis in front of PostgreSQL. On a cache miss, what happens?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Redis fetches the row from PostgreSQL and stores it automatically"
+        },
+        {
+          "key": "b",
+          "text": "The application reads PostgreSQL, returns the value, and writes it to the cache",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The request fails and the client retries after the cache warms"
+        },
+        {
+          "key": "d",
+          "text": "PostgreSQL pushes the row to Redis through a trigger"
+        }
+      ],
+      "explanation": "In cache-aside (lazy loading) the cache is passive. The application checks the cache, loads from the source of truth on a miss, then populates the cache, usually with a TTL. This is different from read-through caching, where the cache itself loads missing data.",
+      "rubric": [
+        "States that the application, not the cache, loads data on a miss.",
+        "Describes populating the cache after the read, typically with a TTL.",
+        "Distinguishes cache-aside from read-through caching."
+      ],
+      "expected_concepts": [
+        "Cache-aside",
+        "Read-through caching",
+        "TTL"
+      ],
+      "misconceptions": [
+        "Caches load missing data from the database on their own.",
+        "Cache misses are errors."
+      ],
+      "resources": [
+        {
+          "title": "AWS Builders' Library: Caching challenges and strategies",
+          "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "States the application loads from the database on a miss and then populates the cache."
+    },
+    {
+      "slug": "sd-backoff-jitter",
+      "topic": "reliability",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Why add jitter?",
+      "prompt": "Clients retry failed calls with exponential backoff. Why should the delays also include random jitter?",
+      "options": [
+        {
+          "key": "a",
+          "text": "To make each retry more likely to succeed on its own"
+        },
+        {
+          "key": "b",
+          "text": "To spread retries out so many clients don't retry in synchronised waves",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "To hide retry behaviour from rate limiters"
+        },
+        {
+          "key": "d",
+          "text": "Jitter is only needed when there is a single client"
+        }
+      ],
+      "explanation": "When many clients fail at the same moment, identical backoff schedules make them retry at the same moments, producing load spikes that can keep a recovering service down. Randomising delays spreads retries over time. Pair it with retry limits and timeouts.",
+      "rubric": [
+        "Explains synchronised retries from many clients (the thundering herd).",
+        "States that jitter spreads load over time.",
+        "Mentions retry limits or retry budgets alongside backoff."
+      ],
+      "expected_concepts": [
+        "Exponential backoff",
+        "Jitter",
+        "Thundering herd",
+        "Retry budgets"
+      ],
+      "misconceptions": [
+        "Retries are always safe to add.",
+        "Backoff alone prevents synchronised retry storms."
+      ],
+      "resources": [
+        {
+          "title": "AWS Builders' Library: Timeouts, retries and backoff with jitter",
+          "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+        }
+      ],
+      "estimated_minutes": 4,
+      "acceptance_criteria": "Explains that jitter de-synchronises retries from many clients."
+    },
+    {
+      "slug": "sd-capacity-estimate",
+      "topic": "scaling",
+      "difficulty": "intermediate",
+      "format": "free_text",
+      "title": "Capacity for a URL shortener",
+      "prompt": "Estimate the storage and read throughput for a URL shortener that creates 10 million links per month, keeps them for five years, and serves 100 reads for every write. State your assumptions, then say which component you would scale first.",
+      "hint": "Work out writes per second first, then multiply. Round aggressively: the goal is the order of magnitude.",
+      "explanation": "Writes ≈ 10M / (30 × 86,400) ≈ 4 per second on average; reads ≈ 400 per second, with a peak multiplier on top. Five years ≈ 600M links; at ~500 bytes each that is roughly 300 GB before indexes and replication. The workload is read-heavy and highly cacheable, so a cache in front of the store is the first lever.",
+      "rubric": [
+        "Converts monthly volume to an average per-second write rate.",
+        "Derives read throughput from the read/write ratio and considers peaks.",
+        "Estimates total storage from link count and a stated record size.",
+        "Identifies the read-heavy pattern and proposes caching first.",
+        "States assumptions explicitly."
+      ],
+      "expected_concepts": [
+        "Back-of-the-envelope estimation",
+        "Peak versus average load",
+        "Read-heavy workloads",
+        "Caching"
+      ],
+      "misconceptions": [
+        "Average load is enough for capacity planning.",
+        "Precise numbers matter more than stated assumptions."
+      ],
+      "resources": [
+        {
+          "title": "Google SRE book: Handling overload",
+          "url": "https://sre.google/sre-book/handling-overload/"
+        }
+      ],
+      "estimated_minutes": 10,
+      "acceptance_criteria": "Produces order-of-magnitude write, read and storage estimates from stated assumptions and identifies caching as the first lever."
+    },
+    {
+      "slug": "sd-cache-invalidation-race",
+      "topic": "caching",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Stale data after an update",
+      "prompt": "A service uses cache-aside in front of PostgreSQL. After a user changes their display name, some pages show the old name for minutes. Explain the race conditions that can cause this and design an invalidation strategy, including its trade-offs.",
+      "hint": "Consider a read that misses the cache, loads the old value, and writes it back after the update has already invalidated the key.",
+      "explanation": "A slow reader can load the old row, the writer then updates the database and deletes the key, and the reader finally writes the stale value back, where it lives until the TTL expires. Prefer deleting keys over updating them on write, keep TTLs short as a safety net, and close the race with versioned values, leases, a delayed second delete, or change-data-capture–driven invalidation. Pages that need read-your-writes can bypass the cache for the current user.",
+      "rubric": [
+        "Describes the reader–writer interleaving that repopulates a stale value.",
+        "Prefers invalidation (delete) over updating the cache on write, with reasoning.",
+        "Uses TTLs as a bound on staleness.",
+        "Proposes a mechanism such as versioning, leases, delayed double delete or CDC.",
+        "Handles read-your-writes requirements separately."
+      ],
+      "expected_concepts": [
+        "Cache invalidation",
+        "Race conditions",
+        "Bounded staleness",
+        "Read-your-writes consistency"
+      ],
+      "misconceptions": [
+        "Deleting the cache key after a database write guarantees freshness.",
+        "Shorter TTLs alone eliminate stale reads."
+      ],
+      "resources": [
+        {
+          "title": "AWS Builders' Library: Caching challenges and strategies",
+          "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/"
+        }
+      ],
+      "estimated_minutes": 12,
+      "acceptance_criteria": "Describes the stale-repopulation race and proposes a mechanism that bounds or prevents it."
+    }
+  ]
+}

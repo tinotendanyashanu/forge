@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+/*
+ * FORGE design tokens. Monochrome, dark-first.
+ * Use the semantic utilities (bg-canvas, bg-surface, border-line, text-fg,
+ * text-fg-muted, ...) rather than raw neutrals so the palette stays consistent.
+ */
+@theme inline {
+  --color-canvas: #0a0a0a;
+  --color-surface: #171717;
+  --color-surface-raised: #1c1c1c;
+  --color-surface-hover: #212121;
+  --color-surface-elevated: #202020;
+  --color-line: #303030;
+  --color-line-subtle: #242424;
+  --color-fg: #fafafa;
+  --color-fg-muted: #a3a3a3;
+  --color-fg-subtle: #737373;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --animate-fade-in: fade-in 180ms ease-out both;
+  --animate-rise-in: rise-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-slide-in: slide-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slide-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-canvas);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #fafafa;
+  color: #0a0a0a;
+}
+
+/* One consistent, high-contrast focus ring for every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--color-fg);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Quiet scrollbars that match the surface palette. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #303030 transparent;
+}
+
+/* System design canvas (React Flow), matched to the FORGE palette. */
+.forge-flow.react-flow {
+  --xy-background-color: var(--color-canvas);
+  --xy-background-pattern-color: #262626;
+  --xy-edge-stroke: #737373;
+  --xy-edge-stroke-selected: #fafafa;
+  --xy-edge-stroke-width: 1.5;
+  --xy-connectionline-stroke: #a3a3a3;
+  --xy-handle-background-color: #fafafa;
+  --xy-handle-border-color: #0a0a0a;
+  --xy-selection-background-color: rgb(250 250 250 / 0.06);
+  --xy-selection-border: 1px dashed #737373;
+  --xy-minimap-background-color: #171717;
+  --xy-minimap-mask-background-color: rgb(10 10 10 / 0.7);
+  --xy-minimap-node-background-color: #303030;
+  --xy-edge-label-background-color: #171717;
+  --xy-edge-label-color: #a3a3a3;
+  --xy-attribution-background-color: transparent;
+  font-family: var(--font-sans);
+}
+.forge-flow .react-flow__edge-textbg {
+  fill: #171717;
+}
+.forge-flow .react-flow__edge-text {
+  fill: #a3a3a3;
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+.forge-flow .react-flow__handle {
+  width: 9px;
+  height: 9px;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.forge-flow .react-flow__node:hover .react-flow__handle,
+.forge-flow .react-flow__node.selected .react-flow__handle,
+.forge-flow.connecting .react-flow__handle {
+  opacity: 1;
+}
+.forge-flow .react-flow__node:focus-visible {
+  outline: none;
+}
+.forge-flow .react-flow__node:focus-visible > div {
+  outline: 2px solid var(--color-fg);
+  outline-offset: 3px;
+}
+
+/* Printable career reports: only the report, dark text on white. */
+@media print {
+  aside[aria-label="Sidebar"],
+  header.md\:hidden,
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body,
+  main {
+    background: #fff !important;
+  }
+  .print-report,
+  .print-report * {
+    color: #111 !important;
+    background: transparent !important;
+    border-color: #bbb !important;
+    box-shadow: none !important;
+  }
+  .print-report section {
+    break-inside: avoid;
+  }
+}

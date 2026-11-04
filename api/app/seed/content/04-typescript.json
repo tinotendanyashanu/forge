@@ -1,0 +1,259 @@
+{
+  "skill": {
+    "slug": "typescript",
+    "title": "TypeScript",
+    "summary": "Narrowing, generics, unions and the limits of compile-time types.",
+    "description": "Use the type system to make invalid states unrepresentable, and understand exactly what it does and does not guarantee once code is running."
+  },
+  "topics": [
+    {
+      "slug": "narrowing",
+      "title": "Narrowing & unions"
+    },
+    {
+      "slug": "generics",
+      "title": "Generics"
+    },
+    {
+      "slug": "type-system",
+      "title": "Type system boundaries"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "ts-unknown-vs-any",
+      "topic": "type-system",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "`unknown` versus `any`",
+      "prompt": "Which statement about `unknown` and `any` is correct?",
+      "options": [
+        {
+          "key": "a",
+          "text": "They are interchangeable; `unknown` is just the newer name"
+        },
+        {
+          "key": "b",
+          "text": "`unknown` must be narrowed before you use it; `any` turns off type checking for that value",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`any` is checked at runtime, `unknown` is not"
+        },
+        {
+          "key": "d",
+          "text": "`unknown` can only hold primitive values"
+        }
+      ],
+      "explanation": "Any value is assignable to both, but `any` allows every operation without checks and spreads silently through your code. `unknown` allows almost nothing until you narrow it with `typeof`, `instanceof`, a type guard or validation, which makes it the safe type for untrusted data.",
+      "rubric": [
+        "States that `unknown` requires narrowing before use.",
+        "States that `any` disables type checking and propagates.",
+        "Recommends `unknown` for untrusted input."
+      ],
+      "expected_concepts": [
+        "Top types",
+        "Narrowing",
+        "Type safety of external data"
+      ],
+      "misconceptions": [
+        "`unknown` and `any` behave the same.",
+        "TypeScript types are enforced at runtime."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: More on functions — unknown",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/functions.html#unknown"
+        }
+      ],
+      "estimated_minutes": 2,
+      "acceptance_criteria": "States that unknown requires narrowing before use while any disables type checking."
+    },
+    {
+      "slug": "ts-typeof-narrowing",
+      "topic": "narrowing",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Narrowing with `typeof`",
+      "prompt": "What is the type of `x` on the final `return` line?",
+      "code": "function format(x: string | number) {\n  if (typeof x === \"string\") {\n    return x.trim();\n  }\n  return x.toFixed(2);\n}",
+      "code_language": "typescript",
+      "options": [
+        {
+          "key": "a",
+          "text": "`string | number`"
+        },
+        {
+          "key": "b",
+          "text": "`number`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`any`"
+        },
+        {
+          "key": "d",
+          "text": "`never`"
+        }
+      ],
+      "explanation": "Control-flow analysis removes `string` after the early return inside the `typeof` check, so `x` is `number` on the last line and `toFixed` type-checks.",
+      "rubric": [
+        "Identifies `number` as the narrowed type.",
+        "Explains control-flow analysis after an early return.",
+        "Names `typeof` as a type guard."
+      ],
+      "expected_concepts": [
+        "Control-flow analysis",
+        "`typeof` type guards",
+        "Union types"
+      ],
+      "misconceptions": [
+        "A variable keeps its declared union type throughout the function.",
+        "Narrowing requires an explicit cast."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Narrowing",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+        }
+      ],
+      "estimated_minutes": 2,
+      "acceptance_criteria": "Answers number and attributes it to control-flow narrowing."
+    },
+    {
+      "slug": "ts-keyof-generic",
+      "topic": "generics",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Indexed access with generics",
+      "prompt": "What type does TypeScript infer for `n`?",
+      "code": "function getProp<T, K extends keyof T>(obj: T, key: K): T[K] {\n  return obj[key];\n}\n\nconst user = { id: 1, name: \"Ada\" };\nconst n = getProp(user, \"name\");",
+      "code_language": "typescript",
+      "options": [
+        {
+          "key": "a",
+          "text": "`string | number`"
+        },
+        {
+          "key": "b",
+          "text": "`string`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`unknown`"
+        },
+        {
+          "key": "d",
+          "text": "`any`"
+        }
+      ],
+      "explanation": "`K` is inferred as the literal type `\"name\"`, and the indexed access type `T[K]` resolves to `typeof user[\"name\"]`, which is `string`. Constraining `K extends keyof T` also rejects keys that don't exist on `T` at compile time.",
+      "rubric": [
+        "Infers `K` as the literal `\"name\"`.",
+        "Explains the indexed access type `T[K]`.",
+        "Notes that the constraint rejects invalid keys."
+      ],
+      "expected_concepts": [
+        "Generic constraints",
+        "`keyof`",
+        "Indexed access types",
+        "Literal type inference"
+      ],
+      "misconceptions": [
+        "Generic return types widen to the union of all property types.",
+        "Generic functions lose type information and return `any`."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Generics — using type parameters in constraints",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#using-type-parameters-in-generic-constraints"
+        },
+        {
+          "title": "TypeScript handbook: Indexed access types",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html"
+        }
+      ],
+      "estimated_minutes": 4,
+      "acceptance_criteria": "Answers string and explains indexed access with the inferred literal key."
+    },
+    {
+      "slug": "ts-discriminated-union-state",
+      "topic": "narrowing",
+      "difficulty": "intermediate",
+      "format": "free_text",
+      "title": "Modelling request state",
+      "prompt": "A component tracks a request with `{ loading: boolean; data?: User; error?: string }`. Explain what invalid states this allows, then model it with a discriminated union and show how you would guarantee every case is handled when a new state is added.",
+      "hint": "How many combinations of those three fields are actually meaningful?",
+      "explanation": "Independent optional fields permit nonsense such as `loading: true` with `data` and `error` both set. A discriminated union (`{ status: \"loading\" } | { status: \"success\"; data: User } | { status: \"error\"; error: string }`) makes those unrepresentable, and `switch (state.status)` narrows each branch. Assigning the remaining value to `never` in the default branch turns a forgotten case into a compile error.",
+      "rubric": [
+        "Lists concrete invalid combinations the original type allows.",
+        "Defines a discriminated union with a literal tag field.",
+        "Shows narrowing via `switch` or `if` on the tag.",
+        "Uses a `never` exhaustiveness check to catch unhandled cases."
+      ],
+      "expected_concepts": [
+        "Discriminated unions",
+        "Making invalid states unrepresentable",
+        "Exhaustiveness checking with `never`"
+      ],
+      "misconceptions": [
+        "Optional fields are enough to model mutually exclusive states.",
+        "TypeScript automatically warns about unhandled union members in every `switch`."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Discriminated unions",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions"
+        },
+        {
+          "title": "TypeScript handbook: Exhaustiveness checking",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking"
+        }
+      ],
+      "estimated_minutes": 7,
+      "acceptance_criteria": "Defines a tagged union for the request states and an exhaustiveness check using never."
+    },
+    {
+      "slug": "ts-runtime-boundaries",
+      "topic": "type-system",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Trusting `as` at an API boundary",
+      "prompt": "A client does `const user = (await res.json()) as User;`. Explain what this cast does and does not guarantee, describe a realistic failure it hides, and design a safer approach for data crossing the network boundary.",
+      "hint": "What remains of `User` after compilation?",
+      "explanation": "`as` is a compile-time assertion with no runtime effect; types are erased. If the server changes a field, returns an error body, or a proxy injects HTML, the code continues with wrong data and fails far from the cause. Treat the response as `unknown` and validate it at the boundary with a schema (e.g. Zod or Valibot) or a hand-written type guard, then derive the static type from the schema so the two cannot drift. Decide how failures surface to users.",
+      "rubric": [
+        "States that types are erased and `as` performs no runtime check.",
+        "Gives a concrete failure, such as a renamed field or an error payload, and where it would surface.",
+        "Proposes runtime validation at the boundary via a schema or type guard.",
+        "Explains deriving the TypeScript type from the schema, or generating it from an API contract.",
+        "Addresses how validation failures are handled and reported."
+      ],
+      "expected_concepts": [
+        "Type erasure",
+        "Type assertions versus validation",
+        "Trust boundaries",
+        "Schema-derived types"
+      ],
+      "misconceptions": [
+        "A type assertion validates data.",
+        "If the code compiles, API responses match their declared types."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Type assertions",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions"
+        },
+        {
+          "title": "TypeScript handbook: Using type predicates",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates"
+        }
+      ],
+      "estimated_minutes": 10,
+      "acceptance_criteria": "States that `as` performs no runtime check and proposes runtime validation at the boundary."
+    }
+  ]
+}

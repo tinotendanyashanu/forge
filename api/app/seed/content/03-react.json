@@ -1,0 +1,268 @@
+{
+  "skill": {
+    "slug": "react",
+    "title": "React",
+    "summary": "State as a snapshot, component identity, effects and data-fetching correctness.",
+    "description": "Reason about rendering precisely: how state updates are applied, how keys preserve identity, when effects run, and how to avoid stale or out-of-order data."
+  },
+  "topics": [
+    {
+      "slug": "state",
+      "title": "State & rendering"
+    },
+    {
+      "slug": "lists",
+      "title": "Lists & identity"
+    },
+    {
+      "slug": "effects",
+      "title": "Effects"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "re-state-snapshot",
+      "topic": "state",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Three updates, one click",
+      "prompt": "`count` starts at 0. After one click, what is rendered?",
+      "code": "const [count, setCount] = useState(0);\n\nfunction handleClick() {\n  setCount(count + 1);\n  setCount(count + 1);\n  setCount(count + 1);\n}\n\nreturn <button onClick={handleClick}>{count}</button>;",
+      "code_language": "tsx",
+      "hint": "What is the value of `count` inside this particular render's event handler?",
+      "options": [
+        {
+          "key": "a",
+          "text": "3"
+        },
+        {
+          "key": "b",
+          "text": "1",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "0, until the component re-renders a second time"
+        },
+        {
+          "key": "d",
+          "text": "It varies between renders because updates race"
+        }
+      ],
+      "explanation": "State is a snapshot for each render. All three calls compute `0 + 1` and queue the value 1. To apply successive updates, pass an updater function: `setCount(c => c + 1)`.",
+      "rubric": [
+        "Explains that `count` is fixed within a render (state as a snapshot).",
+        "Recognises all three calls queue the same value.",
+        "Proposes the updater function form for sequential updates."
+      ],
+      "expected_concepts": [
+        "State as a snapshot",
+        "Batched state updates",
+        "Updater functions"
+      ],
+      "misconceptions": [
+        "`setCount` updates `count` immediately.",
+        "Batched updates are applied in a nondeterministic order."
+      ],
+      "resources": [
+        {
+          "title": "React: State as a snapshot",
+          "url": "https://react.dev/learn/state-as-a-snapshot"
+        },
+        {
+          "title": "React: Queueing a series of state updates",
+          "url": "https://react.dev/learn/queueing-a-series-of-state-updates"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "Answers 1 and explains that state is a per-render snapshot."
+    },
+    {
+      "slug": "re-index-as-key",
+      "topic": "lists",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Index keys in a reorderable list",
+      "prompt": "Each row in a to-do list contains an uncontrolled `<input>`. The list uses `key={index}`, and new items are inserted at the top. What goes wrong?",
+      "options": [
+        {
+          "key": "a",
+          "text": "React logs a duplicate-key warning on every insert"
+        },
+        {
+          "key": "b",
+          "text": "Typed input text stays at the old positions and appears next to the wrong items",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The list re-renders more slowly, but behaves correctly"
+        },
+        {
+          "key": "d",
+          "text": "Nothing; keys only need to be unique among siblings"
+        }
+      ],
+      "explanation": "React uses keys to match elements between renders. With index keys, inserting at the top shifts every index, so React reuses each existing component (and its DOM and state) for a different item. Use a stable id from the data as the key.",
+      "rubric": [
+        "Explains that keys determine component identity across renders.",
+        "Describes state or DOM attaching to the wrong item after insertion.",
+        "Recommends stable ids derived from the data."
+      ],
+      "expected_concepts": [
+        "Reconciliation by key",
+        "Component identity and local state",
+        "Stable keys"
+      ],
+      "misconceptions": [
+        "Index keys are only a performance concern.",
+        "Any key that is unique among siblings is sufficient, even if it changes."
+      ],
+      "resources": [
+        {
+          "title": "React: Rendering lists (keys)",
+          "url": "https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key"
+        },
+        {
+          "title": "React: Preserving and resetting state",
+          "url": "https://react.dev/learn/preserving-and-resetting-state"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "Explains that index keys attach state to the wrong items after insertion and recommends stable ids."
+    },
+    {
+      "slug": "re-object-dependency",
+      "topic": "effects",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "An effect that runs too often",
+      "prompt": "The network tab shows this effect fetching on every render, even when `userId` hasn't changed. Why?",
+      "code": "function Profile({ userId }: { userId: string }) {\n  const options = { userId, include: \"teams\" };\n\n  useEffect(() => {\n    fetchProfile(options).then(setProfile);\n  }, [options]);\n  // ...\n}",
+      "code_language": "tsx",
+      "options": [
+        {
+          "key": "a",
+          "text": "`useEffect` always runs on every render in development"
+        },
+        {
+          "key": "b",
+          "text": "`options` is a new object each render, so the dependency compares unequal",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`fetchProfile` must be listed as a dependency"
+        },
+        {
+          "key": "d",
+          "text": "Effects that call `setState` always re-trigger themselves"
+        }
+      ],
+      "explanation": "React compares dependencies with `Object.is`. A new object literal is created on every render, so the dependency always changes. Depend on the primitive (`userId`) and build the object inside the effect, or memoise it if it must be shared.",
+      "rubric": [
+        "Identifies that dependencies are compared by identity (`Object.is`).",
+        "Explains that the object literal is recreated each render.",
+        "Fixes it by depending on primitives or moving the object inside the effect."
+      ],
+      "expected_concepts": [
+        "Dependency comparison with `Object.is`",
+        "Referential identity",
+        "Effect dependencies"
+      ],
+      "misconceptions": [
+        "React deep-compares dependency arrays.",
+        "Development-mode double invocation explains repeated effects on every render."
+      ],
+      "resources": [
+        {
+          "title": "React: Removing effect dependencies",
+          "url": "https://react.dev/learn/removing-effect-dependencies"
+        }
+      ],
+      "estimated_minutes": 5,
+      "acceptance_criteria": "Identifies the new object identity on each render as the cause and fixes the dependency."
+    },
+    {
+      "slug": "re-derived-state",
+      "topic": "state",
+      "difficulty": "intermediate",
+      "format": "free_text",
+      "title": "State that should be derived",
+      "prompt": "Review this component. What problems does the `fullName` state cause, and how would you rewrite it?",
+      "code": "function Form() {\n  const [first, setFirst] = useState(\"\");\n  const [last, setLast] = useState(\"\");\n  const [fullName, setFullName] = useState(\"\");\n\n  useEffect(() => {\n    setFullName(`${first} ${last}`);\n  }, [first, last]);\n\n  return <Preview name={fullName} />;\n}",
+      "code_language": "tsx",
+      "hint": "Can `fullName` ever hold information that isn't already in `first` and `last`?",
+      "explanation": "`fullName` is redundant: it is fully determined by `first` and `last`. Syncing it in an effect causes an extra render with stale data first, adds a place for the copies to disagree, and is more code. Compute it during render; reach for `useMemo` only when the calculation is genuinely expensive.",
+      "rubric": [
+        "Identifies `fullName` as derived from existing state.",
+        "Explains the extra render and the brief stale value caused by syncing in an effect.",
+        "Rewrites it as a value computed during render.",
+        "Mentions `useMemo` only for expensive derivations, not as the default."
+      ],
+      "expected_concepts": [
+        "Derived values",
+        "Single source of truth",
+        "Unnecessary effects",
+        "Render-time computation"
+      ],
+      "misconceptions": [
+        "Every value shown in the UI must live in state.",
+        "Effects are the right tool for keeping two pieces of state in sync."
+      ],
+      "resources": [
+        {
+          "title": "React: You might not need an effect",
+          "url": "https://react.dev/learn/you-might-not-need-an-effect"
+        },
+        {
+          "title": "React: Choosing the state structure",
+          "url": "https://react.dev/learn/choosing-the-state-structure"
+        }
+      ],
+      "estimated_minutes": 6,
+      "acceptance_criteria": "Identifies fullName as derived state and computes it during render instead of syncing it in an effect."
+    },
+    {
+      "slug": "re-fetch-race-condition",
+      "topic": "effects",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Out-of-order responses",
+      "prompt": "A user clicks quickly between profiles A and B. The request for A is slow, so it resolves after B and the page ends up showing A while B is selected. Explain why this happens and implement a fix. Mention what a data-fetching library would handle for you.",
+      "code": "useEffect(() => {\n  fetch(`/api/users/${userId}`)\n    .then((r) => r.json())\n    .then(setUser);\n}, [userId]);",
+      "code_language": "tsx",
+      "hint": "What runs when `userId` changes before the earlier request finishes?",
+      "explanation": "Each `userId` change starts a new request, but nothing stops an earlier one from resolving later and overwriting newer state. Use the effect cleanup to ignore stale results (a boolean flag) or cancel them with `AbortController`. Libraries such as TanStack Query or SWR key requests by their inputs and handle this, plus caching and retries.",
+      "rubric": [
+        "Explains that responses can resolve in a different order from requests.",
+        "Uses the effect cleanup to ignore or abort stale requests.",
+        "Shows correct cleanup code (an ignore flag or `AbortController`).",
+        "Mentions handling errors and loading state, not only the happy path.",
+        "Notes that data-fetching libraries key requests by input and handle this case."
+      ],
+      "expected_concepts": [
+        "Race conditions",
+        "Effect cleanup",
+        "`AbortController`",
+        "Request keying in data-fetching libraries"
+      ],
+      "misconceptions": [
+        "Requests always resolve in the order they were sent.",
+        "Effect cleanup only matters when the component unmounts."
+      ],
+      "resources": [
+        {
+          "title": "React: Synchronizing with effects (fetching data)",
+          "url": "https://react.dev/learn/synchronizing-with-effects#fetching-data"
+        },
+        {
+          "title": "MDN: AbortController",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController"
+        }
+      ],
+      "estimated_minutes": 10,
+      "acceptance_criteria": "Explains out-of-order resolution and fixes it with effect cleanup (an ignore flag or AbortController)."
+    }
+  ]
+}

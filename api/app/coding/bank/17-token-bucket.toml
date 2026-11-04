@@ -1,0 +1,123 @@
+slug = "token-bucket"
+title = "Token bucket rate limiter"
+area = "production"
+skill = "system-design"
+prerequisites = ["http"]
+difficulty = "intermediate"
+entrypoint = "TokenBucket"
+time_limit_ms = 1500
+memory_limit_mb = 64
+description = """
+Implement `TokenBucket(capacity, refill_per_second, clock)` with `allow(cost=1) -> bool`.
+The bucket starts full. Tokens refill continuously at `refill_per_second`, never above
+`capacity`. `allow` spends `cost` tokens and returns `True` if enough are available;
+otherwise it spends nothing and returns `False`.
+
+`clock()` returns the current time in seconds. Always use it instead of `time.time()`,
+so behaviour is deterministic in tests.
+"""
+constraints = ["Use the injected clock only.", "Work with fractional tokens; don't round refill down to whole tokens."]
+rubric = [
+  "Refills lazily from elapsed time on each call, capped at capacity.",
+  "Doesn't spend tokens on a rejected request.",
+  "Uses the injected clock, making the limiter testable and deterministic.",
+]
+misconceptions = [
+  "Refilling with integer division loses partial tokens.",
+  "Letting tokens accumulate beyond capacity after a long idle period.",
+  "Reading wall-clock time directly makes tests flaky.",
+]
+hints = ["Store the time of the last refill; tokens += elapsed * rate.", "min(capacity, tokens) after refilling."]
+
+[languages.python]
+starter = '''
+import time
+
+
+class TokenBucket:
+    def __init__(self, capacity, refill_per_second, clock=time.time):
+        self.capacity = capacity
+        self.tokens = capacity
+        self.rate = refill_per_second
+        self.last = time.time()
+
+    def allow(self, cost=1):
+        now = time.time()
+        self.tokens += int(now - self.last) * self.rate
+        self.last = now
+        self.tokens -= cost
+        return self.tokens >= 0
+'''
+reference = '''
+class TokenBucket:
+    def __init__(self, capacity, refill_per_second, clock):
+        self.capacity = float(capacity)
+        self.rate = float(refill_per_second)
+        self.clock = clock
+        self.tokens = float(capacity)
+        self.last = clock()
+
+    def allow(self, cost=1):
+        now = self.clock()
+        self.tokens = min(self.capacity, self.tokens + (now - self.last) * self.rate)
+        self.last = now
+        if self.tokens >= cost:
+            self.tokens -= cost
+            return True
+        return False
+'''
+
+[driver.python]
+code = '''
+def simulate(solution, capacity, rate, events):
+    """events: [time, cost]. A fake clock makes the result deterministic."""
+    now = {"t": 0.0}
+    bucket = solution.TokenBucket(capacity, rate, lambda: now["t"])
+    out = []
+    for t, cost in events:
+        now["t"] = float(t)
+        out.append(bucket.allow(cost))
+    return out
+'''
+
+[[tests]]
+name = "Starts full, then rejects"
+visibility = "public"
+call = "driver:simulate"
+args = [2, 1, [[0, 1], [0, 1], [0, 1]]]
+expected = [true, true, false]
+
+[[tests]]
+name = "Refills over time"
+visibility = "public"
+call = "driver:simulate"
+args = [1, 1, [[0, 1], [0.5, 1], [1.0, 1]]]
+expected = [true, false, true]
+
+[[tests]]
+name = "Fractional refill accumulates"
+visibility = "hidden"
+call = "driver:simulate"
+args = [1, 2, [[0, 1], [0.25, 1], [0.5, 1]]]
+expected = [true, false, true]
+
+[[tests]]
+name = "Never exceeds capacity after idling"
+visibility = "hidden"
+call = "driver:simulate"
+args = [3, 10, [[100, 3], [100, 1]]]
+expected = [true, false]
+
+[[tests]]
+name = "Rejected request spends nothing"
+visibility = "hidden"
+call = "driver:simulate"
+args = [5, 1, [[0, 4], [0, 3], [0, 1]]]
+expected = [true, false, true]
+
+[[tests]]
+name = "Cost larger than capacity is always rejected"
+visibility = "hidden"
+call = "driver:simulate"
+args = [2, 100, [[0, 3], [10, 3]]]
+expected = [false, false]

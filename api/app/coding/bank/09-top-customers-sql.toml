@@ -1,0 +1,109 @@
+slug = "top-customers-sql"
+title = "Top customers by spend"
+area = "sql"
+skill = "sql"
+prerequisites = ["programming-fundamentals"]
+difficulty = "beginner"
+entrypoint = "top_customers"
+time_limit_ms = 2000
+memory_limit_mb = 64
+description = """
+Write `top_customers(conn, n)` that runs **one SQL query** on a SQLite connection and
+returns a list of `[name, total_spent]` for the `n` customers who spent the most on
+**paid** orders. Customers with no paid orders count as 0 and are still eligible.
+Order by total descending, then name ascending.
+
+Schema: `customers(id, name)`, `orders(id, customer_id, amount, status)`.
+"""
+constraints = ["Use SQL for aggregation, not Python loops.", "Pass n as a bound parameter, never via string formatting."]
+rubric = [
+  "LEFT JOIN with the status filter in the ON clause keeps customers without paid orders.",
+  "COALESCE turns a NULL sum into 0.",
+  "Deterministic ordering with a tie-breaker; LIMIT uses a bound parameter.",
+]
+misconceptions = [
+  "Filtering status in WHERE turns the LEFT JOIN into an inner join.",
+  "SUM over no rows is NULL, not 0.",
+  "Building SQL with f-strings invites injection.",
+]
+hints = ["Where should `status = 'paid'` go so unmatched customers survive?", "COALESCE(SUM(...), 0)"]
+
+[languages.python]
+starter = '''
+def top_customers(conn, n):
+    rows = conn.execute(
+        """
+        SELECT c.name, SUM(o.amount) AS total
+        FROM customers c LEFT JOIN orders o ON o.customer_id = c.id
+        WHERE o.status = 'paid'
+        GROUP BY c.id
+        ORDER BY total DESC
+        LIMIT ?
+        """,
+        (n,),
+    ).fetchall()
+    return [list(r) for r in rows]
+'''
+reference = '''
+def top_customers(conn, n):
+    rows = conn.execute(
+        """
+        SELECT c.name, COALESCE(SUM(o.amount), 0) AS total
+        FROM customers c
+        LEFT JOIN orders o ON o.customer_id = c.id AND o.status = 'paid'
+        GROUP BY c.id, c.name
+        ORDER BY total DESC, c.name ASC
+        LIMIT ?
+        """,
+        (n,),
+    ).fetchall()
+    return [list(r) for r in rows]
+'''
+
+[driver.python]
+code = '''
+import sqlite3
+
+def run(solution, customers, orders, n):
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT NOT NULL)")
+    conn.execute("CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, amount INTEGER, status TEXT)")
+    conn.executemany("INSERT INTO customers VALUES (?, ?)", customers)
+    conn.executemany("INSERT INTO orders VALUES (?, ?, ?, ?)", orders)
+    return solution.top_customers(conn, n)
+'''
+
+[[tests]]
+name = "Ranks by paid spend"
+visibility = "public"
+call = "driver:run"
+args = [[[1, "Ada"], [2, "Linus"]], [[1, 1, 50, "paid"], [2, 2, 80, "paid"], [3, 1, 40, "paid"]], 2]
+expected = [["Ada", 90], ["Linus", 80]]
+
+[[tests]]
+name = "Unpaid orders don't count"
+visibility = "public"
+call = "driver:run"
+args = [[[1, "Ada"], [2, "Linus"]], [[1, 1, 500, "refunded"], [2, 2, 10, "paid"]], 1]
+expected = [["Linus", 10]]
+
+[[tests]]
+name = "Customers without paid orders count as zero"
+visibility = "hidden"
+call = "driver:run"
+args = [[[1, "Ada"], [2, "Bob"], [3, "Cy"]], [[1, 1, 30, "paid"], [2, 2, 99, "pending"]], 3]
+expected = [["Ada", 30], ["Bob", 0], ["Cy", 0]]
+
+[[tests]]
+name = "Ties broken by name"
+visibility = "hidden"
+call = "driver:run"
+args = [[[1, "Zed"], [2, "Amy"]], [[1, 1, 10, "paid"], [2, 2, 10, "paid"]], 2]
+expected = [["Amy", 10], ["Zed", 10]]
+
+[[tests]]
+name = "No orders at all"
+visibility = "hidden"
+call = "driver:run"
+args = [[[1, "Solo"]], [], 5]
+expected = [["Solo", 0]]

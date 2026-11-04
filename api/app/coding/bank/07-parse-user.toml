@@ -1,0 +1,103 @@
+slug = "parse-user"
+title = "Validate untrusted JSON"
+area = "javascript-typescript"
+skill = "typescript"
+prerequisites = ["typescript"]
+difficulty = "intermediate"
+entrypoint = "parseUser"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+`JSON.parse` returns `unknown` data from the network. Export
+`parseUser(input: unknown): User | null` where
+
+```ts
+type User = { id: number; email: string; roles: string[] };
+```
+
+Return a **new** object with exactly those fields if the input is valid, otherwise `null`.
+`id` must be a positive integer, `email` a string containing `@`, and `roles` an array of
+strings (it may be empty). Ignore extra fields.
+"""
+constraints = ["No `as` casts to skip validation.", "Return only the three known fields."]
+rubric = [
+  "Narrows unknown step by step: object, not null, not an array, then each field.",
+  "Validates element types inside roles.",
+  "Returns a fresh object without extra fields.",
+]
+misconceptions = [
+  "typeof null === 'object', so a null check is required.",
+  "Arrays are objects too; checking typeof alone accepts them.",
+  "A type assertion (as User) performs no runtime check.",
+]
+hints = ["Start with: typeof input === 'object' && input !== null && !Array.isArray(input).", "Number.isInteger rejects 1.5 and NaN."]
+
+[languages.typescript]
+starter = '''
+type User = { id: number; email: string; roles: string[] };
+
+export function parseUser(input: unknown): User | null {
+  return input as User;
+}
+'''
+reference = '''
+type User = { id: number; email: string; roles: string[] };
+
+export function parseUser(input: unknown): User | null {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
+  const o = input as Record<string, unknown>;
+  const { id, email, roles } = o;
+  if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) return null;
+  if (typeof email !== "string" || !email.includes("@")) return null;
+  if (!Array.isArray(roles) || !roles.every((r) => typeof r === "string")) return null;
+  return { id, email, roles: [...roles] };
+}
+'''
+
+[[tests]]
+name = "Valid user"
+visibility = "public"
+args = [{ id = 7, email = "ada@example.com", roles = ["admin"] }]
+expected = { id = 7, email = "ada@example.com", roles = ["admin"] }
+
+[[tests]]
+name = "Missing email"
+visibility = "public"
+args = [{ id = 7, roles = [] }]
+expected_json = "null"
+
+[[tests]]
+name = "Extra fields are dropped"
+visibility = "hidden"
+args = [{ id = 1, email = "a@b.c", roles = [], isAdmin = true }]
+expected = { id = 1, email = "a@b.c", roles = [] }
+
+[[tests]]
+name = "Null input"
+visibility = "hidden"
+args_json = "[null]"
+expected_json = "null"
+
+[[tests]]
+name = "Array input"
+visibility = "hidden"
+args = [[1, 2]]
+expected_json = "null"
+
+[[tests]]
+name = "Non-integer id"
+visibility = "hidden"
+args = [{ id = 1.5, email = "a@b.c", roles = [] }]
+expected_json = "null"
+
+[[tests]]
+name = "Roles must contain strings"
+visibility = "hidden"
+args = [{ id = 2, email = "a@b.c", roles = ["x", 3] }]
+expected_json = "null"
+
+[[tests]]
+name = "Id given as a string"
+visibility = "hidden"
+args = [{ id = "2", email = "a@b.c", roles = [] }]
+expected_json = "null"

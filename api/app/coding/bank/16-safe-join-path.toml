@@ -1,0 +1,111 @@
+slug = "safe-join-path"
+title = "Prevent path traversal"
+area = "security"
+skill = "security"
+prerequisites = ["http"]
+difficulty = "intermediate"
+entrypoint = "safe_join"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+A download endpoint serves files from an uploads directory using a user-supplied path.
+Implement `safe_join(base, user_path) -> str` that returns the normalised absolute path
+inside `base`, or raises `PermissionError` if the result would escape `base`.
+
+Use POSIX paths. `base` is an absolute, normalised directory such as `/srv/uploads`.
+Reject absolute user paths, `..` escapes (however they're written), and NUL bytes.
+Don't touch the filesystem: this is pure path logic.
+"""
+constraints = ["Use posixpath, not os.path, so behaviour is platform-independent.", "A path equal to base itself is not a file and must be rejected."]
+rubric = [
+  "Normalises before checking containment.",
+  "Checks containment with a separator-aware prefix test, not a raw string prefix.",
+  "Rejects absolute paths and NUL bytes explicitly.",
+]
+misconceptions = [
+  "Stripping '../' once is bypassed by '....//'.",
+  "`startswith(base)` accepts '/srv/uploads-evil/…'.",
+  "Joining an absolute user path discards the base entirely.",
+]
+hints = ["posixpath.normpath(posixpath.join(base, p))", "Compare against base + '/' to avoid sibling-prefix matches."]
+
+[languages.python]
+starter = '''
+import posixpath
+
+
+def safe_join(base: str, user_path: str) -> str:
+    cleaned = user_path.replace("../", "")
+    full = posixpath.join(base, cleaned)
+    if not full.startswith(base):
+        raise PermissionError(user_path)
+    return full
+'''
+reference = '''
+import posixpath
+
+
+def safe_join(base: str, user_path: str) -> str:
+    if "\x00" in user_path or user_path.startswith("/"):
+        raise PermissionError("invalid path")
+    full = posixpath.normpath(posixpath.join(base, user_path))
+    if not full.startswith(base.rstrip("/") + "/"):
+        raise PermissionError("path escapes base directory")
+    return full
+'''
+
+[driver.python]
+code = '''
+def with_nul(solution, base, before, after):
+    # JSON storage can't hold NUL, so the byte is added inside the sandbox.
+    return solution.safe_join(base, before + "\x00" + after)
+'''
+
+[[tests]]
+name = "Plain file"
+visibility = "public"
+args = ["/srv/uploads", "report.pdf"]
+expected = "/srv/uploads/report.pdf"
+
+[[tests]]
+name = "Parent escape rejected"
+visibility = "public"
+args = ["/srv/uploads", "../etc/passwd"]
+raises = "PermissionError"
+
+[[tests]]
+name = "Nested directories normalise"
+visibility = "hidden"
+args = ["/srv/uploads", "a/./b/../c.txt"]
+expected = "/srv/uploads/a/c.txt"
+
+[[tests]]
+name = "Dot-only segments are ordinary names, not traversal"
+visibility = "hidden"
+args = ["/srv/uploads", "....//....//etc/passwd"]
+expected = "/srv/uploads/..../..../etc/passwd"
+
+[[tests]]
+name = "Deep escape rejected"
+visibility = "hidden"
+args = ["/srv/uploads", "a/../../uploads-evil/x"]
+raises = "PermissionError"
+
+[[tests]]
+name = "Absolute user path rejected"
+visibility = "hidden"
+args = ["/srv/uploads", "/etc/shadow"]
+raises = "PermissionError"
+
+[[tests]]
+name = "NUL byte rejected"
+visibility = "hidden"
+call = "driver:with_nul"
+args = ["/srv/uploads", "a.txt", ".png"]
+raises = "PermissionError"
+
+[[tests]]
+name = "Base itself rejected"
+visibility = "hidden"
+args = ["/srv/uploads", "."]
+raises = "PermissionError"

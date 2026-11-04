@@ -1,0 +1,112 @@
+slug = "authorize-action"
+title = "Role and ownership checks"
+area = "auth"
+skill = "security"
+prerequisites = ["http"]
+difficulty = "beginner"
+entrypoint = "can"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+Implement `can(user, action, document) -> bool` for a document service. Deny by default.
+
+* `admin` can do anything.
+* `editor` can `read` any document and `update` documents they own.
+* `viewer` can `read` documents that are `public` or that they own.
+* Anyone can `read` a public document, including anonymous users (`user` is `None`).
+* Nobody but an admin can `delete`.
+* Suspended users (`"suspended": true`) can do nothing.
+
+`user`: `{"id", "role", "suspended"?}`; `document`: `{"owner_id", "public"}`.
+"""
+constraints = ["Unknown roles and actions are denied.", "Never trust missing fields to mean 'allowed'."]
+rubric = [
+  "Denies by default and checks suspension first.",
+  "Separates authentication (who) from authorisation (what) and checks ownership by id.",
+  "Handles anonymous users and unknown roles or actions safely.",
+]
+misconceptions = [
+  "Allow-by-default with a list of exceptions fails open for new actions.",
+  "Treating a missing 'suspended' field or role as permissive.",
+]
+hints = ["Return False at the end; only explicit rules return True.", "Check user is None before reading its fields."]
+
+[languages.python]
+starter = '''
+def can(user, action, document):
+    if user and user["role"] == "admin":
+        return True
+    if action == "read":
+        return True
+    return user is not None and user["id"] == document["owner_id"]
+'''
+reference = '''
+def can(user, action, document):
+    if action == "read" and document.get("public") is True:
+        return user is None or not user.get("suspended", False)
+    if user is None or user.get("suspended", False):
+        return False
+    role = user.get("role")
+    owns = user.get("id") is not None and user.get("id") == document.get("owner_id")
+    if role == "admin":
+        return action in {"read", "update", "delete"}
+    if role == "editor":
+        return action == "read" or (action == "update" and owns)
+    if role == "viewer":
+        return action == "read" and owns
+    return False
+'''
+
+[[tests]]
+name = "Admin can delete"
+visibility = "public"
+args = [{ id = 1, role = "admin" }, "delete", { owner_id = 2, public = false }]
+expected = true
+
+[[tests]]
+name = "Viewer cannot read a private document they don't own"
+visibility = "public"
+args = [{ id = 1, role = "viewer" }, "read", { owner_id = 2, public = false }]
+expected = false
+
+[[tests]]
+name = "Anonymous can read public"
+visibility = "hidden"
+args_json = '[null, "read", {"owner_id": 2, "public": true}]'
+expected = true
+
+[[tests]]
+name = "Anonymous cannot read private"
+visibility = "hidden"
+args_json = '[null, "read", {"owner_id": 2, "public": false}]'
+expected = false
+
+[[tests]]
+name = "Editor updates own document"
+visibility = "hidden"
+args = [{ id = 5, role = "editor" }, "update", { owner_id = 5, public = false }]
+expected = true
+
+[[tests]]
+name = "Editor cannot update others' documents"
+visibility = "hidden"
+args = [{ id = 5, role = "editor" }, "update", { owner_id = 6, public = true }]
+expected = false
+
+[[tests]]
+name = "Owner who is a viewer cannot delete"
+visibility = "hidden"
+args = [{ id = 3, role = "viewer" }, "delete", { owner_id = 3, public = false }]
+expected = false
+
+[[tests]]
+name = "Suspended admin is denied"
+visibility = "hidden"
+args = [{ id = 1, role = "admin", suspended = true }, "update", { owner_id = 1, public = false }]
+expected = false
+
+[[tests]]
+name = "Unknown action is denied"
+visibility = "hidden"
+args = [{ id = 1, role = "editor" }, "export", { owner_id = 1, public = true }]
+expected = false

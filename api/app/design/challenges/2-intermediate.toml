@@ -1,0 +1,93 @@
+level = "intermediate"
+
+[[challenges]]
+slug = "ecommerce-checkout"
+title = "Design an e-commerce checkout system"
+skills = ["system-design", "distributed-systems"]
+competencies = ["consistency", "failure_recovery", "api_architecture"]
+prerequisites = ["system-design", "sql"]
+business_context = "An online retailer is replacing a checkout that occasionally oversells stock and double-charges customers."
+functional = ["Convert a cart into an order.", "Reserve inventory.", "Charge the customer through a payment provider.", "Send an order confirmation."]
+non_functional = ["Never charge a customer twice for one order.", "Never sell stock that doesn't exist.", "Checkout completes within a few seconds for most users."]
+scale = ["Hypothetical: 300 orders per minute normally, 3,000 during sales."]
+reliability = ["A charged order is never lost, even if a component crashes mid-checkout."]
+security = ["Card data never touches the retailer's servers.", "Prices are calculated server-side."]
+constraints = ["The payment provider supports idempotency keys and webhooks."]
+hints = ["What happens if the payment call times out but the charge succeeded?", "Where is inventory decremented, and what if payment then fails?"]
+failure_scenarios = ["payment-timeout", "duplicate-delivery", "traffic-10x", "postgres-unavailable"]
+expected_concepts = ["Order state machine (pending, paid, failed, cancelled)", "Inventory reservation with expiry", "Idempotency keys for payment calls and webhook reconciliation", "Outbox pattern for confirmations"]
+common_mistakes = ["Treating a payment timeout as a failure and retrying without an idempotency key.", "Decrementing stock with read-then-write.", "Trusting client-supplied prices."]
+follow_ups = ["How do you release reservations from abandoned checkouts?", "How do you reconcile orders with the provider's records daily?"]
+[challenges.rubric_focus]
+data_consistency = "Atomic inventory reservation and an explicit order state machine."
+reliability = "Unknown payment outcomes are resolved by idempotency and reconciliation."
+security = "Tokenised payments and server-side pricing."
+
+[[challenges]]
+slug = "realtime-notifications"
+title = "Design a real-time notification service"
+skills = ["system-design", "distributed-systems"]
+competencies = ["scalability", "distributed_systems", "api_architecture"]
+prerequisites = ["system-design"]
+business_context = "A collaboration app must notify users instantly in the browser and on mobile when someone mentions them."
+functional = ["Deliver in-app notifications in real time to online users.", "Push to mobile when the user is offline.", "Show unread notification history.", "Let users mute channels."]
+non_functional = ["Online users see notifications within a couple of seconds.", "No notification is silently dropped."]
+scale = ["Hypothetical: 1 million concurrent connections at peak.", "Hypothetical: 20,000 notifications per second at peak."]
+reliability = ["A gateway server restarting must not lose notifications."]
+security = ["Users only receive their own notifications.", "Connections are authenticated."]
+constraints = ["Mobile push goes through vendor push services."]
+hints = ["How does a producer find which server holds a user's connection?", "Where is a notification stored before it is delivered?"]
+failure_scenarios = ["queue-backlog", "duplicate-delivery", "traffic-10x", "cache-offline"]
+expected_concepts = ["WebSocket gateway tier with connection registry", "Durable notification store plus fan-out via pub/sub or queue", "Fallback to push for offline users", "Client-side dedupe and catch-up on reconnect"]
+common_mistakes = ["Keeping undelivered notifications only in gateway memory.", "Assuming sticky routing solves fan-out.", "No catch-up after reconnect."]
+follow_ups = ["How would you rate limit noisy producers?", "How do you handle a user connected on five devices?"]
+[challenges.rubric_focus]
+scalability = "Separates connection handling from fan-out and scales each."
+reliability = "Durability before delivery; reconnect catch-up."
+correctness = "Online versus offline delivery paths both work."
+
+[[challenges]]
+slug = "delivery-tracking"
+title = "Design a delivery tracking platform"
+skills = ["system-design", "distributed-systems"]
+competencies = ["scalability", "data_modeling", "distributed_systems"]
+prerequisites = ["system-design"]
+business_context = "A courier company wants customers to see their driver's location on a map and an estimated arrival time."
+functional = ["Drivers report location every few seconds.", "Customers see the current driver position for their order.", "Operations staff see all active drivers in a city.", "Store route history for 30 days."]
+non_functional = ["Position updates appear within a few seconds.", "Driver apps work on poor mobile connections."]
+scale = ["Hypothetical: 50,000 active drivers, one update every 5 seconds."]
+reliability = ["Losing a single location update is acceptable; losing a delivery's status is not."]
+security = ["Customers see only their own driver and only during the delivery."]
+constraints = ["Historic routes are rarely read."]
+hints = ["Is every location update equally important to store?", "Which store suits 'latest position' versus '30 days of history'?"]
+failure_scenarios = ["traffic-10x", "cache-offline", "queue-backlog", "region-outage"]
+expected_concepts = ["Separate hot latest-position store from cold history", "Batched/compressed ingestion", "Geo indexing for city views", "Pushing updates to customers (WebSocket/SSE)"]
+common_mistakes = ["Writing every update synchronously to the relational database.", "Clients polling the database directly.", "Treating location and delivery status with the same durability."]
+follow_ups = ["How would you compute ETAs without overloading a routing API?", "How do you handle a driver's clock being wrong?"]
+[challenges.rubric_focus]
+scalability = "Ingestion path sized for the write rate."
+data_consistency = "Distinguishes lossy telemetry from authoritative delivery state."
+cost_awareness = "Cheap storage for rarely read history."
+
+[[challenges]]
+slug = "booking-no-double-reservation"
+title = "Design a booking system that prevents double reservations"
+skills = ["system-design", "sql"]
+competencies = ["consistency", "data_modeling", "distributed_systems"]
+prerequisites = ["sql", "system-design"]
+business_context = "A concert ticketing site sells assigned seats; popular shows sell out in minutes and overselling causes refunds and bad press."
+functional = ["Show seat availability.", "Hold seats while the customer pays.", "Confirm or release held seats.", "Prevent any seat being sold twice."]
+non_functional = ["Seat maps stay usable during on-sale spikes.", "Holds expire automatically."]
+scale = ["Hypothetical: 200,000 users trying to buy 20,000 seats in the first ten minutes."]
+reliability = ["A seat confirmed to a customer is never resold."]
+security = ["Limit bots and scalpers.", "Per-customer seat limits are enforced server-side."]
+constraints = ["Payment can take up to ten minutes."]
+hints = ["What single database operation can claim a seat atomically?", "What happens to a hold if the user closes the tab?"]
+failure_scenarios = ["traffic-10x", "payment-timeout", "postgres-unavailable", "worker-crash"]
+expected_concepts = ["Atomic conditional updates or unique constraints per seat", "Time-limited holds with expiry", "Virtual waiting room / admission control", "Idempotent confirmation"]
+common_mistakes = ["Checking availability in a cache and trusting it for the sale.", "Distributed locks without fencing tokens.", "Holds that never expire."]
+follow_ups = ["How would you shard seat inventory for a stadium-sized venue?", "How do you show near-real-time availability without hammering the database?"]
+[challenges.rubric_focus]
+data_consistency = "Seat claims are atomic and enforced by the database."
+scalability = "Admission control protects the system during spikes."
+reliability = "Hold expiry and idempotent confirmation."

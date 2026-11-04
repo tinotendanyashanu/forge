@@ -1,0 +1,93 @@
+level = "beginner"
+
+[[challenges]]
+slug = "url-shortener"
+title = "Design a URL shortener"
+skills = ["system-design", "http"]
+competencies = ["api_architecture", "data_modeling", "scalability"]
+prerequisites = ["http", "sql"]
+business_context = "A marketing team needs short, shareable links that redirect to long URLs and show how often each link is clicked."
+functional = ["Create a short code for a long URL.", "Redirect a short code to its URL.", "Count clicks per link.", "Links can optionally expire."]
+non_functional = ["Redirects feel instant to users.", "Short codes are hard to guess.", "Creating links is far rarer than following them."]
+scale = ["Hypothetical: 1 million new links per month.", "Hypothetical: 100 redirects for every link created."]
+reliability = ["Redirects should keep working if click analytics are delayed."]
+security = ["Prevent link creation abuse (spam).", "Reject malicious destination URLs where feasible."]
+constraints = ["A small team of two engineers operates it."]
+hints = ["Which path is read-heavy, and what can serve it without touching the database?", "Does counting a click have to finish before the redirect is sent?"]
+failure_scenarios = ["cache-offline", "traffic-10x", "postgres-unavailable"]
+expected_concepts = ["Unique short-code generation (base62 counter or random with collision check)", "Read-heavy redirect path served from a cache", "Asynchronous click counting", "Rate limiting link creation"]
+common_mistakes = ["Counting clicks synchronously on the redirect path.", "Sequential codes that are trivially enumerable.", "Ignoring collisions when generating random codes."]
+follow_ups = ["How would you support custom aliases without collisions?", "How do you stop the cache from serving an expired link?"]
+[challenges.rubric_focus]
+scalability = "Separates the read-heavy redirect path and caches it."
+data_consistency = "Guarantees short-code uniqueness with a constraint or atomic allocation."
+performance = "Keeps click counting off the redirect's critical path."
+
+[[challenges]]
+slug = "file-upload-system"
+title = "Design a file upload system"
+skills = ["system-design", "http"]
+competencies = ["api_architecture", "security", "scalability"]
+prerequisites = ["http"]
+business_context = "A document-signing product lets users upload PDFs and images, then share them with colleagues."
+functional = ["Upload files up to 100 MB.", "Download files the user is allowed to see.", "Show upload progress and resume failed uploads.", "Generate thumbnails for images."]
+non_functional = ["Uploads must not tie up application servers.", "Files are never publicly listable."]
+scale = ["Hypothetical: 50,000 uploads per day, average 5 MB."]
+reliability = ["An accepted upload is never lost."]
+security = ["Only authorised users can read a file.", "Uploaded content may be malicious."]
+constraints = ["Use managed object storage rather than local disks."]
+hints = ["Does file data need to pass through your API servers at all?", "What makes an upload 'complete' from the system's point of view?"]
+failure_scenarios = ["worker-crash", "traffic-10x", "cache-offline"]
+expected_concepts = ["Direct-to-storage uploads with pre-signed URLs", "Multipart/resumable uploads", "Asynchronous processing (thumbnails, scanning) via a queue", "Short-lived signed download URLs and per-file authorisation"]
+common_mistakes = ["Streaming large files through application servers.", "Public buckets or guessable object keys.", "Generating thumbnails synchronously in the upload request."]
+follow_ups = ["How do you scan files for malware before sharing?", "How do you clean up abandoned multipart uploads?"]
+[challenges.rubric_focus]
+security = "Per-file authorisation and expiring signed URLs; treats uploads as hostile."
+scalability = "Keeps bulk bytes off application servers."
+reliability = "Defines completion and handles partial uploads."
+
+[[challenges]]
+slug = "authentication-service"
+title = "Design a user authentication service"
+skills = ["security", "system-design"]
+competencies = ["security", "api_architecture", "data_modeling"]
+prerequisites = ["http"]
+business_context = "A SaaS product needs sign-up, login and session management shared by its web and mobile apps."
+functional = ["Sign up and log in with email and password.", "Keep users signed in across visits.", "Log out on one or all devices.", "Reset a forgotten password."]
+non_functional = ["Login stays responsive during peak hours.", "Other services can verify requests without calling the auth service every time."]
+scale = ["Hypothetical: 2 million registered users, 20,000 logins per hour at peak."]
+reliability = ["Existing sessions keep working if login is briefly degraded."]
+security = ["Passwords are never stored or logged in plain text.", "Resist credential stuffing and brute force.", "Revoked sessions stop working promptly."]
+constraints = ["No third-party identity provider for now."]
+hints = ["How will other services verify a request, and what does revoking access then require?", "Where could an attacker try thousands of passwords, and what slows them down?"]
+failure_scenarios = ["auth-overload", "postgres-unavailable", "traffic-10x"]
+expected_concepts = ["Slow adaptive password hashing (argon2/bcrypt)", "Short-lived access tokens plus revocable refresh tokens or server sessions", "Rate limiting and lockout heuristics", "Single-use, expiring reset tokens"]
+common_mistakes = ["Long-lived JWTs with no way to revoke them.", "Fast hashes such as SHA-256 for passwords.", "Reset links that never expire or can be reused."]
+follow_ups = ["How would you add multi-factor authentication?", "How do you rotate token-signing keys without logging everyone out?"]
+[challenges.rubric_focus]
+security = "Password hashing, token lifetime and revocation, brute-force protection."
+reliability = "Token verification that doesn't depend on the auth service being up."
+tradeoffs = "Explains stateless tokens versus server sessions."
+
+[[challenges]]
+slug = "basic-booking-app"
+title = "Design a basic booking application"
+skills = ["system-design", "sql"]
+competencies = ["data_modeling", "api_architecture", "consistency"]
+prerequisites = ["sql"]
+business_context = "A chain of hair salons wants customers to book appointments online with a specific stylist."
+functional = ["Browse stylists and free time slots.", "Book, reschedule and cancel an appointment.", "Send a confirmation and a reminder."]
+non_functional = ["A slot can't end up booked twice.", "Availability pages load quickly."]
+scale = ["Hypothetical: 200 salons, 5,000 bookings per day."]
+reliability = ["A booking confirmed to the customer is never lost."]
+security = ["Customers see only their own bookings.", "Staff can manage bookings only for their salon."]
+constraints = ["Reminders can be sent up to a few minutes late."]
+hints = ["What data model makes 'this stylist at this time' unique?", "Should sending the confirmation email be part of the booking transaction?"]
+failure_scenarios = ["postgres-unavailable", "worker-crash", "duplicate-delivery"]
+expected_concepts = ["Relational model with a uniqueness constraint per stylist and slot", "Transactional booking", "Background jobs for notifications", "Role-based access per salon"]
+common_mistakes = ["Checking availability and inserting in separate, unguarded steps.", "Sending notifications inside the database transaction.", "No timezone handling for slots."]
+follow_ups = ["How would you support appointments of different lengths?", "How would you hold a slot briefly while the customer pays a deposit?"]
+[challenges.rubric_focus]
+data_consistency = "Prevents double booking with a database constraint or locking."
+correctness = "Booking, rescheduling and cancellation flows are complete."
+maintainability = "Separates notification delivery from booking logic."

@@ -1,0 +1,817 @@
+level = "beginner"
+
+[[scenarios]]
+slug = "postgres-pool-exhaustion"
+title = "Checkout requests hang, then fail with 500s"
+summary = "Checkout latency jumped to 30 seconds and errors are climbing. The database looks idle. Find out why requests can't get a connection."
+business_context = "Lumen Shop is a mid-sized online store. Checkout runs through orders-api (FastAPI, 4 replicas, SQLAlchemy pool of 10 + 5 overflow per replica) backed by PostgreSQL (max_connections = 100). A spring marketing campaign launched this morning. Every minute of checkout failure loses orders."
+skills = ["devops", "sql", "fastapi"]
+competencies = ["database_operations", "observability", "root_cause_analysis", "deployment_engineering"]
+learning_outcomes = [
+  "Read connection-pool symptoms: 30 s waits that match the pool timeout, low CPU everywhere.",
+  "Use pg_stat_activity to tell 'busy database' apart from 'leaked idle-in-transaction connections'.",
+  "Correlate a deployment and a feature flag with the start of a leak instead of blaming traffic.",
+  "Choose a mitigation that stops the leak, and understand why a restart alone only buys time.",
+]
+initial_symptoms = [
+  "Pager: orders-api p95 latency above 5 s for 3 minutes.",
+  "Support reports customers stuck on 'Placing order…' and then seeing an error page.",
+  "The /readyz health check of orders-api reports 'database unavailable'.",
+]
+customer_impact = "About one in five checkouts fails after a 30 second wait; the rest are slow."
+start_time = "2026-03-14T14:00:00Z"
+history = [[-90, "healthy"], [-18, "leaking"], [-3, "exhausted"]]
+initial_condition = "exhausted"
+verify_minutes = 5
+target_minutes = 20
+
+# Hidden solution (never sent before the attempt ends)
+spoiler_terms = ["idle in transaction", "leak", "leaked", "leaking", "never returned", "never released", "try/finally", "finally block", "db.close", "get_db", "coupon_validation_v2", "not closing", "isn't closing"]
+key_evidence = ["db-activity", "pool-stats", "deploy-diff", "log-pool-timeout"]
+contributing_factors = [
+  "The dependency refactor had no test for the exception path.",
+  "The new code path shipped enabled at 100% instead of a gradual rollout.",
+  "No alert on pool checkout age or idle-in-transaction sessions; the first alert was user-facing latency.",
+  "The readiness check reports 'database unavailable' for pool exhaustion, pointing responders at the database.",
+  "The campaign made expired-coupon errors frequent, accelerating the leak.",
+]
+investigation_path = [
+  "Notice that p95 sits at exactly ~30 s: the pool timeout, not the database.",
+  "Check database health: low CPU, no slow queries, but many sessions idle in transaction.",
+  "Check pool stats: every connection checked out for minutes.",
+  "Line up the timeline: the leak starts right after orders-api v3.14.0 and its flag.",
+  "Read the diff: get_db without try/finally plus a new path that raises.",
+  "Mitigate: disable the flag (stop the leak) and recycle pods, or roll back.",
+]
+explanation = "This is a connection leak, not a capacity problem. The signature: latency pinned at the pool timeout, low CPU everywhere, a database full of idle-in-transaction sessions from one application, and connection ages measured in minutes. The traffic increase and the 'database unavailable' health check are misleading signals. The fastest safe fix is to stop the leak (disable the flag or roll back) and release the leaked connections (recycle pods)."
+prevention = [
+  "Restore try/finally (or a context manager) in get_db and add a test that raises inside a request and asserts the connection is returned.",
+  "Set idle_in_transaction_session_timeout on the orders database as a safety net.",
+  "Alert on pool waiters, checkout age and idle-in-transaction sessions.",
+  "Roll out flagged code paths gradually and watch pool metrics during rollout.",
+  "Make /readyz distinguish 'pool exhausted' from 'database unreachable'.",
+]
+
+
+[[scenarios.services]]
+id = "lb"
+name = "edge load balancer"
+kind = "load_balancer"
+depends_on = ["web", "api"]
+
+[[scenarios.services]]
+id = "web"
+name = "storefront"
+kind = "web_frontend"
+depends_on = ["api"]
+
+[[scenarios.services]]
+id = "api"
+name = "orders-api"
+kind = "service"
+depends_on = ["db", "redis"]
+description = "FastAPI, 4 replicas, SQLAlchemy QueuePool size 10 + overflow 5 each (60 max), pool timeout 30 s."
+
+[[scenarios.services]]
+id = "worker"
+name = "reports-worker"
+kind = "worker"
+depends_on = ["db"]
+
+[[scenarios.services]]
+id = "db"
+name = "orders-db (PostgreSQL 16)"
+kind = "postgres"
+description = "Primary with one async replica. max_connections = 100."
+
+[[scenarios.services]]
+id = "redis"
+name = "session cache (Redis)"
+kind = "redis"
+
+[scenarios.conditions.healthy]
+label = "Healthy"
+phase = "healthy"
+summary = "All services healthy."
+[scenarios.conditions.healthy.metrics]
+"lb.throughput" = 1250
+"api.throughput" = 1200
+"api.error_rate" = { v = 0.3, jitter = 0.3 }
+"api.p50" = 45
+"api.p95" = 120
+"api.p99" = 220
+"api.cpu" = 34
+"api.memory" = 410
+"db.db_connections" = { v = 24, jitter = 0.08 }
+"db.cpu" = 22
+"db.p95" = 6
+"redis.p95" = 2
+"redis.cpu" = 9
+"worker.worker_rate" = 40
+
+[scenarios.conditions.leaking]
+label = "Connections leaking"
+phase = "incident"
+symptom = "Latency and errors rising on orders-api."
+inherit = "healthy"
+auto_after = 12
+auto_to = "exhausted"
+health = { api = "degraded" }
+summary = "Checked-out connections keep climbing; latency is rising."
+[scenarios.conditions.leaking.metrics]
+"lb.throughput" = 1330
+"api.throughput" = 1280
+"api.error_rate" = { linear = [0.5, 0.15], max = 4, jitter = 0.1 }
+"api.p95" = { linear = [130, 45], max = 900 }
+"api.p99" = { linear = [260, 400], max = 6000 }
+"db.db_connections" = { linear = [26, 2.3], max = 60, jitter = 0.02 }
+
+[scenarios.conditions.exhausted]
+label = "Pool exhausted"
+phase = "incident"
+symptom = "Checkout p95 around 30 s; about 18% of requests failing."
+inherit = "healthy"
+health = { api = "degraded", web = "degraded", lb = "degraded" }
+summary = "Every pool connection is checked out; requests wait 30 s for one and many fail."
+[scenarios.conditions.exhausted.metrics]
+"lb.throughput" = 1390
+"api.throughput" = 1340
+"api.error_rate" = { v = 18, jitter = 0.08 }
+"api.p50" = 940
+"api.p95" = { v = 30020, jitter = 0.002 }
+"api.p99" = { v = 30060, jitter = 0.002 }
+"api.cpu" = 17
+"db.db_connections" = { v = 60, jitter = 0.0 }
+"db.cpu" = 11
+
+[scenarios.conditions.flag_off_exhausted]
+label = "Flag off, pool still exhausted"
+phase = "incident"
+symptom = "Checkout still around 30 s; errors continue."
+inherit = "exhausted"
+summary = "No new leaks, but connections that already leaked are still checked out. Errors continue."
+[scenarios.conditions.flag_off_exhausted.metrics]
+"api.error_rate" = { v = 16, jitter = 0.08 }
+
+[scenarios.conditions.restarted]
+label = "Pods restarted, leak continues"
+phase = "recovering"
+symptom = "Errors dropped after the restart; latency is normal for now."
+inherit = "healthy"
+auto_after = 6
+auto_to = "leaking"
+health = { api = "degraded" }
+summary = "Pools were recycled and requests flow again, but checked-out connections are climbing again."
+[scenarios.conditions.restarted.metrics]
+"api.error_rate" = { v = 1.2, jitter = 0.2 }
+"api.p95" = 160
+"db.db_connections" = { linear = [22, 2.4], max = 60, jitter = 0.02 }
+
+[scenarios.conditions.worse]
+label = "Database out of connections"
+phase = "worse"
+symptom = "orders-api failing for about 40% of requests; reports-worker can't connect to PostgreSQL."
+inherit = "exhausted"
+health = { api = "down", web = "degraded", lb = "degraded", worker = "down", db = "degraded" }
+summary = "PostgreSQL refuses new clients ('too many clients'); reports-worker is failing too."
+[scenarios.conditions.worse.metrics]
+"api.error_rate" = { v = 41, jitter = 0.06 }
+"db.db_connections" = { v = 100, jitter = 0.0 }
+"db.cpu" = 19
+"worker.worker_rate" = 0
+
+[scenarios.conditions.stabilising]
+label = "Stabilising"
+phase = "recovering"
+symptom = "Errors and latency falling."
+inherit = "healthy"
+auto_after = 3
+auto_to = "recovered"
+summary = "Pools recycled with the leaking code path disabled; connections are returning to normal."
+[scenarios.conditions.stabilising.metrics]
+"api.error_rate" = { ramp = [6, 0.4], minutes = 3 }
+"api.p95" = { ramp = [2500, 125], minutes = 3 }
+"db.db_connections" = { ramp = [40, 24], minutes = 3 }
+
+[scenarios.conditions.rolling_back]
+label = "Rolling back"
+phase = "recovering"
+symptom = "Rollout in progress; errors falling."
+inherit = "healthy"
+auto_after = 4
+auto_to = "recovered"
+health = { api = "degraded" }
+summary = "orders-api v3.13.2 is rolling out pod by pod; replaced pods start with fresh pools."
+[scenarios.conditions.rolling_back.metrics]
+"api.error_rate" = { ramp = [14, 0.4], minutes = 4 }
+"api.p95" = { ramp = [22000, 125], minutes = 4 }
+"db.db_connections" = { ramp = [55, 24], minutes = 4 }
+
+[scenarios.conditions.recovered]
+label = "Recovered"
+phase = "recovered"
+inherit = "healthy"
+summary = "Latency, errors and connection counts are back to baseline."
+
+# ---------------------------------------------------------------- logs
+
+[[scenarios.logs]]
+id = "log-coupon-expired-1"
+t = -17.4
+service = "api"
+level = "warning"
+message = "coupon validation failed: CouponExpired"
+fields = { request_id = "r-2b71", path = "/api/checkout", status = 422, coupon = "SPRING15" }
+
+[[scenarios.logs]]
+id = "log-campaign"
+t = -45
+service = "web"
+level = "info"
+message = "feature banner spring_campaign enabled for 100% of visitors"
+fields = { request_id = "r-0001" }
+
+[[scenarios.logs]]
+id = "log-coupon-expired-2"
+t = -13.1
+service = "api"
+level = "warning"
+message = "coupon validation failed: CouponExpired"
+fields = { request_id = "r-4c19", path = "/api/checkout", status = 422, coupon = "WELCOME10" }
+
+[[scenarios.logs]]
+id = "log-overflow"
+t = -8.6
+service = "api"
+level = "warning"
+message = "QueuePool overflow in use: 5/5 (checked out 15/15)"
+fields = { replica = "orders-api-7c9d-2", pool = "default" }
+
+[[scenarios.logs]]
+id = "log-pool-timeout"
+t = -3.2
+service = "api"
+level = "error"
+message = "sqlalchemy.exc.TimeoutError: QueuePool limit of size 10 overflow 5 reached, connection timed out, timeout 30.00"
+fields = { request_id = "r-93f2", path = "/api/checkout", replica = "orders-api-7c9d-1" }
+
+[[scenarios.logs]]
+id = "log-500"
+t = -2.7
+service = "api"
+level = "error"
+message = "HTTP 500 POST /api/checkout (30012 ms)"
+fields = { request_id = "r-93f2", status = 500 }
+
+[[scenarios.logs]]
+id = "log-lb-upstream"
+t = -2.5
+service = "lb"
+level = "warning"
+message = "upstream timed out after 30.01s while reading response header"
+fields = { request_id = "r-93f2", upstream = "orders-api" }
+
+[[scenarios.logs]]
+id = "log-readyz"
+t = -1.0
+service = "api"
+level = "critical"
+message = "readiness check failed: database unavailable (could not acquire connection within 30s)"
+fields = { replica = "orders-api-7c9d-3", check = "/readyz" }
+
+[[scenarios.logs]]
+id = "log-redis-ok"
+t = -0.5
+service = "redis"
+level = "info"
+message = "keyspace hit rate 94.1%, 0 evictions, 0 rejected connections"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-worker-ok"
+t = -0.3
+service = "worker"
+level = "info"
+message = "nightly report batch 412 committed (1840 rows)"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-db-idle-tx"
+t = -5.0
+service = "db"
+level = "warning"
+message = "44 sessions from application_name=orders-api idle in transaction for more than 5 minutes"
+fields = { database = "orders" }
+reveal = "inspect_db"
+
+[[scenarios.logs]]
+id = "log-pool-debug"
+t = -6.0
+service = "api"
+level = "debug"
+message = "connection checked out by request r-4c19 never returned (age 7m)"
+fields = { replica = "orders-api-7c9d-2", request_id = "r-4c19" }
+reveal = "inspect_pool"
+
+[[scenarios.logs]]
+id = "log-flag-off"
+t = 0
+after = "flag_off_exhausted"
+service = "api"
+level = "info"
+message = "feature flag coupon_validation_v2 disabled (was 100%)"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-too-many-clients"
+t = 0.5
+after = "worse"
+service = "db"
+level = "critical"
+message = "FATAL: sorry, too many clients already"
+fields = { application_name = "reports-worker" }
+
+[[scenarios.logs]]
+id = "log-worker-fail"
+t = 1
+after = "worse"
+service = "worker"
+level = "error"
+message = "psycopg.OperationalError: connection failed: FATAL: sorry, too many clients already"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-restarted"
+t = 0
+after = "restarted"
+service = "api"
+level = "info"
+message = "pod restarted; pool initialised (0/15 checked out)"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-rollback"
+t = 3
+after = "rolling_back"
+service = "api"
+level = "info"
+message = "rollout complete: orders-api v3.13.2, 4/4 ready"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-recovered"
+t = 1
+after = "recovered"
+service = "api"
+level = "info"
+message = "pool stats: checked out 2/15, overflow 0/5, waiters 0"
+fields = { replica = "orders-api-7c9d-1" }
+
+# ---------------------------------------------------------------- traces
+
+[[scenarios.traces]]
+id = "tr-baseline"
+t = -40
+request_id = "r-0b11"
+title = "POST /api/checkout (before the incident)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "lb"
+name = "POST /api/checkout"
+start_ms = 0
+duration_ms = 118
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "checkout handler"
+start_ms = 2
+duration_ms = 114
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "api"
+name = "pool.acquire"
+start_ms = 3
+duration_ms = 1
+[[scenarios.traces.spans]]
+id = "s4"
+parent = "s2"
+service = "db"
+name = "INSERT orders"
+start_ms = 6
+duration_ms = 9
+[[scenarios.traces.spans]]
+id = "s5"
+parent = "s2"
+service = "redis"
+name = "GET session"
+start_ms = 4
+duration_ms = 1
+
+[[scenarios.traces]]
+id = "tr-timeout"
+t = -3.2
+request_id = "r-93f2"
+title = "POST /api/checkout (failed)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "lb"
+name = "POST /api/checkout"
+start_ms = 0
+duration_ms = 30013
+status = "error"
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "checkout handler"
+start_ms = 2
+duration_ms = 30010
+status = "error"
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "api"
+name = "pool.acquire"
+start_ms = 4
+duration_ms = 30000
+status = "error"
+note = "Waited the full pool timeout; no database span was ever started."
+[[scenarios.traces.spans]]
+id = "s4"
+parent = "s2"
+service = "redis"
+name = "GET session"
+start_ms = 3
+duration_ms = 1
+
+[[scenarios.traces]]
+id = "tr-coupon"
+t = -13.1
+request_id = "r-4c19"
+title = "POST /api/checkout with expired coupon"
+reveal = "inspect_pool"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "api"
+name = "checkout handler"
+start_ms = 0
+duration_ms = 21
+status = "error"
+note = "Returned 422 CouponExpired."
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "pool.acquire"
+start_ms = 1
+duration_ms = 1
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s1"
+service = "db"
+name = "SELECT coupons ... FOR UPDATE"
+start_ms = 3
+duration_ms = 4
+[[scenarios.traces.spans]]
+id = "s4"
+parent = "s1"
+service = "api"
+name = "validate_coupon_v2"
+start_ms = 8
+duration_ms = 12
+status = "error"
+note = "Raised CouponExpired. No 'pool.release' span follows."
+
+# ---------------------------------------------------------------- deployments
+
+[[scenarios.deployments]]
+id = "dep-web-campaign"
+t = -47
+service = "web"
+version = "v8.2.0"
+author = "growth-team"
+summary = "Spring campaign banner and coupon entry field"
+changes = ["Add campaign banner", "Show coupon input on checkout"]
+
+[[scenarios.deployments]]
+id = "dep-worker"
+t = -30
+service = "worker"
+version = "v1.9.4"
+author = "data-team"
+summary = "Report batch size 2000 -> 1800"
+changes = ["Tune batch size"]
+
+[[scenarios.deployments]]
+id = "dep-api-coupon"
+t = -19
+service = "api"
+version = "v3.14.0"
+author = "checkout-team"
+summary = "Coupon validation v2 behind flag coupon_validation_v2 (enabled 100%)"
+changes = ["New validate_coupon_v2 with row lock on coupons", "Flag coupon_validation_v2 default on", "Refactor get_db dependency"]
+
+# ---------------------------------------------------------------- artifacts
+
+[[scenarios.artifacts]]
+id = "db-activity"
+kind = "database_status"
+title = "pg_stat_activity summary (orders-db)"
+reveal = "inspect_db"
+content = """
+application_name  state                 count  oldest_state_change  sample query
+orders-api        idle in transaction      44  7m 12s ago           SELECT ... FROM coupons WHERE code = $1 FOR UPDATE
+orders-api        idle                     12  0m 02s ago           -
+orders-api        active                    4  0m 00s ago           INSERT INTO orders ...
+reports-worker    idle                      3  0m 40s ago           -
+replication       streaming                 1  -                    -
+-------------------------------------------------------------------------------
+total 64 / max_connections 100   waiting on locks: 0   longest running query: 41 ms
+"""
+
+[[scenarios.artifacts]]
+id = "pool-stats"
+kind = "service_status"
+title = "orders-api connection pool (per replica)"
+reveal = "inspect_pool"
+content = """
+replica              size  checked_out  overflow  waiters  timeouts_last_5m
+orders-api-7c9d-0      10           15     5/5         38               212
+orders-api-7c9d-1      10           15     5/5         41               230
+orders-api-7c9d-2      10           15     5/5         36               198
+orders-api-7c9d-3      10           15     5/5         40               221
+checked-out connection ages: p50 6m 40s, max 17m 50s (normal: < 200 ms)
+"""
+
+[[scenarios.artifacts]]
+id = "deploy-diff"
+kind = "config"
+title = "orders-api v3.14.0: get_db dependency diff"
+reveal = "review_diff"
+content = """
+ def get_db():
+-    db = SessionLocal()
+-    try:
+-        yield db
+-    finally:
+-        db.close()
++    db = SessionLocal()
++    yield db
++    db.close()          # skipped when the request raises
+
+ async def checkout(...):
++    if flags.enabled("coupon_validation_v2"):
++        validate_coupon_v2(db, body.coupon)   # SELECT ... FOR UPDATE, raises CouponExpired -> 422
+"""
+
+[[scenarios.artifacts]]
+id = "flags"
+kind = "feature_flags"
+title = "Feature flags (orders-api)"
+reveal = "check_flags"
+content = """
+flag                    state   rollout  changed
+coupon_validation_v2    on      100%     19 min ago (with deploy v3.14.0)
+new_tax_engine          off       0%     12 days ago
+spring_campaign         on      100%     47 min ago (storefront)
+"""
+
+[[scenarios.artifacts]]
+id = "redis-status"
+kind = "service_status"
+title = "Redis INFO summary"
+reveal = "check_redis"
+content = """
+connected_clients 48   used_memory 1.2G / 4G   hit_rate 94.1%   evicted_keys 0
+latency p99 1.8 ms     rejected_connections 0  role master        uptime 41 days
+"""
+
+[[scenarios.artifacts]]
+id = "traffic-breakdown"
+kind = "dashboard"
+title = "Requests by endpoint (last 30 min vs last week)"
+reveal = "traffic_breakdown"
+content = """
+endpoint             now req/min   last week   change
+GET  /api/products          690         610     +13%   (campaign)
+POST /api/checkout          212         205      +3%
+GET  /api/orders/{id}       260         255      +2%
+POST /api/cart              178         150     +19%
+total                      1340        1220     +10%   (capacity tested to 3000 req/min)
+"""
+
+[[scenarios.artifacts]]
+id = "slow-queries"
+kind = "database_status"
+title = "pg_stat_statements: top queries by mean time (last 15 min)"
+reveal = "slow_queries"
+content = """
+mean_ms  calls   query
+   38.2    310   SELECT ... FROM orders WHERE customer_id = $1 ORDER BY created_at DESC LIMIT $2
+    9.1   4210   INSERT INTO orders ...
+    3.7    890   SELECT ... FROM coupons WHERE code = $1 FOR UPDATE
+No query above 50 ms. CPU 11%, no lock waits.
+"""
+
+# ---------------------------------------------------------------- actions
+
+[[scenarios.actions]]
+id = "inspect_db"
+kind = "investigate"
+label = "Inspect PostgreSQL sessions (pg_stat_activity)"
+description = "List database sessions by application and state."
+minutes = 2
+command = "database-status"
+quality = "helpful"
+teach = "The database is nearly idle, yet 44 orders-api sessions sit 'idle in transaction' for minutes. Connections are held, not busy."
+
+[[scenarios.actions]]
+id = "inspect_pool"
+kind = "investigate"
+label = "Inspect orders-api connection pool stats"
+description = "Per-replica pool usage, waiters and checked-out connection ages."
+minutes = 2
+quality = "helpful"
+teach = "Checked-out connections that are minutes old mean they were never returned to the pool: a leak, not load."
+
+[[scenarios.actions]]
+id = "review_diff"
+kind = "investigate"
+label = "Review the orders-api v3.14.0 diff"
+description = "Open the code changes in the deployment that preceded the incident."
+minutes = 3
+quality = "helpful"
+teach = "get_db lost its try/finally. Any exception inside the request (now CouponExpired) skips db.close()."
+
+[[scenarios.actions]]
+id = "check_flags"
+kind = "investigate"
+label = "List feature flags"
+description = "Show feature flags and when they last changed."
+minutes = 1
+quality = "helpful"
+teach = "The new code path is behind coupon_validation_v2, so it can be turned off without a deploy."
+
+[[scenarios.actions]]
+id = "check_redis"
+kind = "investigate"
+label = "Check Redis health"
+description = "INFO summary for the session cache."
+minutes = 1
+teach = "Redis is healthy: a reasonable thing to rule out, but not the cause."
+
+[[scenarios.actions]]
+id = "traffic_breakdown"
+kind = "investigate"
+label = "Break down traffic by endpoint"
+description = "Compare current request rates to last week."
+minutes = 2
+teach = "Traffic is up about 10% from the campaign, far below tested capacity. A correlation, not the cause."
+
+[[scenarios.actions]]
+id = "slow_queries"
+kind = "investigate"
+label = "Look for slow queries (pg_stat_statements)"
+description = "Top queries by mean execution time."
+minutes = 2
+teach = "No slow queries and no lock waits: the database is not the bottleneck."
+
+[[scenarios.actions]]
+id = "disable_flag"
+kind = "mitigate"
+discovered_by = ["check_flags", "review_diff"]
+label = "Disable feature flag coupon_validation_v2"
+description = "Turn off the new coupon validation path for all users."
+minutes = 1
+quality = "correct"
+transitions = { exhausted = "flag_off_exhausted", leaking = "flag_off_exhausted", restarted = "stabilising" }
+outcome = { exhausted = "Flag disabled. No new connections should leak, but the ones already leaked are still checked out.", leaking = "Flag disabled. New leaks stop, but already leaked connections are still held.", restarted = "Flag disabled on freshly restarted pods. Connection counts should settle.", default = "Flag disabled." }
+teach = "Disabling the flag stops new leaks immediately and is fully reversible. Already leaked connections still need the pods recycled."
+
+[[scenarios.actions]]
+id = "restart_api"
+kind = "mitigate"
+label = "Rolling restart of orders-api"
+description = "Restart the 4 replicas one at a time."
+minutes = 3
+once = false
+quality = "neutral"
+transitions = { exhausted = "restarted", leaking = "restarted", flag_off_exhausted = "stabilising", worse = "restarted" }
+outcome = { exhausted = "Pods restarted with empty pools. Requests succeed again for now.", leaking = "Pods restarted with empty pools.", flag_off_exhausted = "Pods restarted with fresh pools while the leaking path is disabled.", worse = "Pods restarted; total connections drop below the database limit.", default = "Pods restarted." }
+teach = "A restart frees leaked connections but does not stop the leak: without the flag off or a rollback, the pool exhausts again within minutes."
+
+[[scenarios.actions]]
+id = "rollback_api"
+kind = "mitigate"
+label = "Roll back orders-api to v3.13.2"
+description = "Redeploy the previous release (no schema changes between versions)."
+minutes = 2
+quality = "correct"
+transitions = { exhausted = "rolling_back", leaking = "rolling_back", flag_off_exhausted = "rolling_back", restarted = "rolling_back", worse = "rolling_back" }
+outcome = { default = "Rollback started: pods are replaced one by one with v3.13.2." }
+deployment = { service = "api", version = "v3.13.2", summary = "Rollback of v3.14.0" }
+teach = "Rolling back removes both the leak and the leaked connections (replaced pods start with new pools). Safe here because v3.14.0 had no schema changes."
+
+[[scenarios.actions]]
+id = "scale_api"
+kind = "mitigate"
+label = "Scale orders-api from 4 to 8 replicas"
+description = "Add replicas to absorb the load."
+minutes = 3
+quality = "harmful"
+mistake = "scale-without-bottleneck"
+transitions = { exhausted = "worse", leaking = "worse", flag_off_exhausted = "worse" }
+outcome = { exhausted = "8 replicas running. Within a minute PostgreSQL starts refusing new connections ('too many clients') and reports-worker starts failing.", default = "Replicas added." }
+teach = "Each replica brings 15 more connections. With a leak, more replicas just exhaust the database's max_connections and take down other services."
+
+[[scenarios.actions]]
+id = "scale_down_api"
+kind = "mitigate"
+label = "Scale orders-api back to 4 replicas"
+description = "Undo the scale-out."
+minutes = 2
+requires_actions = ["scale_api"]
+quality = "neutral"
+transitions = { worse = "exhausted" }
+outcome = { worse = "Back to 4 replicas. Other clients can connect to PostgreSQL again; checkout is still failing.", default = "Back to 4 replicas." }
+teach = "Undoing a harmful change quickly limits the blast radius."
+
+[[scenarios.actions]]
+id = "raise_max_connections"
+kind = "mitigate"
+label = "Raise PostgreSQL max_connections to 300 (requires DB restart)"
+description = "Increase the database connection limit."
+minutes = 4
+quality = "harmful"
+mistake = "unsafe-database-change"
+outcome = { default = "PostgreSQL restarted with max_connections = 300 (about 40 seconds of write failures during the restart). Checkout latency and errors are unchanged." }
+teach = "The database was never full. Restarting the primary mid-incident caused a write outage for no benefit."
+
+[[scenarios.actions]]
+id = "kill_idle_tx"
+kind = "mitigate"
+discovered_by = ["inspect_db"]
+label = "Terminate idle-in-transaction sessions in PostgreSQL"
+description = "pg_terminate_backend() for orders-api sessions idle in transaction > 5 min."
+minutes = 1
+once = false
+requires_actions = ["inspect_db"]
+quality = "risky"
+mistake = "unsafe-database-change"
+transitions = { exhausted = "restarted", leaking = "restarted", flag_off_exhausted = "stabilising" }
+outcome = { exhausted = "Sessions terminated. A burst of 'server closed the connection unexpectedly' errors, then requests succeed again.", flag_off_exhausted = "Leaked sessions terminated while the leaking path is disabled. Errors spike briefly, then settle.", default = "Sessions terminated." }
+teach = "It works, but killing sessions from the database side surfaces as errors in the app and is easy to get wrong (you can kill a legitimate transaction). Recycling the pods is cleaner."
+
+[[scenarios.actions]]
+id = "throttle"
+kind = "mitigate"
+label = "Throttle checkout traffic to 50% at the load balancer"
+description = "Reject half of incoming checkout requests with 429."
+minutes = 1
+quality = "risky"
+mistake = "scale-without-bottleneck"
+outcome = { default = "Half of checkouts are now rejected immediately with 429. The requests that get through still wait about 30 s." }
+teach = "Load shedding helps when demand exceeds capacity. Here capacity is consumed by leaked connections, so it only adds failures."
+
+# ---------------------------------------------------------------- hidden solution
+
+[[scenarios.root_causes]]
+id = "rc-leak"
+text = "orders-api v3.14.0 stopped closing database sessions when a request raises; expired-coupon checkouts (coupon_validation_v2) leak pooled connections until the pool is exhausted."
+correct = true
+explanation = "The refactored get_db dependency lost its try/finally, so db.close() is skipped whenever the request raises. validate_coupon_v2 raises CouponExpired for expired coupons (common during the campaign) after opening a transaction with SELECT ... FOR UPDATE. Each such request leaves a connection checked out and idle in transaction. With 60 pooled connections, the pool fills in about 15 minutes and every later request waits the full 30 s pool timeout."
+
+[[scenarios.root_causes]]
+id = "rc-traffic"
+text = "The spring campaign increased traffic beyond what orders-api and PostgreSQL can handle."
+explanation = "Traffic rose about 10%, well under tested capacity (3000 req/min). CPU on orders-api and PostgreSQL is low. Traffic correlates in time with the incident but cannot explain connections held for minutes."
+
+[[scenarios.root_causes]]
+id = "rc-slow-query"
+text = "A slow or locking query in PostgreSQL is saturating the database."
+explanation = "pg_stat_statements shows no query above 50 ms and no lock waits; database CPU is 11%. The sessions are idle, not running."
+
+[[scenarios.root_causes]]
+id = "rc-redis"
+text = "The Redis session cache is failing, pushing load onto the database."
+explanation = "Redis shows a 94% hit rate, no evictions and sub-2 ms latency."
+
+[[scenarios.misleading_signals]]
+signal = "Traffic up from the campaign"
+why = "It started 47 minutes earlier and is ~10% above normal, far below capacity. Timing correlates loosely; mechanism doesn't fit."
+
+[[scenarios.misleading_signals]]
+signal = "Readiness check says 'database unavailable'"
+why = "The check fails because it can't get a pool connection. The database itself is up and idle."
+
+[[scenarios.misleading_signals]]
+signal = "64 database connections"
+why = "High but under max_connections (100). The problem is who holds them (idle in transaction), not how many the database can take."
+
+[scenarios.rubric_focus]
+diagnostic_accuracy = "Names the leaked connections from the exception path in v3.14.0, not traffic or the database."
+evidence_quality = "Cites pg_stat_activity idle-in-transaction sessions, pool checkout ages and the 30 s timeout."
+mitigation_safety = "Prefers flag off or rollback plus pod recycle; avoids scaling and database restarts."
+long_term_prevention = "try/finally with a test, idle_in_transaction_session_timeout, pool alerts, gradual rollout."

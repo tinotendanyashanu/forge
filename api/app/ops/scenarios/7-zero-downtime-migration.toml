@@ -1,0 +1,558 @@
+level = "senior"
+
+[[scenarios]]
+slug = "zero-downtime-migration"
+title = "Logins fail during a 'zero-downtime' release"
+summary = "A canary release started nine minutes ago. Since then most logins fail and billing jobs are erroring. The new version looks healthy. Work out what the release did."
+business_context = "Quillstack is a B2B SaaS. accounts-api (12 pods) handles login and profiles; billing-worker (deployed separately) generates invoices. Release v9.0 shipped with a database migration run as a pre-deploy hook, then a canary rollout at 10%. Enterprise customers can't log in during their working day."
+skills = ["senior-practices", "sql", "devops"]
+competencies = ["deployment_engineering", "database_operations", "reliability", "technical_communication", "root_cause_analysis"]
+learning_outcomes = [
+  "Recognise a contract (destructive) migration that ran before old code was retired.",
+  "Use 'which version fails' to reason: the new canary works, everything old breaks.",
+  "Choose between reverting a schema change and rolling forward, considering every consumer of the table.",
+  "Understand why rolling the application back cannot fix a schema that no longer matches it.",
+]
+initial_symptoms = [
+  "Alert: accounts-api 5xx rate above 50%.",
+  "Alert: billing-worker job failures above threshold.",
+  "The v9.0 canary pods report healthy; v8.x pods are failing readiness checks intermittently.",
+]
+customer_impact = "About 90% of login and profile requests fail; invoice generation has stopped."
+start_time = "2026-06-23T13:00:00Z"
+history = [[-120, "healthy"], [-9, "broken"]]
+initial_condition = "broken"
+verify_minutes = 5
+target_minutes = 20
+
+spoiler_terms = ["rename", "renamed", "email_address", "contract migration", "expand/contract", "expand and contract"]
+key_evidence = ["log-undefined-column", "migration-log", "versions-running", "release-plan"]
+contributing_factors = [
+  "Expand and contract were shipped in one release; the contract step (rename) ran before any old reader was gone.",
+  "The pre-deploy hook ran migrations before the canary, so old pods saw the new schema immediately.",
+  "billing-worker, a second consumer of users, wasn't in the release plan.",
+  "The migration review checklist doesn't flag renames or drops as breaking for running code.",
+  "The canary's health only measured the canary pods, so the release looked healthy.",
+]
+investigation_path = [
+  "Group errors by version: v9.0 pods succeed, v8.x pods and billing-worker v4 fail.",
+  "Read the error: column users.email does not exist.",
+  "Read the migration log: 0142 renamed users.email to email_address in the pre-deploy hook.",
+  "List every consumer of users.email: 90% of api pods (v8) and billing-worker v4.",
+  "Mitigate by reverting the rename (then abort the canary), or roll forward v9 everywhere including billing-worker.",
+]
+explanation = "Release v9.0 combined an expand step (code reading email_address) with a contract step (RENAME COLUMN email TO email_address) and ran the migration before the rollout. Renaming is instant, but it breaks every reader that still uses the old name: the 90% of accounts-api pods still on v8 and billing-worker v4, which isn't part of the release. Rolling the app back can't help because the schema no longer has users.email. The fastest safe fix is to rename the column back (a quick metadata change), which restores every old reader, then abort the canary until the change is split into expand (add a column, dual-write, backfill), migrate readers, then contract."
+prevention = [
+  "Expand/contract across separate releases: add new column, dual-write and backfill, move all readers, then drop or rename.",
+  "Run contract migrations only after every consumer of the table is on the new version.",
+  "Lint migrations for renames and drops; require an explicit 'breaking for running code' sign-off.",
+  "Include every consumer of a table (workers, jobs, reporting) in release plans; consider views for compatibility.",
+  "Canary analysis should compare the whole fleet's error rate, not just the canary's.",
+]
+
+[[scenarios.services]]
+id = "gw"
+name = "api-gateway"
+kind = "api_gateway"
+depends_on = ["api"]
+
+[[scenarios.services]]
+id = "api"
+name = "accounts-api"
+kind = "service"
+depends_on = ["db"]
+description = "12 pods: 1 on v9.0 (canary, ~10% traffic), 11 on v8.7."
+
+[[scenarios.services]]
+id = "worker"
+name = "billing-worker"
+kind = "worker"
+depends_on = ["db"]
+description = "v4.2, deployed separately; reads users.email for invoice delivery."
+
+[[scenarios.services]]
+id = "db"
+name = "accounts-db (PostgreSQL 16)"
+kind = "postgres"
+
+[scenarios.conditions.healthy]
+label = "Healthy"
+phase = "healthy"
+summary = "All services healthy."
+[scenarios.conditions.healthy.metrics]
+"gw.throughput" = 3400
+"gw.error_rate" = { v = 0.3, jitter = 0.3 }
+"api.throughput" = 3300
+"api.error_rate" = { v = 0.3, jitter = 0.3 }
+"api.p50" = 35
+"api.p95" = 140
+"api.p99" = 260
+"api.cpu" = 40
+"worker.worker_rate" = 120
+"worker.error_rate" = { v = 0.2, jitter = 0.3 }
+"db.cpu" = 34
+"db.p95" = 6
+"db.db_connections" = 140
+
+[scenarios.conditions.broken]
+label = "Old readers broken"
+phase = "incident"
+symptom = "About 89% of login requests failing; billing jobs failing."
+inherit = "healthy"
+health = { api = "degraded", gw = "degraded", worker = "down" }
+summary = "v8.x pods and billing-worker query users.email, which no longer exists; only canary requests succeed."
+[scenarios.conditions.broken.metrics]
+"gw.error_rate" = { v = 88.6, jitter = 0.01 }
+"api.error_rate" = { v = 89.1, jitter = 0.01 }
+"api.p50" = 12
+"api.cpu" = 21
+"worker.worker_rate" = 0
+"worker.error_rate" = { v = 100, jitter = 0.0 }
+
+[scenarios.conditions.all_old]
+label = "All pods on v8, schema renamed"
+phase = "worse"
+symptom = "About 99% of login requests failing."
+inherit = "broken"
+health = { api = "down", gw = "degraded", worker = "down" }
+summary = "With the canary gone, every request hits v8 against the renamed column: logins fail completely."
+[scenarios.conditions.all_old.metrics]
+"gw.error_rate" = { v = 99.2, jitter = 0.002 }
+"api.error_rate" = { v = 99.6, jitter = 0.002 }
+
+[scenarios.conditions.all_new]
+label = "All pods on v9, schema reverted"
+phase = "worse"
+symptom = "About 99% of login requests failing."
+inherit = "broken"
+health = { api = "down", gw = "degraded" }
+summary = "Every pod runs v9.0 against users.email: all logins fail."
+[scenarios.conditions.all_new.metrics]
+"gw.error_rate" = { v = 99.1, jitter = 0.002 }
+"api.error_rate" = { v = 99.5, jitter = 0.002 }
+"worker.worker_rate" = 260
+"worker.error_rate" = { v = 0.2, jitter = 0.3 }
+
+[scenarios.conditions.restoring]
+label = "Restoring database from backup"
+phase = "worse"
+symptom = "accounts-db offline; everything failing."
+inherit = "broken"
+auto_after = 14
+auto_to = "recovered"
+health = { api = "down", gw = "degraded", worker = "down", db = "down" }
+summary = "accounts-db is offline while a 1-hour-old snapshot is restored; all writes since then will be lost."
+[scenarios.conditions.restoring.metrics]
+"gw.error_rate" = { v = 100, jitter = 0.0 }
+"api.error_rate" = { v = 100, jitter = 0.0 }
+"db.cpu" = 2
+"db.db_connections" = 0
+
+[scenarios.conditions.reverted_canary]
+label = "Rename reverted, canary failing"
+phase = "incident"
+symptom = "About 9% of login requests failing; billing recovering."
+inherit = "healthy"
+health = { api = "degraded" }
+summary = "The column is users.email again: v8 pods and billing-worker recover, but the v9 canary (about 10% of traffic) now fails."
+[scenarios.conditions.reverted_canary.metrics]
+"api.error_rate" = { v = 9.4, jitter = 0.05 }
+"gw.error_rate" = { v = 9.2, jitter = 0.05 }
+"worker.worker_rate" = { ramp = [0, 260], minutes = 3 }
+
+[scenarios.conditions.api_new_worker_broken]
+label = "API on v9, billing still broken"
+phase = "incident"
+symptom = "Logins working; billing jobs failing."
+inherit = "healthy"
+health = { worker = "down" }
+summary = "Every accounts-api pod runs v9 and logins work; billing-worker v4 still reads users.email and fails."
+[scenarios.conditions.api_new_worker_broken.metrics]
+"worker.worker_rate" = 0
+"worker.error_rate" = { v = 100, jitter = 0.0 }
+
+[scenarios.conditions.stabilising]
+label = "Stabilising"
+phase = "recovering"
+symptom = "Errors falling; billing catching up."
+inherit = "healthy"
+auto_after = 3
+auto_to = "recovered"
+summary = "All readers match the schema; billing is catching up on its backlog."
+[scenarios.conditions.stabilising.metrics]
+"worker.worker_rate" = { v = 260, jitter = 0.03 }
+"api.error_rate" = { ramp = [6, 0.3], minutes = 3 }
+
+[scenarios.conditions.recovered]
+label = "Recovered"
+phase = "recovered"
+inherit = "healthy"
+summary = "Logins and billing work; the schema matches every running reader."
+
+[[scenarios.logs]]
+id = "log-undefined-column"
+t = -8.8
+service = "api"
+level = "error"
+message = "asyncpg.exceptions.UndefinedColumnError: column users.email does not exist"
+fields = { request_id = "a-1102", path = "/api/login", version = "v8.7.3", pod = "accounts-api-v8-7c" }
+
+[[scenarios.logs]]
+id = "log-canary-ok"
+t = -8.5
+service = "api"
+level = "info"
+message = "POST /api/login 200 (41 ms)"
+fields = { request_id = "a-1107", version = "v9.0.0", pod = "accounts-api-v9-canary-1" }
+
+[[scenarios.logs]]
+id = "log-worker-fail"
+t = -8.0
+service = "worker"
+level = "error"
+message = "invoice job 88121 failed: psycopg.errors.UndefinedColumn: column \"email\" does not exist LINE 1: SELECT id, email FROM users WHERE ..."
+fields = { version = "v4.2.0" }
+
+[[scenarios.logs]]
+id = "log-lock-wait"
+t = -9.4
+service = "db"
+level = "warning"
+message = "process 4410 still waiting for AccessExclusiveLock on relation users after 1000.2 ms"
+fields = { application_name = "migrate-0142" }
+
+[[scenarios.logs]]
+id = "log-index-build"
+t = -95
+service = "db"
+level = "info"
+message = "CREATE INDEX CONCURRENTLY users_last_login_idx completed in 412 s"
+fields = { application_name = "migrate-0141" }
+
+[[scenarios.logs]]
+id = "log-readiness"
+t = -6.0
+service = "api"
+level = "warning"
+message = "Readiness probe failed: /readyz returned 500 (profile lookup failed)"
+fields = { pod = "accounts-api-v8-2f", version = "v8.7.3" }
+
+[[scenarios.logs]]
+id = "log-reverted"
+t = 0
+after = "reverted_canary"
+service = "db"
+level = "info"
+message = "ALTER TABLE users RENAME COLUMN email_address TO email (6 ms)"
+fields = { application_name = "psql-oncall" }
+
+[[scenarios.logs]]
+id = "log-canary-fail"
+t = 0.5
+after = "reverted_canary"
+service = "api"
+level = "error"
+message = "asyncpg.exceptions.UndefinedColumnError: column users.email_address does not exist"
+fields = { version = "v9.0.0", pod = "accounts-api-v9-canary-1" }
+
+[[scenarios.logs]]
+id = "log-restore"
+t = 0
+after = "restoring"
+service = "db"
+level = "critical"
+message = "restore from snapshot 2026-06-23T12:00Z started; database offline; 61 minutes of writes will be lost"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-recovered"
+t = 1
+after = "recovered"
+service = "api"
+level = "info"
+message = "error rate 0.3% fleet-wide; billing backlog cleared"
+fields = {}
+
+[[scenarios.traces]]
+id = "tr-v8"
+t = -8.8
+request_id = "a-1102"
+title = "POST /api/login on v8.7.3 (500)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "gw"
+name = "POST /api/login"
+start_ms = 0
+duration_ms = 14
+status = "error"
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "login (v8.7.3)"
+start_ms = 2
+duration_ms = 11
+status = "error"
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "db"
+name = "SELECT id, email, password_hash FROM users WHERE email = $1"
+start_ms = 4
+duration_ms = 2
+status = "error"
+note = "UndefinedColumnError: users.email"
+
+[[scenarios.traces]]
+id = "tr-v9"
+t = -8.5
+request_id = "a-1107"
+title = "POST /api/login on v9.0.0 canary (200)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "gw"
+name = "POST /api/login"
+start_ms = 0
+duration_ms = 44
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "login (v9.0.0)"
+start_ms = 2
+duration_ms = 40
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "db"
+name = "SELECT id, email_address, password_hash FROM users WHERE email_address = $1"
+start_ms = 4
+duration_ms = 3
+
+[[scenarios.deployments]]
+id = "dep-v9"
+t = -9.5
+service = "api"
+version = "v9.0.0"
+author = "identity-team"
+summary = "Rename email to email_address (canary 10%, migrations in pre-deploy hook)"
+changes = ["Migration 0142: users.email -> email_address", "Code reads email_address", "Canary 10% for 30 min"]
+status = "succeeded"
+
+[[scenarios.deployments]]
+id = "dep-0141"
+t = -97
+service = "db"
+version = "migration 0141"
+author = "identity-team"
+summary = "Index on users.last_login (concurrently)"
+changes = ["CREATE INDEX CONCURRENTLY"]
+
+[[scenarios.artifacts]]
+id = "migration-log"
+kind = "database_status"
+title = "Migration log (pre-deploy hook, v9.0.0)"
+reveal = "migration_log"
+content = """
+12:50:31  alembic upgrade 0141 -> 0142  (identity: rename user email)
+12:50:31  ALTER TABLE users RENAME COLUMN email TO email_address;
+12:50:32  waited 1.0 s for AccessExclusiveLock (long-running analytics transaction), then acquired
+12:50:32  done in 1.04 s. Downgrade: RENAME COLUMN email_address TO email; DROP TABLE email_verifications (created in 0142).
+"""
+
+[[scenarios.artifacts]]
+id = "versions-running"
+kind = "service_status"
+title = "Running versions and error rates"
+reveal = "versions_running"
+content = """
+workload          version  replicas  traffic  error rate
+accounts-api      v9.0.0   1         10%       0.4%
+accounts-api      v8.7.3   11        90%      98.7%
+billing-worker    v4.2.0   3         -        100% (all jobs)
+"""
+
+[[scenarios.artifacts]]
+id = "release-plan"
+kind = "runbook"
+title = "Release plan v9.0.0"
+reveal = "release_plan"
+content = """
+1. Pre-deploy hook: run migrations (0142 rename).
+2. Canary v9.0.0 at 10% for 30 min; promote if canary error rate < 1%.
+3. Promote to 100%.
+Consumers of users table listed: accounts-api.   (billing-worker not listed)
+"""
+
+[[scenarios.artifacts]]
+id = "db-locks"
+kind = "database_status"
+title = "accounts-db locks and load"
+reveal = "db_locks"
+content = """
+cpu 34%   connections 140/400   lock waits now: 0
+Last lock wait: migrate-0142 waited 1.0 s at 12:50:31 (resolved).
+CREATE INDEX CONCURRENTLY (0141) finished 95 min ago.
+"""
+
+[[scenarios.actions]]
+id = "versions_running"
+kind = "investigate"
+label = "Compare error rates by running version"
+description = "Group workloads by version and error rate."
+minutes = 1
+command = "service-status"
+quality = "helpful"
+teach = "New code works, all old readers fail: the schema changed under them."
+
+[[scenarios.actions]]
+id = "migration_log"
+kind = "investigate"
+label = "Read the migration log"
+description = "What the pre-deploy hook ran, with timings."
+minutes = 1
+quality = "helpful"
+teach = "A rename is a contract step: instant to run, instantly breaking for every old reader."
+
+[[scenarios.actions]]
+id = "release_plan"
+kind = "investigate"
+label = "Read the v9.0 release plan"
+description = "Steps and listed consumers."
+minutes = 1
+quality = "helpful"
+teach = "billing-worker reads users.email but wasn't in the plan."
+
+[[scenarios.actions]]
+id = "db_locks"
+kind = "investigate"
+label = "Check accounts-db locks and load"
+description = "Lock waits, CPU, connections."
+minutes = 1
+command = "database-status"
+teach = "A one-second lock wait during the migration is a red herring: it resolved before the errors started."
+
+[[scenarios.actions]]
+id = "revert_rename"
+kind = "mitigate"
+discovered_by = ["migration_log", "versions_running"]
+label = "Revert the rename: ALTER TABLE users RENAME COLUMN email_address TO email"
+description = "Metadata-only change; needs a brief AccessExclusiveLock."
+minutes = 1
+quality = "correct"
+transitions = { broken = "reverted_canary", all_old = "stabilising" }
+outcome = { broken = "Column restored. v8 pods and billing-worker recover; the v9 canary now fails on email_address.", all_old = "Column restored; every pod is on v8, so everything recovers.", default = "Column renamed back." }
+teach = "Restores the contract every old reader depends on, in milliseconds. Do it with a lock_timeout so it can't queue behind a long transaction."
+
+[[scenarios.actions]]
+id = "pause_rollout"
+kind = "mitigate"
+label = "Abort the rollout: route all traffic to v8.7"
+description = "Remove the v9.0 canary pods."
+minutes = 1
+quality = "helpful"
+transitions = { broken = "all_old", reverted_canary = "stabilising", all_new = "stabilising" }
+outcome = { all_new = "All traffic back on v8.7, which matches the restored users.email column.", broken = "Canary removed. Logins now fail for almost every request.", reverted_canary = "Canary removed; all pods run v8.7 against the restored column.", default = "Canary removed." }
+teach = "Correct after reverting the schema, harmful before it: old code can't run on the renamed column."
+
+[[scenarios.actions]]
+id = "promote_v9"
+kind = "mitigate"
+label = "Promote v9.0 to 100% of accounts-api"
+description = "Roll forward: every API pod on the new code."
+minutes = 3
+quality = "helpful"
+transitions = { broken = "api_new_worker_broken", reverted_canary = "all_new", stabilising = "all_new", recovered = "all_new" }
+outcome = { broken = "All accounts-api pods on v9.0; logins recover. billing-worker is still failing.", reverted_canary = "All pods on v9.0. Every login request now fails.", default = "Promotion complete." }
+deployment = { service = "api", version = "v9.0.0", summary = "Promote canary to 100%" }
+teach = "A valid roll-forward for the API, but it skips verification and leaves other readers (billing-worker) broken."
+
+[[scenarios.actions]]
+id = "deploy_worker_v5"
+kind = "mitigate"
+label = "Deploy billing-worker v5.0 (reads email_address)"
+description = "Ship the worker version that understands the new column."
+minutes = 3
+requires_actions = ["promote_v9"]
+quality = "helpful"
+transitions = { api_new_worker_broken = "stabilising" }
+outcome = { default = "billing-worker v5.0 rolling out; invoice jobs resume." }
+deployment = { service = "worker", version = "v5.0.0", summary = "Read users.email_address" }
+teach = "Completes the roll-forward. Only works if v5.0 exists and has been tested; check before relying on it."
+
+[[scenarios.actions]]
+id = "migrate_down"
+kind = "mitigate"
+discovered_by = ["migration_log"]
+label = "Run alembic downgrade -1"
+description = "Use the migration's own down step."
+minutes = 1
+quality = "risky"
+mistake = "ignore-data-safety"
+transitions = { broken = "reverted_canary", all_old = "stabilising" }
+outcome = { broken = "Column renamed back, and table email_verifications dropped: 1,204 verification records created since 12:50 are deleted.", default = "Downgrade complete; email_verifications dropped." }
+teach = "The down migration also drops a table with new data. Read a down migration before running it in an incident; a targeted rename is safer."
+
+[[scenarios.actions]]
+id = "rollback_app"
+kind = "mitigate"
+label = "Roll back accounts-api to v8.7 everywhere"
+description = "Standard application rollback."
+minutes = 2
+quality = "harmful"
+mistake = "rollback-blindly"
+transitions = { broken = "all_old" }
+outcome = { broken = "All pods on v8.7. Logins now fail for almost every request.", default = "Rollback complete." }
+deployment = { service = "api", version = "v8.7.3", summary = "Rollback of v9.0.0" }
+teach = "An app rollback only works if the old version is compatible with the current schema. Here it isn't."
+
+[[scenarios.actions]]
+id = "restore_backup"
+kind = "mitigate"
+label = "Restore accounts-db from the 12:00 snapshot"
+description = "Point-in-time restore to before the release."
+minutes = 2
+quality = "harmful"
+mistake = "ignore-data-safety"
+transitions = { broken = "restoring", all_old = "restoring", reverted_canary = "restoring", api_new_worker_broken = "restoring" }
+outcome = { default = "Database offline for the restore; about an hour of signups, password changes and profile edits will be lost." }
+teach = "A restore is for data corruption, not a schema mismatch. It turns a partial outage into a full one and loses data."
+
+[[scenarios.root_causes]]
+id = "rc-contract"
+text = "Release v9.0 ran a destructive contract migration (renaming users.email to email_address) before old readers were retired, breaking the v8 API pods and billing-worker."
+correct = true
+explanation = "Errors are UndefinedColumn on users.email from v8.7 and billing-worker v4 only; the v9 canary succeeds; the migration log shows the rename ran in the pre-deploy hook at 12:50."
+
+[[scenarios.root_causes]]
+id = "rc-lock"
+text = "The migration's lock on the users table is blocking queries."
+explanation = "The lock wait lasted 1 s and resolved before the errors; errors are UndefinedColumn, not lock timeouts."
+
+[[scenarios.root_causes]]
+id = "rc-canary-bug"
+text = "A bug in v9.0 is breaking logins."
+explanation = "v9.0 is the one version that works; failures come from older readers."
+
+[[scenarios.root_causes]]
+id = "rc-index"
+text = "The new last_login index (0141) is degrading database performance."
+explanation = "It finished 95 minutes ago and database load is normal."
+
+[[scenarios.misleading_signals]]
+signal = "AccessExclusiveLock wait in the database log"
+why = "One second during the rename, resolved before errors began; failures are UndefinedColumn errors, not timeouts."
+
+[[scenarios.misleading_signals]]
+signal = "v8 readiness probes failing"
+why = "A symptom: readiness checks query the profile, which hits the missing column."
+
+[[scenarios.misleading_signals]]
+signal = "The release dashboard says the canary is healthy"
+why = "True: the canary is the only healthy code. Fleet-wide errors are what matter."
+
+[scenarios.rubric_focus]
+diagnostic_accuracy = "Contract migration before old readers retired, not locks, canary bugs or the index."
+evidence_quality = "UndefinedColumn by version, the migration log, versions-running, the release plan missing billing-worker."
+mitigation_safety = "Revert the rename (with lock_timeout) then abort the canary, or roll forward everything; no app rollback, restore or blind downgrade."
+long_term_prevention = "Expand/contract across releases, migration linting, consumer inventory, fleet-wide canary analysis."

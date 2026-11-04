@@ -1,0 +1,100 @@
+slug = "pagination-params"
+title = "Validate pagination parameters"
+area = "python-fastapi"
+skill = "fastapi"
+prerequisites = ["python", "http"]
+difficulty = "beginner"
+entrypoint = "parse_pagination"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+An endpoint receives raw query parameters as strings. Implement
+`parse_pagination(params: dict[str, str]) -> dict` returning `{"limit": int, "offset": int}`.
+
+* `limit` defaults to 20 and must be an integer from 1 to 100.
+* `offset` defaults to 0 and must be an integer of at least 0.
+* Raise `ValueError` for anything invalid (this is what FastAPI turns into a 422).
+* Ignore unknown parameters.
+"""
+constraints = ["Values arrive as strings.", 'Reject "10.5", "", "abc" and out-of-range values.']
+rubric = [
+  "Applies defaults only when a parameter is absent.",
+  "Rejects non-integers and out-of-range values with ValueError.",
+  "Doesn't silently clamp invalid input.",
+]
+misconceptions = [
+  "Clamping out-of-range values instead of rejecting them hides client bugs.",
+  "Using int(float(x)) accepts '10.5' as 10.",
+]
+hints = ["str.isdigit() rejects signs and decimals; is that what you want for offset?", "Check range after converting."]
+
+[languages.python]
+starter = '''
+def parse_pagination(params: dict[str, str]) -> dict:
+    return {"limit": int(params.get("limit", 20)), "offset": int(params.get("offset", 0))}
+'''
+reference = '''
+def _to_int(raw: str, name: str) -> int:
+    text = raw.strip()
+    if not text or not (text.isdigit() or (text[0] == "-" and text[1:].isdigit())):
+        raise ValueError(f"{name} must be an integer")
+    return int(text)
+
+
+def parse_pagination(params: dict[str, str]) -> dict:
+    limit = _to_int(params["limit"], "limit") if "limit" in params else 20
+    offset = _to_int(params["offset"], "offset") if "offset" in params else 0
+    if not 1 <= limit <= 100:
+        raise ValueError("limit must be between 1 and 100")
+    if offset < 0:
+        raise ValueError("offset must be >= 0")
+    return {"limit": limit, "offset": offset}
+'''
+
+[[tests]]
+name = "Defaults"
+visibility = "public"
+args = [{}]
+expected = { limit = 20, offset = 0 }
+
+[[tests]]
+name = "Valid values"
+visibility = "public"
+args = [{ limit = "50", offset = "100" }]
+expected = { limit = 50, offset = 100 }
+
+[[tests]]
+name = "Limit too large is rejected"
+visibility = "public"
+args = [{ limit = "101" }]
+raises = "ValueError"
+
+[[tests]]
+name = "Zero limit is rejected"
+visibility = "hidden"
+args = [{ limit = "0" }]
+raises = "ValueError"
+
+[[tests]]
+name = "Negative offset is rejected"
+visibility = "hidden"
+args = [{ offset = "-1" }]
+raises = "ValueError"
+
+[[tests]]
+name = "Decimal is rejected"
+visibility = "hidden"
+args = [{ limit = "10.5" }]
+raises = "ValueError"
+
+[[tests]]
+name = "Empty string is rejected"
+visibility = "hidden"
+args = [{ offset = "" }]
+raises = "ValueError"
+
+[[tests]]
+name = "Unknown parameters are ignored"
+visibility = "hidden"
+args = [{ sort = "name", limit = "1" }]
+expected = { limit = 1, offset = 0 }

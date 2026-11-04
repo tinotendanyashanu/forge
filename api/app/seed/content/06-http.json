@@ -1,0 +1,261 @@
+{
+  "skill": {
+    "slug": "http",
+    "title": "HTTP",
+    "summary": "Method semantics, status codes, caching and browser security rules.",
+    "description": "Know what each part of an HTTP exchange promises: idempotency, status code meaning, what caches may store, and how browsers enforce cross-origin rules."
+  },
+  "topics": [
+    {
+      "slug": "semantics",
+      "title": "Methods & status codes"
+    },
+    {
+      "slug": "caching",
+      "title": "Caching"
+    },
+    {
+      "slug": "browser-security",
+      "title": "Browser security"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "http-non-idempotent-method",
+      "topic": "semantics",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Which method isn't idempotent?",
+      "prompt": "According to the HTTP specification, which of these methods is not idempotent?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`GET`"
+        },
+        {
+          "key": "b",
+          "text": "`PUT`"
+        },
+        {
+          "key": "c",
+          "text": "`DELETE`"
+        },
+        {
+          "key": "d",
+          "text": "`POST`",
+          "correct": true
+        }
+      ],
+      "explanation": "A method is idempotent when repeating the same request has the same intended effect on the server as sending it once. `GET`, `PUT` and `DELETE` are defined that way; `POST` is not, which is why clients cannot blindly retry it after a timeout.",
+      "rubric": [
+        "Defines idempotency in terms of effect on server state.",
+        "Identifies `POST` as not idempotent.",
+        "Connects idempotency to whether retries are safe."
+      ],
+      "expected_concepts": [
+        "Idempotent methods",
+        "Safe methods",
+        "Retry safety"
+      ],
+      "misconceptions": [
+        "Idempotent means the response is identical each time.",
+        "`DELETE` is not idempotent because the second call returns 404."
+      ],
+      "resources": [
+        {
+          "title": "MDN: Idempotent",
+          "url": "https://developer.mozilla.org/en-US/docs/Glossary/Idempotent"
+        },
+        {
+          "title": "RFC 9110 §9.2.2: Idempotent methods",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110#name-idempotent-methods"
+        }
+      ],
+      "estimated_minutes": 2,
+      "acceptance_criteria": "Identifies POST and defines idempotency by its effect on server state."
+    },
+    {
+      "slug": "http-401-vs-403",
+      "topic": "semantics",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Authenticated but not allowed",
+      "prompt": "A request carries a valid access token for user Ada, but Ada isn't permitted to delete this project. Which status code fits best?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`400 Bad Request`"
+        },
+        {
+          "key": "b",
+          "text": "`401 Unauthorized`"
+        },
+        {
+          "key": "c",
+          "text": "`403 Forbidden`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "`409 Conflict`"
+        }
+      ],
+      "explanation": "`401` means the request lacks valid authentication credentials; the server knows who Ada is, so that doesn't apply. `403` means the server understood the request and refuses to authorise it. Some APIs return `404` instead to avoid revealing that the resource exists.",
+      "rubric": [
+        "Distinguishes authentication (401) from authorisation (403).",
+        "Chooses 403 for an authenticated but unauthorised request.",
+        "Mentions 404 as a deliberate choice to hide resource existence."
+      ],
+      "expected_concepts": [
+        "Authentication versus authorisation",
+        "401 semantics",
+        "403 semantics"
+      ],
+      "misconceptions": [
+        "401 is the correct code for any permission failure, because of its name.",
+        "Permission errors are client syntax errors (400)."
+      ],
+      "resources": [
+        {
+          "title": "MDN: 403 Forbidden",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+        },
+        {
+          "title": "MDN: 401 Unauthorized",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401"
+        }
+      ],
+      "estimated_minutes": 2,
+      "acceptance_criteria": "Chooses 403 and distinguishes authentication from authorisation."
+    },
+    {
+      "slug": "http-cors-preflight",
+      "topic": "browser-security",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Before a cross-origin JSON POST",
+      "prompt": "A page on `https://app.example.com` calls `fetch(\"https://api.example.com/orders\", { method: \"POST\", headers: { \"Content-Type\": \"application/json\" }, body })`. What does the browser do first?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Sends the POST, then blocks the response unless the API returns CORS headers"
+        },
+        {
+          "key": "b",
+          "text": "Sends an `OPTIONS` preflight and only sends the POST if the API allows it",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Nothing special; both origins share the same registrable domain"
+        },
+        {
+          "key": "d",
+          "text": "Refuses the request, because browsers never allow cross-origin POSTs"
+        }
+      ],
+      "explanation": "Different subdomains are different origins. `Content-Type: application/json` is not a CORS-safelisted value, so the browser first sends an `OPTIONS` preflight and proceeds only if the response allows the origin, method and headers. CORS is enforced by browsers to protect users; it does not stop non-browser clients calling the API.",
+      "rubric": [
+        "Recognises the two hosts are different origins.",
+        "Explains that a JSON content type triggers a preflight.",
+        "Describes the preflight's role in allowing the actual request.",
+        "States that CORS is browser-enforced and not a server-side access control."
+      ],
+      "expected_concepts": [
+        "Same-origin policy",
+        "CORS preflight",
+        "Simple versus preflighted requests"
+      ],
+      "misconceptions": [
+        "CORS protects the API from all unauthorised clients.",
+        "Subdomains of the same site share an origin."
+      ],
+      "resources": [
+        {
+          "title": "MDN: Cross-Origin Resource Sharing (CORS)",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS"
+        }
+      ],
+      "estimated_minutes": 4,
+      "acceptance_criteria": "States the browser sends an OPTIONS preflight first because the JSON content type crosses origins."
+    },
+    {
+      "slug": "http-cache-personalised",
+      "topic": "caching",
+      "difficulty": "intermediate",
+      "format": "free_text",
+      "title": "Caching a personalised response",
+      "prompt": "`GET /me` returns the signed-in user's profile and sits behind a CDN. Which caching headers would you send, and what could go wrong with a careless choice? Then describe how you would cache a public `GET /courses/{id}` that changes a few times a day.",
+      "hint": "Who may store the response: the browser, the CDN, or both?",
+      "explanation": "Personalised responses must not be stored by shared caches: send `Cache-Control: private` (or `no-store` for sensitive data). A careless `public` lets the CDN serve one user's profile to another. For public content use `public, max-age` and/or `s-maxage` with validators (`ETag`/`Last-Modified`), and consider `stale-while-revalidate` or purging on change.",
+      "rubric": [
+        "Uses `private` or `no-store` for the personalised response.",
+        "Explains the data-leak risk of shared caching.",
+        "Uses `max-age`/`s-maxage` for public content.",
+        "Adds validation with `ETag` or `Last-Modified`.",
+        "Mentions a freshness strategy such as `stale-while-revalidate` or purging."
+      ],
+      "expected_concepts": [
+        "Private versus shared caches",
+        "`Cache-Control` directives",
+        "Conditional requests",
+        "Cache invalidation"
+      ],
+      "misconceptions": [
+        "CDNs never cache responses to authenticated requests.",
+        "`no-cache` means do not store."
+      ],
+      "resources": [
+        {
+          "title": "MDN: HTTP caching",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching"
+        },
+        {
+          "title": "MDN: Cache-Control",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control"
+        }
+      ],
+      "estimated_minutes": 8,
+      "acceptance_criteria": "Uses private or no-store for /me, explains the shared-cache leak risk, and caches the public endpoint with validation."
+    },
+    {
+      "slug": "http-idempotency-keys",
+      "topic": "semantics",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Retry-safe payments",
+      "prompt": "Mobile clients call `POST /payments`. On flaky networks they time out and retry, and some customers are charged twice. Design an idempotency-key mechanism: what the client sends, what the server stores, how concurrent duplicates are handled, and how long keys are kept.",
+      "hint": "A timed-out request may or may not have been processed.",
+      "explanation": "The client generates a unique key per logical operation and resends it on every retry. The server stores the key (scoped to the account) with a fingerprint of the request and the final response, enforced by a unique constraint. A retry with the same key returns the stored response; a key reused with a different body is rejected. Concurrent duplicates are serialised by the unique constraint or a lock, with the second request waiting or receiving a conflict. Keys expire after a window longer than the client's retry horizon.",
+      "rubric": [
+        "Has the client generate one key per logical operation and reuse it on retries.",
+        "Stores key, request fingerprint and final response with a uniqueness guarantee.",
+        "Returns the stored response for duplicates and rejects mismatched bodies.",
+        "Handles concurrent in-flight duplicates explicitly.",
+        "Defines a retention window and scopes keys to the account."
+      ],
+      "expected_concepts": [
+        "Idempotency keys",
+        "At-least-once delivery",
+        "Uniqueness constraints",
+        "Request fingerprinting"
+      ],
+      "misconceptions": [
+        "Turning off client retries solves duplicate charges.",
+        "Checking for a recent identical payment amount is a reliable deduplication method."
+      ],
+      "resources": [
+        {
+          "title": "Stripe engineering: Designing robust and predictable APIs with idempotency",
+          "url": "https://stripe.com/blog/idempotency"
+        },
+        {
+          "title": "Patterns of Distributed Systems: Idempotent receiver",
+          "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/idempotent-receiver.html"
+        }
+      ],
+      "estimated_minutes": 12,
+      "acceptance_criteria": "Designs client-generated keys stored with a uniqueness guarantee and the stored response, and handles concurrent duplicates."
+    }
+  ]
+}

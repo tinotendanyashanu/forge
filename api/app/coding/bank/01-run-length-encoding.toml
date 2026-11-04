@@ -1,0 +1,81 @@
+slug = "run-length-encoding"
+title = "Run-length encoding"
+area = "foundations"
+skill = "programming-fundamentals"
+prerequisites = []
+difficulty = "beginner"
+entrypoint = "encode"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+Compress a string by replacing each run of identical characters with the character
+followed by the run length. `"aaabcc"` becomes `"a3b1c2"`.
+"""
+constraints = ["The input contains only letters.", "Return an empty string for empty input."]
+rubric = [
+  "Counts each run correctly, including the final run.",
+  "Handles empty input and single characters.",
+  "Runs in linear time without repeated string concatenation in a quadratic way.",
+]
+misconceptions = [
+  "Forgetting to flush the last run after the loop ends.",
+  "Counting total occurrences of a character instead of consecutive runs.",
+]
+hints = ["Track the current character and how many times you've seen it in a row.", "After the loop, the last run hasn't been written yet."]
+
+[languages.python]
+starter = '''
+def encode(text: str) -> str:
+    raise NotImplementedError
+'''
+reference = '''
+def encode(text: str) -> str:
+    if not text:
+        return ""
+    parts = []
+    current, count = text[0], 1
+    for ch in text[1:]:
+        if ch == current:
+            count += 1
+        else:
+            parts.append(f"{current}{count}")
+            current, count = ch, 1
+    parts.append(f"{current}{count}")
+    return "".join(parts)
+'''
+
+[[tests]]
+name = "Example from the description"
+visibility = "public"
+args = ["aaabcc"]
+expected = "a3b1c2"
+
+[[tests]]
+name = "Single character"
+visibility = "public"
+args = ["z"]
+expected = "z1"
+
+[[tests]]
+name = "Empty input"
+visibility = "hidden"
+args = [""]
+expected = ""
+
+[[tests]]
+name = "Repeated letters separated by others are separate runs"
+visibility = "hidden"
+args = ["aabaa"]
+expected = "a2b1a2"
+
+[[tests]]
+name = "Long run"
+visibility = "hidden"
+args = ["xxxxxxxxxxxxxxxxxxxxxxxxx"]
+expected = "x25"
+
+[[tests]]
+name = "Case-sensitive"
+visibility = "hidden"
+args = ["aAaa"]
+expected = "a1A1a2"

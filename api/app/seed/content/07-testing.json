@@ -1,0 +1,238 @@
+{
+  "skill": {
+    "slug": "testing",
+    "title": "Testing",
+    "summary": "Test design, fixtures, test doubles and keeping a suite trustworthy.",
+    "description": "Write tests that catch regressions without slowing teams down: choosing cases, using fixtures and mocks correctly, and diagnosing flaky tests."
+  },
+  "topics": [
+    {
+      "slug": "test-design",
+      "title": "Test design"
+    },
+    {
+      "slug": "test-doubles",
+      "title": "Fixtures & test doubles"
+    },
+    {
+      "slug": "reliability",
+      "title": "Reliable suites"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "test-pytest-fixture-scope",
+      "topic": "test-doubles",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Default fixture scope",
+      "prompt": "A pytest fixture is declared with `@pytest.fixture` and no arguments. How often is it set up?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Once per test function that requests it",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Once per module"
+        },
+        {
+          "key": "c",
+          "text": "Once per test session"
+        },
+        {
+          "key": "d",
+          "text": "Once per test, even for tests that don't request it"
+        }
+      ],
+      "explanation": "The default scope is `function`: each test that requests the fixture gets a fresh instance, which keeps tests isolated. Broader scopes (`module`, `session`) trade isolation for speed and should be used for expensive, read-only resources.",
+      "rubric": [
+        "Identifies `function` as the default scope.",
+        "Explains that fixtures run only for tests that request them (unless `autouse`).",
+        "Describes the isolation versus speed trade-off of wider scopes."
+      ],
+      "expected_concepts": [
+        "Fixture scope",
+        "Test isolation",
+        "`autouse` fixtures"
+      ],
+      "misconceptions": [
+        "Fixtures are shared across a module by default.",
+        "Every fixture runs for every test."
+      ],
+      "resources": [
+        {
+          "title": "pytest: How to use fixtures",
+          "url": "https://docs.pytest.org/en/stable/how-to/fixtures.html"
+        }
+      ],
+      "estimated_minutes": 2,
+      "acceptance_criteria": "States that the default fixture scope is function."
+    },
+    {
+      "slug": "test-choosing-cases",
+      "topic": "test-design",
+      "difficulty": "beginner",
+      "format": "free_text",
+      "title": "Choosing test cases",
+      "prompt": "`apply_discount(price: Decimal, percent: int) -> Decimal` returns the discounted price rounded to two decimal places, and should reject invalid percentages. List the test cases you would write and say what each one protects against.",
+      "hint": "Think about typical values, boundaries, invalid input and rounding.",
+      "explanation": "Good coverage includes a typical case, the boundaries (0% and 100%), just outside them (-1%, 101%) expecting errors, rounding behaviour at half-cent values, a zero price, and the use of `Decimal` rather than float. Each test should state one behaviour so failures are easy to read.",
+      "rubric": [
+        "Includes at least one typical, representative case.",
+        "Tests boundaries at 0% and 100%.",
+        "Tests invalid inputs outside the allowed range and the expected error.",
+        "Tests rounding behaviour explicitly.",
+        "Explains what regression each case would catch."
+      ],
+      "expected_concepts": [
+        "Boundary value analysis",
+        "Equivalence partitioning",
+        "Testing error paths",
+        "Decimal rounding"
+      ],
+      "misconceptions": [
+        "One happy-path test is enough for a small function.",
+        "Line coverage proves the function is correct."
+      ],
+      "resources": [
+        {
+          "title": "pytest: Parametrizing tests",
+          "url": "https://docs.pytest.org/en/stable/how-to/parametrize.html"
+        },
+        {
+          "title": "pytest: Assertions about expected exceptions",
+          "url": "https://docs.pytest.org/en/stable/how-to/assert.html#assertions-about-expected-exceptions"
+        }
+      ],
+      "estimated_minutes": 6,
+      "acceptance_criteria": "Covers typical, boundary, invalid and rounding cases and says what each protects against."
+    },
+    {
+      "slug": "test-mock-where-to-patch",
+      "topic": "test-doubles",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Patching the wrong name",
+      "prompt": "`app/service.py` contains `from app.clients import fetch_rate` and calls `fetch_rate()` inside `convert()`. A test wraps `convert()` in `mock.patch(\"app.clients.fetch_rate\")`. What happens?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`convert()` uses the mock, because the patch replaces the function everywhere"
+        },
+        {
+          "key": "b",
+          "text": "`convert()` still calls the real `fetch_rate`; patch `app.service.fetch_rate` instead",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The test errors because `app.clients.fetch_rate` cannot be patched"
+        },
+        {
+          "key": "d",
+          "text": "It works only if the test imports `app.service` after applying the patch"
+        }
+      ],
+      "explanation": "`from ... import` binds a second name, `fetch_rate`, in `app.service`'s namespace at import time. Patching `app.clients.fetch_rate` rebinds only the original name. Patch where the name is looked up: `app.service.fetch_rate`.",
+      "rubric": [
+        "Explains that `from x import y` creates a separate binding in the importing module.",
+        "States that `mock.patch` replaces a name in one namespace only.",
+        "Patches the name where it is looked up."
+      ],
+      "expected_concepts": [
+        "Name binding on import",
+        "`mock.patch` targets",
+        "Where to patch"
+      ],
+      "misconceptions": [
+        "Patching a function replaces it in every module.",
+        "Import order alone determines whether a patch applies."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: unittest.mock — Where to patch",
+          "url": "https://docs.python.org/3/library/unittest.mock.html#where-to-patch"
+        }
+      ],
+      "estimated_minutes": 4,
+      "acceptance_criteria": "Explains the real function is still called and patches the name where it is looked up."
+    },
+    {
+      "slug": "test-flaky-investigation",
+      "topic": "reliability",
+      "difficulty": "intermediate",
+      "format": "free_text",
+      "title": "Investigating a flaky test",
+      "prompt": "A test passes locally but fails about one time in twenty in CI. Describe how you would investigate it, the most common root causes of flaky tests, and what you would do while the root cause is still unknown.",
+      "hint": "Make the failure reproducible before trying to fix it.",
+      "explanation": "Reproduce first: run the test repeatedly, alone and with the full suite, with randomised order, and compare CI and local environments. Common causes are shared state between tests, time and timezone dependence, ordering assumptions, real network calls or timers, and concurrency. While investigating, quarantine with a tracked ticket rather than deleting it or silently retrying.",
+      "rubric": [
+        "Reproduces the failure by repeated and randomised runs before changing code.",
+        "Lists several common causes: shared state, time, ordering, network, concurrency.",
+        "Uses CI logs and environment differences as evidence.",
+        "Quarantines with a tracked owner instead of deleting or silently retrying.",
+        "Fixes the root cause and guards against recurrence."
+      ],
+      "expected_concepts": [
+        "Test isolation",
+        "Non-determinism",
+        "Quarantining tests",
+        "Reproducing failures"
+      ],
+      "misconceptions": [
+        "Automatic retries fix flaky tests.",
+        "A test that passes locally must be correct."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Eradicating non-determinism in tests",
+          "url": "https://martinfowler.com/articles/nonDeterminism.html"
+        }
+      ],
+      "estimated_minutes": 8,
+      "acceptance_criteria": "Reproduces the failure before fixing, lists several real causes, and quarantines rather than silently retrying."
+    },
+    {
+      "slug": "test-strategy-external-deps",
+      "topic": "test-design",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "A test strategy for an API with dependencies",
+      "prompt": "A FastAPI service stores data in PostgreSQL and charges cards through a third-party payment provider. Design its test strategy: what you test at each level, how you treat the database and the payment provider, and how you keep the suite fast and trustworthy.",
+      "hint": "Which fakes could disagree with reality without any test noticing?",
+      "explanation": "Unit-test pure domain logic without I/O. Run API and repository tests against a real PostgreSQL (e.g. a container) because SQLite or mocks hide constraint, type and locking behaviour. Put the payment provider behind an interface you own; test against a fake in most tests, verify the adapter against the provider's sandbox or recorded contract, and add a few end-to-end smoke tests. Keep tests isolated with per-test transactions or truncation, and run slow suites in parallel or less often.",
+      "rubric": [
+        "Separates fast unit tests of domain logic from integration tests.",
+        "Uses a real PostgreSQL for persistence tests and explains why substitutes mislead.",
+        "Wraps the payment provider behind an owned interface with a fake for most tests.",
+        "Verifies the real integration via contract tests or the provider's sandbox.",
+        "Addresses isolation, data setup and suite speed."
+      ],
+      "expected_concepts": [
+        "Test pyramid",
+        "Integration testing with real dependencies",
+        "Ports and adapters",
+        "Contract testing",
+        "Test isolation"
+      ],
+      "misconceptions": [
+        "Mocking everything gives the most reliable suite.",
+        "SQLite is an adequate stand-in for PostgreSQL in tests."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: The practical test pyramid",
+          "url": "https://martinfowler.com/articles/practical-test-pyramid.html"
+        },
+        {
+          "title": "Martin Fowler: Test double",
+          "url": "https://martinfowler.com/bliki/TestDouble.html"
+        }
+      ],
+      "estimated_minutes": 12,
+      "acceptance_criteria": "Separates unit and integration levels, uses real PostgreSQL, and isolates the payment provider behind an owned interface verified by contract or sandbox tests."
+    }
+  ]
+}

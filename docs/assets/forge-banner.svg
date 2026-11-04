@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="480" viewBox="0 0 1600 480" role="img" aria-labelledby="title desc">
+<title id="title">FORGE 1.0 — Evidence before confidence</title>
+<desc id="desc">Original documentation banner. Local-only, single-user engineering learning platform. This is not an application screenshot.</desc>
+<rect width="1600" height="480" rx="24" fill="#111820"/>
+<path d="M0 0H1600V8H0Z" fill="#ff9a59"/>
+<g stroke="#263440" stroke-width="1" opacity=".65">
+<path d="M1160 0V480M1280 0V480M1400 0V480M1520 0V480M1060 120H1600M1060 240H1600M1060 360H1600"/>
+</g>
+<g fill="none" stroke="#ff9a59" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter">
+<path d="M1214 156H1438L1396 228H1256L1298 300H1354"/>
+<path d="M1284 332H1368"/>
+</g>
+<text x="80" y="90" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="4" fill="#ffb17f">ENGINEERING LEARNING / 1.0</text>
+<text x="72" y="240" font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="800" letter-spacing="-5" fill="#f1f4f6">FORGE</text>
+<text x="80" y="314" font-family="Arial, Helvetica, sans-serif" font-size="42" fill="#d9e1e6">Evidence before confidence.</text>
+<path d="M80 366H1030" stroke="#33424e"/>
+<text x="80" y="418" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="2" fill="#ffb17f">LOCAL-ONLY</text>
+<circle cx="285" cy="410" r="3" fill="#7b8d9a"/>
+<text x="315" y="418" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="2" fill="#d0d9e0">SINGLE USER</text>
+<text x="1450" y="429" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="20" letter-spacing="3" fill="#91a4b2">FORGE 1.0</text>
+</svg>

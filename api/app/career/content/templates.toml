@@ -1,0 +1,342 @@
+# Versioned assessment templates. Sections compose existing FORGE modules:
+#   interview -> M3 AI interviewer   coding -> M5 coding lab (verified sandbox only)
+#   design    -> M6 architecture lab  incident -> M7 FORGE OPS
+#   judgment  -> engineering judgment scenarios  take_home -> take-home project
+# Section weights only summarise the attempt; readiness comes from the gated
+# competency model, never from a weighted average.
+
+[[templates]]
+slug = "fullstack-mid"
+title = "Full-Stack Engineer: mid-level readiness"
+track = "fullstack"
+level = "mid"
+purpose = "formal"
+time_limit_minutes = 300
+description = "A formal, timed assessment of mid-level full-stack competency across backend, frontend, data, design, production and judgment."
+objectives = ["Implement and test backend and frontend logic", "Explain technical decisions under follow-up questions", "Design a feature-level system with explicit trade-offs", "Investigate and mitigate a production incident safely", "Make and communicate sound engineering decisions"]
+passing_criteria = "Every gated competency for Full-Stack mid-level is demonstrated in the readiness report; no critical failure."
+critical_failures = ["A harmful action during the incident simulation", "Executable coding sections unavailable (no verified sandbox): the attempt cannot establish implementation evidence", "A gated competency with a demonstrated weakness"]
+evidence_requirements = "Verified coding results, a deterministic incident outcome, an evaluated architecture, AI-evaluated interview and judgment answers. AI judgments are advisory and never sufficient alone."
+
+[[templates.sections]]
+key = "interview-backend"
+kind = "interview"
+title = "Technical interview: backend"
+objectives = ["Explain FastAPI behaviour and backend trade-offs", "Answer follow-up questions without hints"]
+dimensions = ["python_backend", "api_design"]
+weight = 1.0
+minutes = 30
+params = { skill = "fastapi", difficulty = "intermediate", mode = "grill", questions = 2 }
+
+[[templates.sections]]
+key = "interview-frontend"
+kind = "interview"
+title = "Technical interview: frontend"
+objectives = ["Explain React state, effects and rendering trade-offs"]
+dimensions = ["react_nextjs", "javascript_typescript"]
+weight = 1.0
+minutes = 25
+params = { skill = "react", difficulty = "intermediate", mode = "grill", questions = 2 }
+
+[[templates.sections]]
+key = "coding"
+kind = "coding"
+title = "Coding challenges"
+objectives = ["Implement correct, validated solutions that pass hidden tests"]
+dimensions = ["python_backend", "javascript_typescript", "database_engineering", "programming_fundamentals"]
+weight = 2.0
+minutes = 90
+critical = true
+params = { picks = [{ skill = "fastapi", difficulty = "intermediate" }, { skill = "typescript", difficulty = "intermediate" }, { skill = "sql", difficulty = "intermediate" }] }
+
+[[templates.sections]]
+key = "design"
+kind = "design"
+title = "System design exercise"
+objectives = ["Clarify requirements and propose an architecture", "Defend decisions; adapt when constraints change"]
+dimensions = ["system_architecture", "distributed_systems", "concurrency_consistency"]
+weight = 1.5
+minutes = 60
+params = { level = "intermediate", constraint_changes = ["traffic-10x", "duplicate-delivery", "payment-timeout", "postgres-unavailable"] }
+
+[[templates.sections]]
+key = "incident"
+kind = "incident"
+title = "Production incident"
+objectives = ["Triage, investigate and mitigate safely", "Verify recovery and explain the root cause"]
+dimensions = ["production_reliability", "debugging", "devops_deployment"]
+weight = 1.5
+minutes = 45
+critical = true
+params = { level = "intermediate" }
+
+[[templates.sections]]
+key = "judgment"
+kind = "judgment"
+title = "Engineering judgment scenarios"
+objectives = ["Make justified decisions and communicate them"]
+dimensions = ["engineering_judgment", "technical_communication", "code_review_maintainability"]
+weight = 1.0
+minutes = 40
+params = { count = 2, level = "mid", include = ["review-junior-pr"] }
+
+[[templates]]
+slug = "fullstack-junior"
+title = "Full-Stack Engineer: junior readiness"
+track = "fullstack"
+level = "junior"
+purpose = "formal"
+time_limit_minutes = 210
+description = "A formal, timed assessment of junior full-stack fundamentals."
+objectives = ["Write correct code for routine problems", "Explain basic web, API and database concepts", "Follow evidence when something breaks"]
+passing_criteria = "Every gated competency for Full-Stack junior is demonstrated; no critical failure."
+critical_failures = ["Executable coding sections unavailable (no verified sandbox)", "A gated competency with a demonstrated weakness"]
+evidence_requirements = "Verified coding results and AI-evaluated interview answers; incident outcome where completed."
+
+[[templates.sections]]
+key = "interview"
+kind = "interview"
+title = "Technical interview: fundamentals"
+objectives = ["Explain Python and HTTP fundamentals"]
+dimensions = ["python_backend", "api_design"]
+weight = 1.0
+minutes = 25
+params = { skill = "python", difficulty = "beginner", mode = "grill", questions = 2 }
+
+[[templates.sections]]
+key = "coding"
+kind = "coding"
+title = "Coding challenges"
+objectives = ["Solve routine problems with edge cases"]
+dimensions = ["programming_fundamentals", "javascript_typescript", "database_engineering", "testing_quality"]
+weight = 2.0
+minutes = 80
+critical = true
+params = { picks = [{ skill = "programming-fundamentals", difficulty = "beginner" }, { skill = "typescript", difficulty = "beginner" }, { skill = "sql", difficulty = "beginner" }, { skill = "testing", difficulty = "beginner" }] }
+
+[[templates.sections]]
+key = "incident"
+kind = "incident"
+title = "Production incident"
+objectives = ["Investigate with evidence and avoid risky changes"]
+dimensions = ["production_reliability", "debugging"]
+weight = 1.0
+minutes = 45
+params = { level = "beginner" }
+
+[[templates.sections]]
+key = "judgment"
+kind = "judgment"
+title = "Engineering judgment"
+objectives = ["Communicate status and decisions clearly"]
+dimensions = ["technical_communication", "engineering_judgment"]
+weight = 0.5
+minutes = 20
+params = { count = 1, level = "mid", include = ["incident-uncertainty"] }
+
+[[templates]]
+slug = "fullstack-senior"
+title = "Full-Stack Engineer: senior readiness"
+track = "fullstack"
+level = "senior"
+purpose = "formal"
+time_limit_minutes = 360
+description = "A formal, timed assessment of senior full-stack competency. Seniority at work also depends on demonstrated impact, ownership and sustained responsibility, which no assessment can verify."
+objectives = ["Design systems under scale, failure and cost constraints", "Lead an incident from triage to postmortem", "Make and defend cross-team decisions", "Implement correct, concurrent, secure code"]
+passing_criteria = "Every gated competency for Full-Stack senior is demonstrated across architecture, implementation, production, security, reliability, communication and judgment; no critical failure."
+critical_failures = ["A harmful action during the incident simulation", "Executable coding sections unavailable (no verified sandbox)", "A gated competency with a demonstrated weakness"]
+evidence_requirements = "Verified coding (including concurrency), a deterministic senior incident outcome, evaluated senior architecture with failure analysis, AI-evaluated interview and judgment answers."
+
+[[templates.sections]]
+key = "interview"
+kind = "interview"
+title = "Technical interview: architecture"
+objectives = ["Defend design trade-offs under probing follow-ups"]
+dimensions = ["system_architecture", "distributed_systems"]
+weight = 1.0
+minutes = 30
+params = { skill = "system-design", difficulty = "advanced", mode = "architect", questions = 2 }
+
+[[templates.sections]]
+key = "coding"
+kind = "coding"
+title = "Coding: concurrency, APIs and performance"
+objectives = ["Write correct code under concurrency and load"]
+dimensions = ["concurrency_consistency", "api_design", "performance", "database_engineering"]
+weight = 2.0
+minutes = 100
+critical = true
+params = { picks = [{ skill = "sql", difficulty = "advanced" }, { skill = "http", difficulty = "advanced" }, { skill = "python", difficulty = "advanced" }, { skill = "programming-fundamentals", difficulty = "advanced" }] }
+
+[[templates.sections]]
+key = "design"
+kind = "design"
+title = "System design under changing constraints"
+objectives = ["Design and defend a senior-level system", "Handle a changed constraint"]
+dimensions = ["system_architecture", "distributed_systems", "concurrency_consistency", "security"]
+weight = 2.0
+minutes = 75
+params = { level = "senior", constraint_changes = ["region-outage", "duplicate-delivery", "incompatible-schema", "payment-timeout"] }
+
+[[templates.sections]]
+key = "incident"
+kind = "incident"
+title = "Senior production incident"
+objectives = ["Lead an ambiguous, high-risk incident to verified recovery"]
+dimensions = ["production_reliability", "debugging", "security", "devops_deployment"]
+weight = 2.0
+minutes = 60
+critical = true
+params = { level = "senior" }
+
+[[templates.sections]]
+key = "judgment"
+kind = "judgment"
+title = "Senior judgment and collaboration"
+objectives = ["Resolve disagreement, plan risky change, mentor"]
+dimensions = ["engineering_judgment", "technical_communication", "code_review_maintainability"]
+weight = 1.5
+minutes = 60
+params = { count = 3, level = "senior", include = ["architecture-disagreement"] }
+
+[[templates]]
+slug = "backend-mid"
+title = "Backend Engineer: mid-level readiness"
+track = "backend"
+level = "mid"
+purpose = "formal"
+time_limit_minutes = 270
+description = "A formal, timed assessment of mid-level backend competency."
+objectives = ["Implement correct APIs and transactional logic", "Design services for consistency", "Investigate a production incident"]
+passing_criteria = "Every gated competency for Backend mid-level is demonstrated; no critical failure."
+critical_failures = ["A harmful action during the incident simulation", "Executable coding sections unavailable (no verified sandbox)"]
+evidence_requirements = "Verified coding, deterministic incident outcome, evaluated architecture, AI-evaluated interview."
+
+[[templates.sections]]
+key = "interview"
+kind = "interview"
+title = "Technical interview: data"
+objectives = ["Explain transactions, indexes and isolation"]
+dimensions = ["database_engineering", "concurrency_consistency"]
+weight = 1.0
+minutes = 30
+params = { skill = "sql", difficulty = "intermediate", mode = "grill", questions = 2 }
+
+[[templates.sections]]
+key = "coding"
+kind = "coding"
+title = "Backend coding"
+objectives = ["Implement APIs and transactional updates"]
+dimensions = ["python_backend", "database_engineering", "api_design"]
+weight = 2.0
+minutes = 80
+critical = true
+params = { picks = [{ skill = "fastapi", difficulty = "intermediate" }, { skill = "sql", difficulty = "intermediate" }, { skill = "python", difficulty = "intermediate" }] }
+
+[[templates.sections]]
+key = "design"
+kind = "design"
+title = "Service design"
+objectives = ["Design a consistent, reliable service"]
+dimensions = ["system_architecture", "distributed_systems", "concurrency_consistency"]
+weight = 1.5
+minutes = 60
+params = { level = "intermediate", constraint_changes = ["duplicate-delivery", "postgres-unavailable", "traffic-10x"] }
+
+[[templates.sections]]
+key = "incident"
+kind = "incident"
+title = "Production incident"
+objectives = ["Investigate and mitigate safely"]
+dimensions = ["production_reliability", "debugging"]
+weight = 1.5
+minutes = 45
+critical = true
+params = { level = "intermediate" }
+
+[[templates]]
+slug = "frontend-mid"
+title = "Frontend Engineer: mid-level readiness"
+track = "frontend"
+level = "mid"
+purpose = "formal"
+time_limit_minutes = 180
+description = "A formal, timed assessment of mid-level frontend competency."
+objectives = ["Implement typed, correct UI logic", "Explain state and rendering trade-offs", "Communicate decisions"]
+passing_criteria = "Every gated competency for Frontend mid-level is demonstrated; no critical failure."
+critical_failures = ["Executable coding sections unavailable (no verified sandbox)"]
+evidence_requirements = "Verified coding results and AI-evaluated interview and judgment answers. FORGE has limited React coding content; expect missing evidence."
+
+[[templates.sections]]
+key = "interview"
+kind = "interview"
+title = "Technical interview: React"
+objectives = ["Explain React state and rendering"]
+dimensions = ["react_nextjs", "javascript_typescript"]
+weight = 1.0
+minutes = 30
+params = { skill = "react", difficulty = "intermediate", mode = "grill", questions = 2 }
+
+[[templates.sections]]
+key = "coding"
+kind = "coding"
+title = "Frontend coding"
+objectives = ["Typed data handling and UI state"]
+dimensions = ["javascript_typescript", "react_nextjs"]
+weight = 2.0
+minutes = 70
+critical = true
+params = { picks = [{ skill = "typescript", difficulty = "intermediate" }, { skill = "react", difficulty = "beginner" }, { skill = "typescript", difficulty = "beginner" }] }
+
+[[templates.sections]]
+key = "judgment"
+kind = "judgment"
+title = "Communication and judgment"
+objectives = ["Explain trade-offs to stakeholders"]
+dimensions = ["technical_communication", "engineering_judgment"]
+weight = 1.0
+minutes = 30
+params = { count = 2, level = "mid", include = ["explain-to-stakeholders"] }
+
+[[templates]]
+slug = "diagnostic"
+title = "Diagnostic: where am I now?"
+track = "fullstack"
+level = "junior"
+purpose = "diagnostic"
+time_limit_minutes = 0
+description = "An untimed practice diagnostic across interview, coding and judgment. Practice results are evidence too, but they are labelled as practice."
+objectives = ["Establish a baseline across core dimensions"]
+passing_criteria = "Diagnostic: no pass or fail. The report shows what has been demonstrated and what is missing."
+critical_failures = []
+evidence_requirements = "Any; coverage is reported."
+
+[[templates.sections]]
+key = "interview"
+kind = "interview"
+title = "Interview: Python"
+objectives = ["Baseline knowledge"]
+dimensions = ["python_backend"]
+weight = 1.0
+minutes = 20
+params = { skill = "python", difficulty = "beginner", mode = "tutor", questions = 2 }
+
+[[templates.sections]]
+key = "coding"
+kind = "coding"
+title = "Coding"
+objectives = ["Baseline implementation"]
+dimensions = ["programming_fundamentals"]
+weight = 1.0
+minutes = 30
+params = { picks = [{ skill = "programming-fundamentals", difficulty = "beginner" }] }
+
+[[templates.sections]]
+key = "judgment"
+kind = "judgment"
+title = "Judgment"
+objectives = ["Baseline communication"]
+dimensions = ["technical_communication"]
+weight = 0.5
+minutes = 15
+params = { count = 1, level = "mid", include = ["incident-uncertainty"] }

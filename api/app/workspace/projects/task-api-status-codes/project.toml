@@ -1,0 +1,243 @@
+slug = "task-api-status-codes"
+title = "Fix the Tasks API contract"
+level = "beginner"
+task_type = "bug_fix"
+skill = "fastapi"
+area = "python-fastapi"
+prerequisites = ["python", "http"]
+stack = ["Python 3.12", "FastAPI 0.115", "Pydantic 2"]
+dimensions = ["python_backend", "api_design", "debugging"]
+competencies = ["codebase_comprehension", "debugging", "api", "implementation"]
+estimated_minutes = 40
+time_limit_ms = 4000
+memory_limit_mb = 128
+rubric_version = "task-api-v1"
+summary = "The mobile team reports wrong status codes, unvalidated input and a broken filter in a small FastAPI service. Find the bugs across four files and fix them without changing the response shapes."
+
+description = """
+The support team's **Tasks API** is used by a new mobile client. The mobile
+engineers branch on HTTP status codes, and several endpoints return the wrong
+ones. A data-quality report also found tasks with a priority of `0` and `99`,
+and a filter that silently returns everything.
+
+You are inheriting the code. Read it before changing anything: the bugs are
+spread across the models, the repository and the routes.
+"""
+
+architecture = """
+`create_app()` builds a FastAPI app with one `TaskRepository` on
+`app.state.repo`. Handlers in `app/routes/tasks.py` receive it with
+`Depends(get_repository)`. Request validation lives in `app/models.py`
+(`TaskIn`); responses use `Task`. See `ARCHITECTURE.md` in the workspace.
+"""
+
+setup = """
+Everything runs in the FORGE sandbox: **Run tests** executes the public tests
+against `create_app()` with FastAPI's `TestClient`. No network, no database.
+
+To run it on your machine instead:
+
+```bash
+pip install "fastapi==0.115.14" "httpx==0.28.1" uvicorn
+uvicorn app.main:create_app --factory --reload
+```
+"""
+
+misconceptions = [
+  "Returning None from a handler gives a 200 with a null body; it is not a 404.",
+  "`if completed:` treats False the same as None, so a filter for incomplete tasks returns every task.",
+  "Validating ranges inside the handler instead of on the model skips FastAPI's standard 422 error shape.",
+  "A 204 response must not carry a body.",
+]
+hints = [
+  "Start with the failing public test names, then trace each one from the route into the repository.",
+  "`Field(ge=..., le=...)` constrains a Pydantic field; `HTTPException` produces the standard error body.",
+  "Compare `completed is not None` with `if completed:` for the value False.",
+]
+rubric = [
+  "Fixes each defect at its source (model validation, repository filter, route status codes) rather than patching symptoms in one place.",
+  "Keeps response shapes and existing behaviour unchanged for clients that already work.",
+  "Uses FastAPI idioms: status_code on the route, HTTPException for 404, Field constraints for validation.",
+  "Keeps handlers thin and the repository free of HTTP concerns.",
+  "Makes changes that are small, readable and easy to review.",
+]
+
+[ticket]
+key = "TASKS-142"
+title = "Tasks API returns wrong status codes and accepts invalid priorities"
+type = "Bug"
+priority = "High"
+reporter = "Mobile team"
+body = """
+The iOS client shows *"Task saved"* only on `201 Created`, so creating a task
+looks like a failure. Opening a deleted task shows an empty screen instead of
+*"Not found"*. The *Open tasks* tab shows completed tasks too.
+
+| Endpoint | Expected |
+| --- | --- |
+| `POST /tasks` | `201` with the created task |
+| `GET /tasks/{id}` | `200` with the task, or `404 {"detail": "Task not found"}` |
+| `GET /tasks?completed=true\\|false` | only matching tasks, ordered by id; no parameter returns all |
+| `DELETE /tasks/{id}` | `204` with an empty body, or `404 {"detail": "Task not found"}` |
+| any write with `priority` outside 1–5 | `422` |
+"""
+acceptance_criteria = [
+  "POST /tasks returns 201 and the created task, including its id.",
+  "GET /tasks/{id} returns 404 with {\"detail\": \"Task not found\"} for an unknown id.",
+  "priority must be an integer from 1 to 5; anything else returns 422.",
+  "GET /tasks?completed=false returns only incomplete tasks; without the parameter it returns all tasks, ordered by id.",
+  "DELETE /tasks/{id} returns 204 with an empty body; deleting an unknown id returns 404 with the same detail.",
+  "Existing response fields (id, title, priority, completed) are unchanged.",
+]
+
+# ---------------------------------------------------------------- tests
+
+[[tests]]
+name = "Creating a task returns 201 and the task"
+visibility = "public"
+suite = "python"
+call = "http"
+competency = "api"
+args = [[["POST", "/tasks", { title = "Call the customer", priority = 2 }, "full"]]]
+expected = [[201, { id = 1, title = "Call the customer", priority = 2, completed = false }]]
+
+[[tests]]
+name = "Unknown task id returns 404"
+visibility = "public"
+suite = "python"
+call = "http"
+competency = "debugging"
+args = [[["GET", "/tasks/42", {}, "full"]]]
+expected_json = '[[404, {"detail": "Task not found"}]]'
+
+[[tests]]
+name = "Filtering completed tasks"
+visibility = "public"
+suite = "python"
+call = "http"
+competency = "codebase_comprehension"
+args_json = '''[[
+  ["POST", "/tasks", {"title": "a"}, "skip"],
+  ["POST", "/tasks", {"title": "b", "completed": true}, "skip"],
+  ["GET", "/tasks?completed=true", null, "full"]
+]]'''
+expected_json = '[null, null, [200, [{"id": 2, "title": "b", "priority": 3, "completed": true}]]]'
+
+[[tests]]
+name = "Filtering incomplete tasks excludes completed ones"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "debugging"
+args_json = '''[[
+  ["POST", "/tasks", {"title": "a"}, "skip"],
+  ["POST", "/tasks", {"title": "b", "completed": true}, "skip"],
+  ["POST", "/tasks", {"title": "c"}, "skip"],
+  ["GET", "/tasks?completed=false", null, "full"],
+  ["GET", "/tasks", null, "full"]
+]]'''
+expected_json = '''[null, null, null,
+  [200, [{"id": 1, "title": "a", "priority": 3, "completed": false}, {"id": 3, "title": "c", "priority": 3, "completed": false}]],
+  [200, [{"id": 1, "title": "a", "priority": 3, "completed": false}, {"id": 2, "title": "b", "priority": 3, "completed": true}, {"id": 3, "title": "c", "priority": 3, "completed": false}]]]'''
+
+[[tests]]
+name = "Priority outside 1 to 5 is rejected"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "api"
+args_json = '''[[
+  ["POST", "/tasks", {"title": "x", "priority": 0}, "status"],
+  ["POST", "/tasks", {"title": "x", "priority": 6}, "status"],
+  ["POST", "/tasks", {"title": "x", "priority": -3}, "status"],
+  ["GET", "/tasks", null, "full"]
+]]'''
+expected_json = '[[422], [422], [422], [200, []]]'
+
+[[tests]]
+name = "Priority boundaries 1 and 5 are accepted"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "api"
+args_json = '''[[
+  ["POST", "/tasks", {"title": "urgent", "priority": 1}, "body"],
+  ["POST", "/tasks", {"title": "later", "priority": 5}, "body"]
+]]'''
+expected_json = '''[[{"id": 1, "title": "urgent", "priority": 1, "completed": false}],
+  [{"id": 2, "title": "later", "priority": 5, "completed": false}]]'''
+
+[[tests]]
+name = "Deleting a task returns 204 and removes it"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "implementation"
+args_json = '''[[
+  ["POST", "/tasks", {"title": "a"}, "skip"],
+  ["DELETE", "/tasks/1", null, "full"],
+  ["GET", "/tasks/1", null, "full"]
+]]'''
+expected_json = '[null, [204, null], [404, {"detail": "Task not found"}]]'
+
+[[tests]]
+name = "Deleting an unknown task returns 404"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "api"
+args = [[["DELETE", "/tasks/7", {}, "full"]]]
+expected_json = '[[404, {"detail": "Task not found"}]]'
+
+[[tests]]
+name = "Ids are not reused after a delete"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "codebase_comprehension"
+args_json = '''[[
+  ["POST", "/tasks", {"title": "a"}, "skip"],
+  ["DELETE", "/tasks/1", null, "skip"],
+  ["POST", "/tasks", {"title": "b"}, "body"]
+]]'''
+expected_json = '[null, null, [{"id": 2, "title": "b", "priority": 3, "completed": false}]]'
+
+# ---------------------------------------------------------------- collaboration
+
+[[exercises]]
+slug = "explain-to-support"
+kind = "stakeholder_explanation"
+title = "Explain the fix to the support lead"
+prompt = """
+The support lead (not an engineer) asks: *"Why did the app say saving failed
+when it didn't, and could we have lost tasks?"* Write a short reply: what was
+wrong, who was affected, whether any data was lost or corrupted, and what
+changes for them now. Avoid jargon.
+"""
+rubric = [
+  "Explains the cause in plain language, without HTTP or framework jargon.",
+  "Answers the data-loss question directly and accurately (tasks were saved; invalid priorities may exist).",
+  "States the user-visible impact and what changes now.",
+  "Recommends a follow-up for existing bad data (priorities outside 1-5).",
+]
+
+[[exercises]]
+slug = "backward-compat-change"
+kind = "requirement_change"
+title = "Requirement change: an old client sends priority 0"
+prompt = """
+After your fix ships to staging, the Android team says their **old app version**
+(still 18% of users) sends `priority: 0` to mean *"no priority"*. Rejecting it
+with 422 would break task creation for those users. The product manager still
+wants invalid data out of the database.
+
+Assess the impact and propose a plan. Cover the options, the one you'd pick,
+how you'd roll it out and how you'd eventually remove the compatibility path.
+"""
+rubric = [
+  "Identifies the conflict between strict validation and backward compatibility, and who is affected.",
+  "Compares at least two options (e.g. normalise 0 to the default, version the API, client-specific handling) with trade-offs.",
+  "Chooses an option that keeps old clients working without storing invalid data.",
+  "Plans rollout and removal: metrics on old-client traffic, a deprecation date, communication with the Android team.",
+  "Mentions how to test the compatibility path.",
+]

@@ -1,0 +1,86 @@
+slug = "merge-intervals"
+title = "Merge overlapping intervals"
+area = "algorithms"
+skill = "programming-fundamentals"
+prerequisites = []
+difficulty = "intermediate"
+entrypoint = "merge"
+time_limit_ms = 1500
+memory_limit_mb = 64
+description = """
+Given a list of closed intervals `[start, end]`, merge all overlapping or touching intervals
+and return them sorted by start. `[[1,3],[2,6],[8,10]]` becomes `[[1,6],[8,10]]`.
+"""
+constraints = ["Intervals may be unsorted.", "Touching intervals such as [1,2] and [2,3] merge.", "Do not mutate the input."]
+rubric = [
+  "Sorts by start before merging.",
+  "Extends the current interval with max(end, other end), handling containment.",
+  "Treats touching intervals as overlapping and handles empty input.",
+]
+misconceptions = [
+  "Setting the merged end to the next interval's end instead of the maximum of both ends.",
+  "Assuming the input is already sorted.",
+]
+hints = ["Sort first; then each interval can only overlap the last merged one.", "What if one interval is entirely inside another?"]
+
+[languages.python]
+starter = '''
+def merge(intervals: list[list[int]]) -> list[list[int]]:
+    raise NotImplementedError
+'''
+reference = '''
+def merge(intervals: list[list[int]]) -> list[list[int]]:
+    result: list[list[int]] = []
+    for start, end in sorted(intervals):
+        if result and start <= result[-1][1]:
+            result[-1][1] = max(result[-1][1], end)
+        else:
+            result.append([start, end])
+    return result
+'''
+
+[[tests]]
+name = "Example from the description"
+visibility = "public"
+args = [[[1, 3], [2, 6], [8, 10]]]
+expected = [[1, 6], [8, 10]]
+
+[[tests]]
+name = "Unsorted input"
+visibility = "public"
+args = [[[8, 10], [1, 3]]]
+expected = [[1, 3], [8, 10]]
+
+[[tests]]
+name = "Contained interval"
+visibility = "hidden"
+args = [[[1, 10], [2, 3], [4, 5]]]
+expected = [[1, 10]]
+
+[[tests]]
+name = "Touching intervals merge"
+visibility = "hidden"
+args = [[[1, 2], [2, 3]]]
+expected = [[1, 3]]
+
+[[tests]]
+name = "Empty input"
+visibility = "hidden"
+args = [[]]
+expected = []
+
+[[tests]]
+name = "Input is not mutated"
+visibility = "hidden"
+call = "driver:not_mutated"
+args = [[[5, 6], [1, 4], [2, 3]]]
+expected = true
+
+[driver.python]
+code = '''
+import copy
+def not_mutated(solution, intervals):
+    before = copy.deepcopy(intervals)
+    solution.merge(intervals)
+    return intervals == before
+'''

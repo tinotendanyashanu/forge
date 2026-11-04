@@ -1,0 +1,5 @@
+{
+  "name": "invoices-web",
+  "private": true,
+  "type": "module"
+}

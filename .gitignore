@@ -1,0 +1,79 @@
+# Starter root rules. Merge with existing api/ and web/ rules; review exceptions.
+# Ignore rules do not remove files already tracked or present in Git history.
+
+# Private environment configuration; sanitized examples remain visible.
+.env
+.env.*
+!.env.example
+!.env.*.example
+.envrc
+
+# Local keys and credential exports. Review any intentional public fixtures.
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_ed25519
+credentials.local.*
+service-account*.json
+
+# Python environments and generated files.
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+
+# JavaScript dependencies, caches and generated application assets.
+node_modules/
+.next/
+.turbo/
+.npm/
+.pnpm-store/
+*.tsbuildinfo
+web/next-env.d.ts
+web/public/monaco/
+web/out/
+web/build/
+coverage/
+
+# Runtime logs and local learner data. Do not ignore SQL migrations or seeds.
+*.log
+*.log.*
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.backup
+/backups/
+/pgdata/
+/.forge/
+/.local/
+/tmp/
+/scratch/
+
+# Local deployment-tool state; no public deployment is supported by FORGE 1.0.
+.vercel/
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Operating-system and editor files.
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Keep manifests, lockfiles, migrations, curriculum, exercises and reviewed
+# documentation images in version control. Avoid broad *.sql or *.json rules.

@@ -1,0 +1,114 @@
+# Engineering judgment & collaboration scenarios. Responses are evaluated by
+# the AI against the rubric (advisory). Considerations and red flags are hidden
+# until the attempt is finalized. Scenario performance is not workplace experience.
+
+[[scenarios]]
+slug = "review-junior-pr"
+title = "Review a junior developer's pull request"
+tags = ["code_review", "communication"]
+level = "mid"
+context = "A junior engineer opened their first PR adding a password-reset endpoint. They are nervous about feedback. The change is due for a release tomorrow."
+prompt = """Review the change below. Write the review comments you would leave (what you'd block on and what is optional), and explain how you'd deliver the feedback.
+
+```python
+@router.post("/reset")
+def reset_password(email: str, new_password: str, db=Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return {"error": "no such user"}
+    user.password = new_password
+    db.commit()
+    log.info(f"password reset for {email} to {new_password}")
+    return {"ok": True}
+```"""
+criteria = { defect_detection = "Finds the blocking defects (no token/ownership check, plaintext password, password logged, user enumeration).", prioritisation = "Separates blocking issues from optional improvements.", actionability = "Gives concrete, actionable fixes.", tone = "Feedback is respectful and supports the junior engineer's growth." }
+considerations = ["Anyone can reset anyone's password: needs a signed, expiring reset token", "Password stored in plaintext: hash it", "Logs the new password: remove", "Different responses reveal whether an email exists", "Should be async-safe and rate limited", "Offer pairing or a follow-up rather than a wall of comments"]
+red_flags = ["Approving the PR", "Only style comments", "Belittling language"]
+
+[[scenarios]]
+slug = "production-regression"
+title = "Respond to a production regression"
+tags = ["judgment", "communication"]
+level = "mid"
+context = "Twenty minutes after your team's release, the error rate on checkout rose from 0.3% to 4%. Your product manager asks in the incident channel whether to roll back, because a marketing launch depends on the new feature."
+prompt = "What do you do in the next 15 minutes, and what do you write in the incident channel? Justify the decision to roll back or not."
+criteria = { risk_assessment = "Weighs customer impact against the launch and the reversibility of each option.", evidence_use = "States what evidence would confirm the release is the cause and how to get it quickly.", decision = "Makes a clear, time-boxed decision with a fallback.", communication = "Writes a clear status update with impact, action and next update time." }
+considerations = ["Customer impact on checkout outweighs the launch", "Rollback is the default if the release correlates and is reversible", "Check deploy timing, error signatures, and whether a feature flag can disable the change", "Time-box investigation", "Communicate impact, action, ETA for next update; avoid blame"]
+red_flags = ["Waiting for the launch before acting", "Debugging in production indefinitely", "Blaming individuals"]
+
+[[scenarios]]
+slug = "tech-debt-vs-deadline"
+title = "Prioritise technical debt against a deadline"
+tags = ["judgment", "communication"]
+level = "mid"
+context = "Your team must ship a partner integration in three weeks. The module it touches has no tests, and two recent incidents were caused there. The engineering manager asks for your plan."
+prompt = "Propose how to split the next three weeks between the integration and the debt. What would you cut, what would you not compromise on, and how would you explain the plan?"
+criteria = { tradeoffs = "Makes explicit trade-offs between scope, quality and time.", risk = "Identifies the risk of changing untested code and mitigates it.", plan = "Proposes a concrete, incremental plan.", communication = "Explains the plan in terms the manager can act on." }
+considerations = ["Add characterisation tests around the code being changed", "Fix debt that is on the integration path; defer the rest with tickets", "Negotiate scope rather than quality", "Make risk visible with evidence (incidents)"]
+red_flags = ["Stop the integration to rewrite the module", "Ignore the debt entirely"]
+
+[[scenarios]]
+slug = "architecture-disagreement"
+title = "Handle disagreement over architecture"
+tags = ["judgment", "communication"]
+level = "senior"
+context = "A respected colleague insists the new notifications feature needs Kafka and three new microservices. You think a queue table in PostgreSQL and a worker would meet the requirements for at least a year. The team is split."
+prompt = "How do you resolve the disagreement? Describe how you'd compare the options and reach a decision the team can commit to."
+criteria = { alternatives = "Compares both options against concrete requirements and costs.", decision_process = "Proposes a fair process (criteria, ADR, time-box, reversibility).", collaboration = "Respects the colleague and seeks shared understanding.", reversibility = "Considers how to change course later." }
+considerations = ["Write down requirements and expected scale", "Compare operational cost, team expertise, failure modes", "Prefer the simpler option if it meets requirements and is reversible", "Record the decision in an ADR with revisit conditions", "Disagree and commit"]
+red_flags = ["Escalate immediately", "Dismiss the colleague", "Decide by seniority"]
+
+[[scenarios]]
+slug = "risky-migration-plan"
+title = "Plan a risky database migration"
+tags = ["judgment"]
+level = "senior"
+context = "The orders table (400 M rows) must split `address` into structured columns. The service runs 24/7 and several jobs read the table."
+prompt = "Plan the migration. Include the steps, how each step is verified and rolled back, and how you'd keep the service available."
+criteria = { safety = "Uses expand/backfill/switch/contract steps that keep every reader working.", verification = "Verifies each step and has rollback points.", consumers = "Inventories all readers and writers of the table.", operations = "Considers locks, batch sizes, load and timing." }
+considerations = ["Add new nullable columns, dual-write", "Backfill in batches with throttling", "Switch readers behind a flag; verify", "Contract only after all consumers are migrated", "Avoid long locks; use lock_timeout"]
+red_flags = ["Single ALTER with downtime assumed acceptable", "No rollback plan"]
+
+[[scenarios]]
+slug = "explain-to-stakeholders"
+title = "Explain trade-offs to non-technical stakeholders"
+tags = ["communication"]
+level = "mid"
+context = "Sales wants a 'real-time' dashboard for enterprise customers. Real-time costs about 4x more to run than refreshing every 5 minutes. The VP of Sales is not technical."
+prompt = "Write the message you would send to the VP of Sales explaining the options and your recommendation."
+criteria = { clarity = "Explains options without jargon.", business_framing = "Frames trade-offs in terms of customer value, cost and risk.", recommendation = "Makes a clear recommendation with reasoning.", honesty = "Is honest about uncertainty and what would change the recommendation." }
+considerations = ["Ask what decisions customers make with the data (does 5 minutes suffice?)", "Quantify cost and effort", "Offer a phased option", "Plain language"]
+red_flags = ["Technical jargon dump", "Refusing without alternatives"]
+
+[[scenarios]]
+slug = "mentoring"
+title = "Mentor another engineer"
+tags = ["communication", "judgment"]
+level = "senior"
+context = "A mid-level engineer on your team keeps shipping features that work but are hard for others to change. They are defensive in reviews."
+prompt = "How would you help them grow? Describe concrete steps over the next two months and how you'd know it's working."
+criteria = { empathy = "Understands the engineer's perspective and builds trust.", specificity = "Proposes concrete, observable practices.", feedback = "Gives direct, kind feedback with examples.", measurement = "Defines how progress will be recognised." }
+considerations = ["One-to-one conversation with specific examples", "Pairing on design before code", "Agree on maintainability goals", "Recognise improvements"]
+red_flags = ["Escalate to the manager first", "Rewrite their code silently"]
+
+[[scenarios]]
+slug = "refactor-or-replace"
+title = "Refactor or replace legacy code"
+tags = ["judgment"]
+level = "senior"
+context = "A 9-year-old billing module is hard to change but correct and handles edge cases nobody fully remembers. A teammate proposes a rewrite in a new service."
+prompt = "Decide whether to refactor incrementally or rewrite, and explain how you'd reduce risk either way."
+criteria = { risk = "Recognises the hidden knowledge in legacy code and the risk of rewrites.", approach = "Proposes an incremental strategy (characterisation tests, strangler pattern).", criteria = "States what would justify a rewrite.", verification = "Plans how to verify behaviour is preserved." }
+considerations = ["Characterisation tests first", "Strangler fig / incremental replacement", "Shadow traffic and reconciliation for billing", "Rewrite only with clear benefits"]
+red_flags = ["Big-bang rewrite", "Never touch it"]
+
+[[scenarios]]
+slug = "incident-uncertainty"
+title = "Manage uncertainty during an incident"
+tags = ["judgment", "communication"]
+level = "mid"
+context = "Login latency is spiking intermittently. You have two plausible causes and no confirmation yet. Support is asking for an ETA."
+prompt = "How do you proceed, and what do you tell support right now?"
+criteria = { hypotheses = "Works the hypotheses in a sensible order using evidence.", safety = "Prefers reversible mitigations and avoids risky changes.", communication = "Gives support an honest update without false certainty.", coordination = "Assigns roles or asks for help as needed." }
+considerations = ["State what is known and unknown", "Commit to the next update time, not a fix ETA", "Test the cheapest discriminating check first", "Reversible mitigations"]
+red_flags = ["Promising a fix time", "Several changes at once"]

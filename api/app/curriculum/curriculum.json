@@ -1,0 +1,291 @@
+{
+  "version": "2026.11.1",
+  "skills": [
+    {
+      "slug": "programming-fundamentals",
+      "title": "Programming Fundamentals",
+      "category": "Foundations",
+      "summary": "Control flow, functions, data structures and the mental model of a running program.",
+      "prerequisites": [],
+      "learning_objectives": [
+        "Trace program state through control flow, function calls and mutation.",
+        "Choose basic data structures by their access patterns.",
+        "Reason about time complexity of simple algorithms."
+      ],
+      "subskills": [
+        { "slug": "control-flow", "title": "Control flow & functions" },
+        { "slug": "data-structures", "title": "Core data structures" },
+        { "slug": "complexity", "title": "Complexity" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Predict the output of short programs with loops and functions.", "competency": "Correctly traces program output on at least two distinct questions in separate sessions." },
+        "intermediate": { "objective": "Explain aliasing, recursion and complexity trade-offs.", "competency": "Explains complexity and state changes correctly on at least two distinct questions in separate sessions." },
+        "advanced": { "objective": "Select and justify structures for non-trivial problems.", "competency": "Justifies data-structure choices with correct complexity analysis in at least two independent attempts." }
+      }
+    },
+    {
+      "slug": "python",
+      "title": "Python",
+      "category": "Languages",
+      "summary": "The data model, scope, mutability and concurrency behaviour behind everyday Python.",
+      "prerequisites": ["programming-fundamentals"],
+      "learning_objectives": [
+        "Predict behaviour driven by object identity, mutability and scope.",
+        "Explain late binding, default arguments and copying semantics.",
+        "Choose threads, processes or asyncio for a workload."
+      ],
+      "subskills": [
+        { "slug": "data-model", "title": "Data model & mutability" },
+        { "slug": "functions", "title": "Functions & scope" },
+        { "slug": "concurrency", "title": "Concurrency" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Distinguish identity from equality and spot shared mutable defaults.", "competency": "Answers at least two distinct beginner questions correctly across separate sessions, one of them objectively graded." },
+        "intermediate": { "objective": "Explain closures, scope and copy semantics precisely.", "competency": "Succeeds on two distinct intermediate questions across separate sessions with evidence-backed reasoning." },
+        "advanced": { "objective": "Match concurrency models to workloads and justify the choice.", "competency": "Gives evidence-backed concurrency designs in at least two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "typescript",
+      "title": "TypeScript",
+      "category": "Languages",
+      "summary": "TypeScript and JavaScript: narrowing, generics, unions and runtime boundaries.",
+      "prerequisites": ["programming-fundamentals"],
+      "learning_objectives": [
+        "Use narrowing and discriminated unions to model state safely.",
+        "Write constrained generics with correct inferred types.",
+        "Explain what types guarantee at runtime and validate external data."
+      ],
+      "subskills": [
+        { "slug": "narrowing", "title": "Narrowing & unions" },
+        { "slug": "generics", "title": "Generics" },
+        { "slug": "type-system", "title": "Type system boundaries" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Narrow unions and distinguish unknown from any.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Model states with unions and reason about generic inference.", "competency": "Succeeds on two distinct intermediate questions with evidence-backed reasoning." },
+        "advanced": { "objective": "Design validation at trust boundaries.", "competency": "Proposes runtime validation designs in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "http",
+      "title": "HTTP",
+      "category": "Web & APIs",
+      "summary": "HTTP and API engineering: semantics, status codes, caching and browser security.",
+      "prerequisites": ["programming-fundamentals"],
+      "learning_objectives": [
+        "Apply method semantics and status codes correctly.",
+        "Design cache behaviour for public and personalised responses.",
+        "Explain CORS and design retry-safe APIs."
+      ],
+      "subskills": [
+        { "slug": "semantics", "title": "Methods & status codes" },
+        { "slug": "caching", "title": "Caching" },
+        { "slug": "browser-security", "title": "Browser security" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Choose correct methods and status codes.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Design caching and explain preflight behaviour.", "competency": "Succeeds on two distinct intermediate questions with evidence-backed reasoning." },
+        "advanced": { "objective": "Design idempotent, retry-safe APIs.", "competency": "Designs idempotency mechanisms in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "sql",
+      "title": "SQL",
+      "category": "Data",
+      "summary": "PostgreSQL and database engineering: querying, indexing and transactions.",
+      "prerequisites": ["programming-fundamentals"],
+      "learning_objectives": [
+        "Write queries with correct NULL and join semantics.",
+        "Choose indexes from access patterns and read query plans.",
+        "Reason about isolation levels and concurrent writes."
+      ],
+      "subskills": [
+        { "slug": "querying", "title": "Querying & joins" },
+        { "slug": "indexing", "title": "Indexing & plans" },
+        { "slug": "transactions", "title": "Transactions" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Apply three-valued logic and outer join semantics.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Reason about composite indexes and lost updates.", "competency": "Succeeds on two distinct intermediate questions with evidence-backed reasoning." },
+        "advanced": { "objective": "Diagnose planner decisions and fix them.", "competency": "Diagnoses plan problems correctly in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "react",
+      "title": "React",
+      "category": "Frontend",
+      "summary": "React and Next.js: state as a snapshot, identity, effects and data fetching.",
+      "prerequisites": ["typescript", "http"],
+      "learning_objectives": [
+        "Predict rendering from state snapshots and keys.",
+        "Use effects only for synchronisation, with correct dependencies.",
+        "Fetch data without race conditions."
+      ],
+      "subskills": [
+        { "slug": "state", "title": "State & rendering" },
+        { "slug": "lists", "title": "Lists & identity" },
+        { "slug": "effects", "title": "Effects" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Explain state snapshots and keys.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Diagnose effect dependencies and derived state.", "competency": "Succeeds on two distinct intermediate questions with evidence-backed reasoning." },
+        "advanced": { "objective": "Prevent stale and out-of-order data.", "competency": "Implements race-free fetching in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "fastapi",
+      "title": "FastAPI",
+      "category": "Backend",
+      "summary": "FastAPI and backend development: validation, dependencies and async handlers.",
+      "prerequisites": ["python", "http"],
+      "learning_objectives": [
+        "Use type-driven validation and response models safely.",
+        "Design dependency graphs with correct lifetimes.",
+        "Keep async handlers non-blocking."
+      ],
+      "subskills": [
+        { "slug": "request-validation", "title": "Validation & responses" },
+        { "slug": "dependencies", "title": "Dependencies" },
+        { "slug": "async-handlers", "title": "Async handlers" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Predict validation behaviour and filter responses.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Reason about dependency caching and the event loop.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Design session and transaction lifecycles.", "competency": "Designs request-scoped resources correctly in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "testing",
+      "title": "Testing",
+      "category": "Quality",
+      "summary": "Testing and debugging: test design, test doubles and reliable suites.",
+      "prerequisites": ["python"],
+      "learning_objectives": [
+        "Choose test cases from boundaries and failure modes.",
+        "Use fixtures and mocks correctly.",
+        "Diagnose and fix flaky tests methodically."
+      ],
+      "subskills": [
+        { "slug": "test-design", "title": "Test design" },
+        { "slug": "test-doubles", "title": "Fixtures & test doubles" },
+        { "slug": "reliability", "title": "Reliable suites" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Design basic test cases and use fixtures.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Patch correctly and investigate flakiness.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Design a test strategy around real dependencies.", "competency": "Produces evidence-backed test strategies in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "security",
+      "title": "Security",
+      "category": "Quality",
+      "summary": "Web and application security: authentication, authorisation, injection and secrets.",
+      "prerequisites": ["http", "sql"],
+      "learning_objectives": [
+        "Distinguish authentication from authorisation and enforce both.",
+        "Prevent injection and cross-site attacks.",
+        "Handle secrets and sensitive data safely."
+      ],
+      "subskills": [
+        { "slug": "auth", "title": "Authentication & authorisation" },
+        { "slug": "injection", "title": "Injection & XSS" },
+        { "slug": "secrets", "title": "Secrets & data protection" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Identify common vulnerability classes.", "competency": "Correctly identifies vulnerabilities on two distinct questions in separate sessions." },
+        "intermediate": { "objective": "Apply mitigations in application code.", "competency": "Applies correct mitigations on two distinct questions in separate sessions." },
+        "advanced": { "objective": "Threat-model a service.", "competency": "Produces evidence-backed threat models in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "devops",
+      "title": "DevOps",
+      "category": "Operations",
+      "summary": "DevOps and cloud: CI/CD, containers, observability and safe rollouts.",
+      "prerequisites": ["testing", "http"],
+      "learning_objectives": [
+        "Build reproducible pipelines and container images.",
+        "Instrument services with logs, metrics and traces.",
+        "Roll out and roll back changes safely."
+      ],
+      "subskills": [
+        { "slug": "ci-cd", "title": "CI/CD" },
+        { "slug": "containers", "title": "Containers" },
+        { "slug": "observability", "title": "Observability" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Explain pipelines and container basics.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Design observable deployments.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Plan progressive delivery with rollback criteria.", "competency": "Designs safe rollouts in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "system-design",
+      "title": "System Design",
+      "category": "Architecture",
+      "summary": "Scaling, caching, failure handling and the trade-offs between them.",
+      "prerequisites": ["http", "sql"],
+      "learning_objectives": [
+        "Estimate capacity from stated assumptions.",
+        "Design caching with explicit staleness bounds.",
+        "Handle failure with timeouts, retries and backpressure."
+      ],
+      "subskills": [
+        { "slug": "scaling", "title": "Scaling & capacity" },
+        { "slug": "caching", "title": "Caching" },
+        { "slug": "reliability", "title": "Reliability" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Explain stateless scaling and cache-aside.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Estimate capacity and design retries.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Resolve consistency races in caches.", "competency": "Designs invalidation strategies in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "distributed-systems",
+      "title": "Distributed Systems",
+      "category": "Architecture",
+      "summary": "Consistency, consensus, messaging and partial failure across machines.",
+      "prerequisites": ["system-design"],
+      "learning_objectives": [
+        "Explain consistency models and their trade-offs.",
+        "Design reliable messaging with idempotent consumers.",
+        "Reason about partitions, clocks and ordering."
+      ],
+      "subskills": [
+        { "slug": "consistency", "title": "Consistency models" },
+        { "slug": "messaging", "title": "Messaging & queues" },
+        { "slug": "partial-failure", "title": "Partial failure" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Describe partial failure and at-least-once delivery.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Choose consistency guarantees for a feature.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Design for partitions and ordering.", "competency": "Produces evidence-backed designs in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "senior-practices",
+      "title": "Senior Engineering Practices",
+      "category": "Leadership",
+      "summary": "Code review, technical decision-making, incident response and mentoring.",
+      "prerequisites": ["testing", "system-design", "security"],
+      "learning_objectives": [
+        "Review changes for risk, not style.",
+        "Write and defend technical decisions with trade-offs.",
+        "Lead incident response and blameless follow-up."
+      ],
+      "subskills": [
+        { "slug": "code-review", "title": "Code review" },
+        { "slug": "decision-making", "title": "Technical decisions" },
+        { "slug": "incidents", "title": "Incident response" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Identify risky changes in review.", "competency": "Identifies risk correctly on two distinct questions in separate sessions." },
+        "intermediate": { "objective": "Structure decisions with explicit trade-offs.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Lead an incident from detection to follow-up.", "competency": "Produces evidence-backed incident plans in two independent attempts on different days." }
+      }
+    }
+  ]
+}

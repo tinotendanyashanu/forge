@@ -1,0 +1,279 @@
+{
+  "skill": {
+    "slug": "fastapi",
+    "title": "FastAPI",
+    "summary": "Request validation, dependency injection, response models and async handlers.",
+    "description": "Understand how FastAPI turns type hints into validation, how its dependency system resolves per request, and how async handlers interact with the event loop."
+  },
+  "topics": [
+    {
+      "slug": "request-validation",
+      "title": "Validation & responses"
+    },
+    {
+      "slug": "dependencies",
+      "title": "Dependencies"
+    },
+    {
+      "slug": "async-handlers",
+      "title": "Async handlers"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "fa-path-param-validation",
+      "topic": "request-validation",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A path parameter with the wrong type",
+      "prompt": "A client sends `GET /items/abc` to this endpoint. What response does FastAPI return?",
+      "code": "@app.get(\"/items/{item_id}\")\ndef read_item(item_id: int, q: str | None = None):\n    return {\"item_id\": item_id, \"q\": q}",
+      "code_language": "python",
+      "hint": "FastAPI validates parameters against their type hints before your function runs.",
+      "options": [
+        {
+          "key": "a",
+          "text": "`404 Not Found`, because no route matches `abc`"
+        },
+        {
+          "key": "b",
+          "text": "`422 Unprocessable Content` with a validation error for `item_id`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`500 Internal Server Error`, because `int(\"abc\")` raises"
+        },
+        {
+          "key": "d",
+          "text": "`200 OK` with `item_id` set to the string `\"abc\"`"
+        }
+      ],
+      "explanation": "The route matches; FastAPI then validates `item_id` against `int`. Validation fails before the handler is called, so FastAPI returns 422 with a JSON body describing which field failed and why.",
+      "rubric": [
+        "Recognises that the route matches and validation happens afterwards.",
+        "Identifies 422 as FastAPI's validation error status.",
+        "Notes that the handler body never runs on invalid input."
+      ],
+      "expected_concepts": [
+        "Type-hint-driven validation",
+        "Path parameters",
+        "422 validation errors"
+      ],
+      "misconceptions": [
+        "Type hints in FastAPI are documentation only.",
+        "Invalid path parameters cause the route not to match."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI: Path parameters",
+          "url": "https://fastapi.tiangolo.com/tutorial/path-params/"
+        },
+        {
+          "title": "FastAPI: Handling errors",
+          "url": "https://fastapi.tiangolo.com/tutorial/handling-errors/"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "Identifies a 422 validation error raised before the handler runs."
+    },
+    {
+      "slug": "fa-response-model-filtering",
+      "topic": "request-validation",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Keeping secrets out of responses",
+      "prompt": "A handler returns a user object that includes `hashed_password`. Which approach reliably keeps that field out of the JSON response?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Declare `response_model=UserPublic`, a schema without `hashed_password`",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Name the field `_hashed_password` so FastAPI treats it as private"
+        },
+        {
+          "key": "c",
+          "text": "Add a comment in the OpenAPI description telling clients to ignore it"
+        },
+        {
+          "key": "d",
+          "text": "Return the object unchanged; FastAPI never serialises fields named `password`"
+        }
+      ],
+      "explanation": "FastAPI validates and filters the return value through `response_model`, so only fields declared on `UserPublic` are serialised. Separate input, storage and output schemas make leaks structurally impossible rather than relying on convention.",
+      "rubric": [
+        "Chooses an explicit output schema via `response_model` or a return annotation.",
+        "Explains that FastAPI filters output to the declared fields.",
+        "Recommends separate schemas for input, storage and output."
+      ],
+      "expected_concepts": [
+        "Response models",
+        "Output filtering",
+        "Separate input and output schemas"
+      ],
+      "misconceptions": [
+        "Naming conventions hide fields from serialisation.",
+        "Frameworks automatically strip sensitive-looking fields."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI: Response model",
+          "url": "https://fastapi.tiangolo.com/tutorial/response-model/"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "Uses an explicit output schema (response_model or return type) so the field is never serialised."
+    },
+    {
+      "slug": "fa-dependency-caching",
+      "topic": "dependencies",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Shared sub-dependencies",
+      "prompt": "Both `get_current_user` and `get_repository` declare `Depends(get_db)`, and an endpoint depends on both. With default settings, how many times is `get_db` called for one request?",
+      "hint": "FastAPI keeps a per-request cache of dependency results.",
+      "options": [
+        {
+          "key": "a",
+          "text": "Twice, once for each dependency that declares it"
+        },
+        {
+          "key": "b",
+          "text": "Once; the result is cached for the rest of that request",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Once for the lifetime of the application"
+        },
+        {
+          "key": "d",
+          "text": "It depends on whether `get_db` is `async def`"
+        }
+      ],
+      "explanation": "Within a single request FastAPI caches each dependency's result and reuses it for every dependant (`use_cache=True` by default). Both dependants therefore receive the same database session. Pass `Depends(get_db, use_cache=False)` if you genuinely need a fresh value.",
+      "rubric": [
+        "States that dependency results are cached per request by default.",
+        "Distinguishes per-request caching from application-wide singletons.",
+        "Mentions `use_cache=False` as the opt-out."
+      ],
+      "expected_concepts": [
+        "Dependency graph resolution",
+        "Per-request dependency caching",
+        "`use_cache`"
+      ],
+      "misconceptions": [
+        "Every `Depends` call executes the dependency again.",
+        "Dependencies are application-scoped singletons."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI: Sub-dependencies (using the same dependency multiple times)",
+          "url": "https://fastapi.tiangolo.com/tutorial/dependencies/sub-dependencies/"
+        }
+      ],
+      "estimated_minutes": 4,
+      "acceptance_criteria": "States get_db runs once per request because dependency results are cached per request."
+    },
+    {
+      "slug": "fa-blocking-call-in-async-handler",
+      "topic": "async-handlers",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A blocking call inside `async def`",
+      "prompt": "This endpoint runs on a single Uvicorn worker. Under concurrent load, what is the effect of the `time.sleep` call?",
+      "code": "@app.get(\"/report\")\nasync def report():\n    time.sleep(2)  # stands in for a blocking library call\n    return {\"ok\": True}",
+      "code_language": "python",
+      "options": [
+        {
+          "key": "a",
+          "text": "Only this request waits two seconds; others are unaffected"
+        },
+        {
+          "key": "b",
+          "text": "FastAPI detects the blocking call and moves it to a thread pool"
+        },
+        {
+          "key": "c",
+          "text": "It blocks the event loop, stalling every request on that worker for two seconds",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "It raises an error because blocking calls are not allowed in coroutines"
+        }
+      ],
+      "explanation": "`async def` handlers run directly on the event loop. A blocking call holds the loop, so no other request on that worker progresses. Use an async library (`await asyncio.sleep`, an async HTTP client), declare the handler with plain `def` so FastAPI runs it in a thread pool, or offload with `run_in_threadpool`.",
+      "rubric": [
+        "Explains that `async def` handlers run on the event loop.",
+        "States that a blocking call stalls all concurrent requests on that worker.",
+        "Offers a fix: an async library, a plain `def` handler, or explicit thread offloading."
+      ],
+      "expected_concepts": [
+        "Event loop",
+        "Blocking versus non-blocking I/O",
+        "`def` handlers run in a thread pool"
+      ],
+      "misconceptions": [
+        "`async def` makes any code inside it non-blocking.",
+        "FastAPI automatically offloads blocking calls made inside coroutines."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI: Concurrency and async / await",
+          "url": "https://fastapi.tiangolo.com/async/"
+        }
+      ],
+      "estimated_minutes": 4,
+      "acceptance_criteria": "Explains the blocking call stalls the event loop for every request on the worker and gives a valid fix."
+    },
+    {
+      "slug": "fa-db-session-dependency",
+      "topic": "dependencies",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Designing a database session dependency",
+      "prompt": "Design how a FastAPI service should create and provide async SQLAlchemy sessions. Cover where the engine is created and disposed, how a request gets its session, where transactions are committed or rolled back, and how tests can substitute a different database.",
+      "hint": "Distinguish objects that live for the whole application from objects that live for one request.",
+      "explanation": "Create the engine once per process (e.g. in a lifespan handler) because it owns the connection pool, and dispose it on shutdown. Provide one session per request through a `yield` dependency so cleanup runs after the response. Keep transaction boundaries explicit in the code that performs the unit of work, and roll back on error. Tests override the dependency or settings to point at a dedicated test database.",
+      "rubric": [
+        "Creates the engine once per process and disposes it on shutdown, e.g. via lifespan.",
+        "Provides one session per request via a `yield` dependency that always closes it.",
+        "Defines clear transaction boundaries and rolls back on exceptions.",
+        "Explains how tests override the dependency or configuration to use a separate database.",
+        "Notes that engines and pooled connections must not be shared across event loops."
+      ],
+      "expected_concepts": [
+        "Application lifespan",
+        "Yield dependencies",
+        "Unit of work and transactions",
+        "Connection pooling",
+        "Dependency overrides in tests"
+      ],
+      "misconceptions": [
+        "Creating a new engine per request is harmless.",
+        "A single global session can safely be shared between concurrent requests.",
+        "Commits happen automatically when the handler returns."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI: Dependencies with yield",
+          "url": "https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/"
+        },
+        {
+          "title": "FastAPI: Lifespan events",
+          "url": "https://fastapi.tiangolo.com/advanced/events/"
+        },
+        {
+          "title": "SQLAlchemy: Asynchronous I/O (asyncio)",
+          "url": "https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html"
+        }
+      ],
+      "estimated_minutes": 12,
+      "acceptance_criteria": "Creates the engine once per process, one session per request via a yield dependency, with explicit commit/rollback and a test override."
+    }
+  ]
+}

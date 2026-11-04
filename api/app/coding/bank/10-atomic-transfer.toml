@@ -1,0 +1,123 @@
+slug = "atomic-transfer"
+title = "Atomic money transfer"
+area = "sql"
+skill = "sql"
+prerequisites = ["sql"]
+difficulty = "intermediate"
+entrypoint = "transfer"
+time_limit_ms = 2000
+memory_limit_mb = 64
+description = """
+Implement `transfer(conn, from_id, to_id, amount)` on a SQLite connection (autocommit
+mode). Move `amount` between `accounts(id, balance)` **atomically**:
+
+* Raise `ValueError` if `amount <= 0`, an account doesn't exist, or the balance is insufficient.
+* On any error, no balance may change.
+* Return the sender's new balance.
+"""
+constraints = ["Use a transaction (BEGIN ... COMMIT / ROLLBACK).", "Never leave money half-moved."]
+rubric = [
+  "Wraps both updates in one transaction and rolls back on any failure.",
+  "Checks funds inside the transaction, preferably with a conditional UPDATE.",
+  "Validates the amount and the existence of both accounts.",
+]
+misconceptions = [
+  "Debiting first and crediting later without a transaction loses money if the second step fails.",
+  "Checking the balance in a separate earlier query allows a race between check and update.",
+]
+hints = ["UPDATE ... SET balance = balance - ? WHERE id = ? AND balance >= ? and check rowcount.", "Use try/except to ROLLBACK, then re-raise."]
+
+[languages.python]
+starter = '''
+def transfer(conn, from_id, to_id, amount):
+    conn.execute("UPDATE accounts SET balance = balance - ? WHERE id = ?", (amount, from_id))
+    conn.execute("UPDATE accounts SET balance = balance + ? WHERE id = ?", (amount, to_id))
+    return conn.execute("SELECT balance FROM accounts WHERE id = ?", (from_id,)).fetchone()[0]
+'''
+reference = '''
+def transfer(conn, from_id, to_id, amount):
+    if amount <= 0:
+        raise ValueError("amount must be positive")
+    conn.execute("BEGIN")
+    try:
+        debited = conn.execute(
+            "UPDATE accounts SET balance = balance - ? WHERE id = ? AND balance >= ?",
+            (amount, from_id, amount),
+        ).rowcount
+        if debited != 1:
+            raise ValueError("insufficient funds or unknown sender")
+        credited = conn.execute(
+            "UPDATE accounts SET balance = balance + ? WHERE id = ?", (amount, to_id)
+        ).rowcount
+        if credited != 1:
+            raise ValueError("unknown recipient")
+        balance = conn.execute("SELECT balance FROM accounts WHERE id = ?", (from_id,)).fetchone()[0]
+        conn.execute("COMMIT")
+        return balance
+    except BaseException:
+        conn.execute("ROLLBACK")
+        raise
+'''
+
+[driver.python]
+code = '''
+import sqlite3
+
+def _db(accounts):
+    conn = sqlite3.connect(":memory:", isolation_level=None)
+    conn.execute("CREATE TABLE accounts (id INTEGER PRIMARY KEY, balance INTEGER NOT NULL)")
+    conn.executemany("INSERT INTO accounts VALUES (?, ?)", accounts)
+    return conn
+
+def balances(conn):
+    return [list(r) for r in conn.execute("SELECT id, balance FROM accounts ORDER BY id")]
+
+def run(solution, accounts, from_id, to_id, amount):
+    conn = _db(accounts)
+    return [solution.transfer(conn, from_id, to_id, amount), balances(conn)]
+
+def attempt(solution, accounts, from_id, to_id, amount):
+    """Returns [error type or None, balances after]: balances must be unchanged on error."""
+    conn = _db(accounts)
+    try:
+        solution.transfer(conn, from_id, to_id, amount)
+        err = None
+    except Exception as exc:
+        err = type(exc).__name__
+    return [err, balances(conn)]
+'''
+
+[[tests]]
+name = "Successful transfer"
+visibility = "public"
+call = "driver:run"
+args = [[[1, 100], [2, 0]], 1, 2, 30]
+expected = [70, [[1, 70], [2, 30]]]
+
+[[tests]]
+name = "Insufficient funds"
+visibility = "public"
+call = "driver:attempt"
+args = [[[1, 10], [2, 0]], 1, 2, 30]
+expected = ["ValueError", [[1, 10], [2, 0]]]
+
+[[tests]]
+name = "Unknown recipient rolls back the debit"
+visibility = "hidden"
+call = "driver:attempt"
+args = [[[1, 100]], 1, 99, 30]
+expected = ["ValueError", [[1, 100]]]
+
+[[tests]]
+name = "Zero amount rejected"
+visibility = "hidden"
+call = "driver:attempt"
+args = [[[1, 100], [2, 0]], 1, 2, 0]
+expected = ["ValueError", [[1, 100], [2, 0]]]
+
+[[tests]]
+name = "Exact balance allowed"
+visibility = "hidden"
+call = "driver:run"
+args = [[[1, 30], [2, 5]], 1, 2, 30]
+expected = [0, [[1, 0], [2, 35]]]

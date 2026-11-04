@@ -1,0 +1,291 @@
+slug = "invoice-discount-codes"
+title = "Ship discount codes across the stack"
+level = "mid"
+task_type = "feature"
+skill = "fastapi"
+area = "python-fastapi"
+prerequisites = ["python", "sql", "typescript"]
+stack = ["Python 3.12", "FastAPI 0.115", "SQLite", "TypeScript (Node 24)", "React"]
+dimensions = ["python_backend", "database_engineering", "javascript_typescript", "api_design"]
+competencies = ["implementation", "database", "api", "frontend", "codebase_comprehension"]
+estimated_minutes = 90
+time_limit_ms = 4000
+memory_limit_mb = 192
+rubric_version = "invoice-discounts-v1"
+summary = "Add percentage discount codes to invoices: a backward-compatible SQLite migration, API validation and integer money maths, and the TypeScript the React app uses to show and send them."
+
+description = """
+Marketing is launching discount codes next week. Customers enter a code when an
+invoice is created; finance needs the discount stored on the invoice so totals
+never change after the fact, and the web app must show it.
+
+This feature crosses three layers: the **database** (a new migration that must
+work on production data), the **API** (validation and money maths) and the
+**web data layer** (what the React app displays and sends). The codes
+themselves already exist in `invoices/discounts.py`.
+"""
+
+architecture = """
+FastAPI routes (`invoices/routes.py`) call `invoices/repository.py`, which owns
+all SQL. `create_app(db_path)` connects and runs `db.migrate()`, which applies
+`migrations/*.sql` in order and records them in `schema_migrations`.
+Production has already applied `001_create_invoices.sql`. Amounts are integer
+cents end to end. The React app formats data with `web/src/lib/invoice.ts` and
+builds requests with `web/src/lib/api.ts`. See `ARCHITECTURE.md`.
+"""
+
+setup = """
+**Run tests** runs two suites in the sandbox:
+
+* **python**: the backend through FastAPI's `TestClient`, with a fresh SQLite
+  file per test.
+* **node**: the TypeScript in `web/src/lib` under Node 24 (types are stripped,
+  not checked). Imports between `.ts` files need the `.ts` extension.
+
+React components are not rendered in the sandbox; keep their logic in
+`web/src/lib`.
+"""
+
+misconceptions = [
+  "Editing a migration that already shipped: production databases never run it again, so the new columns never appear there.",
+  "Using floats or Python's round() for money: round(154.5) == 154 (half to even), but finance rounds half up.",
+  "Adding a NOT NULL column without a DEFAULT, which SQLite rejects on a table with existing rows.",
+  "Recomputing the discount from today's code table on every read, so changing a code silently rewrites old invoices.",
+  "Validating the code only in the frontend; the API is the source of truth.",
+]
+hints = [
+  "Start from the acceptance criteria and list every file each one touches: migration, model, repository, route, two .ts files.",
+  "Integer half-up rounding: (amount * percent * 2 + 100) // 200. Check it with 154.5 cents.",
+  "Store discount_cents when the invoice is created; reads should only subtract it.",
+]
+rubric = [
+  "Adds a new, backward-compatible migration instead of editing a shipped one; existing invoices keep working.",
+  "Performs money maths in integer cents with explicit half-up rounding, and stores the discount at creation time.",
+  "Validates and normalises the code on the server, returning a clear 422 for unknown codes without writing anything.",
+  "Keeps responsibilities in the existing layers: SQL in the repository, HTTP concerns in routes, display logic in web/src/lib.",
+  "Keeps the API and the TypeScript types consistent (field names, nullability).",
+  "Considers edge cases: whitespace and case in codes, zero discounts, invoices created before the feature.",
+]
+
+[ticket]
+key = "INV-318"
+title = "Support marketing discount codes on invoices"
+type = "Feature"
+priority = "High"
+reporter = "Product (Billing)"
+body = """
+**As** a customer **I want** to enter a discount code when an invoice is created
+**so that** the agreed discount appears on my invoice.
+
+Codes and their percentages are in `invoices/discounts.py`. Finance requires:
+
+* the discount is a percentage of the **subtotal**, in whole cents, **rounded
+  half up**;
+* the discount is fixed when the invoice is created (changing a code later must
+  not change old invoices);
+* invoices created before this release keep working, with no discount.
+
+Design for the totals panel:
+
+```
+Subtotal               $20.00
+Discount (WELCOME10)   -$2.00
+Total                  $18.00
+```
+
+No discount row when there is no discount.
+"""
+acceptance_criteria = [
+  "POST /invoices accepts an optional discount_code. It is case-insensitive and surrounding whitespace is ignored; it is stored in upper case.",
+  "An unknown code returns 422 with {\"detail\": \"Unknown discount code\"} and creates nothing.",
+  "POST and GET responses include discount_code (null when none), subtotal_cents, discount_cents and total_cents = subtotal_cents - discount_cents.",
+  "discount_cents = subtotal × percent / 100, in whole cents, rounded half up (integers only).",
+  "A new migration adds discount_code and discount_cents to invoices; 001 is not edited, and invoices created before the release return discount_cents 0 and discount_code null.",
+  "web/src/lib/invoice.ts adds a \"Discount (CODE)\" row with a negative amount only when discount_cents > 0; web/src/lib/api.ts sends discount_code trimmed and upper-cased, and omits it when blank.",
+]
+
+# ---------------------------------------------------------------- python suite
+
+[[tests]]
+name = "Invoice with a discount code"
+visibility = "public"
+suite = "python"
+call = "http"
+competency = "implementation"
+args_json = '''[[
+  ["POST", "/invoices", {"customer": "Acme", "discount_code": "WELCOME10",
+    "lines": [{"description": "Plan", "quantity": 2, "unit_price_cents": 1000}]},
+    ["discount_code", "subtotal_cents", "discount_cents", "total_cents"]]
+]]'''
+expected_json = '[[201, {"discount_code": "WELCOME10", "subtotal_cents": 2000, "discount_cents": 200, "total_cents": 1800}]]'
+
+[[tests]]
+name = "Invoice without a code has a zero discount"
+visibility = "public"
+suite = "python"
+call = "http"
+competency = "api"
+args_json = '''[[
+  ["POST", "/invoices", {"customer": "Acme", "lines": [{"description": "Plan", "quantity": 1, "unit_price_cents": 999}]},
+    ["discount_code", "subtotal_cents", "discount_cents", "total_cents"]]
+]]'''
+expected_json = '[[201, {"discount_code": null, "subtotal_cents": 999, "discount_cents": 0, "total_cents": 999}]]'
+
+[[tests]]
+name = "Unknown invoice returns 404"
+visibility = "public"
+suite = "python"
+call = "http"
+competency = "api"
+args = [[["GET", "/invoices/9", {}, "full"]]]
+expected_json = '[[404, {"detail": "Invoice not found"}]]'
+
+[[tests]]
+name = "Discounts round half up to the cent"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "implementation"
+args_json = '''[[
+  ["POST", "/invoices", {"customer": "A", "discount_code": "SPRING15", "lines": [{"description": "x", "quantity": 1, "unit_price_cents": 1030}]}, ["discount_cents", "total_cents"]],
+  ["POST", "/invoices", {"customer": "B", "discount_code": "WELCOME10", "lines": [{"description": "x", "quantity": 3, "unit_price_cents": 335}]}, ["discount_cents", "total_cents"]],
+  ["POST", "/invoices", {"customer": "C", "discount_code": "VIP25", "lines": [{"description": "x", "quantity": 1, "unit_price_cents": 1005}]}, ["discount_cents", "total_cents"]]
+]]'''
+expected_json = '''[[201, {"discount_cents": 155, "total_cents": 875}],
+  [201, {"discount_cents": 101, "total_cents": 904}],
+  [201, {"discount_cents": 251, "total_cents": 754}]]'''
+
+[[tests]]
+name = "Codes are case-insensitive, trimmed and stored in upper case"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "api"
+args_json = '''[[
+  ["POST", "/invoices", {"customer": "A", "discount_code": "  vip25 ", "lines": [{"description": "x", "quantity": 1, "unit_price_cents": 400}]}, "skip"],
+  ["GET", "/invoices/1", null, ["discount_code", "discount_cents", "total_cents"]]
+]]'''
+expected_json = '[null, [200, {"discount_code": "VIP25", "discount_cents": 100, "total_cents": 300}]]'
+
+[[tests]]
+name = "Unknown codes are rejected and nothing is stored"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "api"
+args_json = '''[[
+  ["POST", "/invoices", {"customer": "A", "discount_code": "FREE100", "lines": [{"description": "x", "quantity": 1, "unit_price_cents": 400}]}, "full"],
+  ["GET", "/invoices/1", null, "status"]
+]]'''
+expected_json = '[[422, {"detail": "Unknown discount code"}], [404]]'
+
+[[tests]]
+name = "Invoices from before the release keep working after the migration"
+visibility = "hidden"
+suite = "python"
+call = "legacy_upgrade"
+competency = "database"
+args_json = '''["Legacy Ltd", [["Support", 2, 1250]], ["discount_code", "subtotal_cents", "discount_cents", "total_cents"]]'''
+expected_json = '[200, {"discount_code": null, "subtotal_cents": 2500, "discount_cents": 0, "total_cents": 2500}]'
+
+[[tests]]
+name = "Reads return the stored discount"
+visibility = "hidden"
+suite = "python"
+call = "http"
+competency = "database"
+args_json = '''[[
+  ["POST", "/invoices", {"customer": "A", "discount_code": "spring15", "lines": [{"description": "x", "quantity": 4, "unit_price_cents": 250}]}, "skip"],
+  ["GET", "/invoices/1", null, ["discount_code", "subtotal_cents", "discount_cents", "total_cents"]]
+]]'''
+expected_json = '[null, [200, {"discount_code": "SPRING15", "subtotal_cents": 1000, "discount_cents": 150, "total_cents": 850}]]'
+
+# ---------------------------------------------------------------- node suite
+
+[[tests]]
+name = "Totals panel without a discount"
+visibility = "public"
+suite = "node"
+call = "summarize"
+competency = "frontend"
+args_json = '''[{"id": 1, "customer": "A", "lines": [], "discount_code": null, "subtotal_cents": 1200, "discount_cents": 0, "total_cents": 1200}]'''
+expected_json = '''[{"label": "Subtotal", "amount": "$12.00"}, {"label": "Total", "amount": "$12.00", "emphasis": true}]'''
+
+[[tests]]
+name = "Totals panel shows the discount row"
+visibility = "public"
+suite = "node"
+call = "summarize"
+competency = "frontend"
+args_json = '''[{"id": 1, "customer": "A", "lines": [], "discount_code": "WELCOME10", "subtotal_cents": 2000, "discount_cents": 200, "total_cents": 1800}]'''
+expected_json = '''[{"label": "Subtotal", "amount": "$20.00"}, {"label": "Discount (WELCOME10)", "amount": "-$2.00"}, {"label": "Total", "amount": "$18.00", "emphasis": true}]'''
+
+[[tests]]
+name = "Request body normalises the discount code"
+visibility = "hidden"
+suite = "node"
+call = "payload"
+competency = "frontend"
+args_json = '''[{"customer": " Acme ", "discountCode": "  welcome10 ", "lines": [{"description": " Plan ", "quantity": "2", "unitPrice": "10.00"}]}]'''
+expected_json = '''{"customer": "Acme", "discount_code": "WELCOME10", "lines": [{"description": "Plan", "quantity": 2, "unit_price_cents": 1000}]}'''
+
+[[tests]]
+name = "Blank or missing codes are omitted from the request"
+visibility = "hidden"
+suite = "node"
+call = "payloadKeys"
+competency = "frontend"
+args_json = '''[{"customer": "Acme", "discountCode": "   ", "lines": [{"description": "Plan", "quantity": "1", "unitPrice": "1"}]}]'''
+expected_json = '["customer", "lines"]'
+
+[[tests]]
+name = "Discount row uses the formatted negative amount"
+visibility = "hidden"
+suite = "node"
+call = "summarize"
+competency = "frontend"
+args_json = '''[{"id": 2, "customer": "B", "lines": [], "discount_code": "VIP25", "subtotal_cents": 1005, "discount_cents": 251, "total_cents": 754}]'''
+expected_json = '''[{"label": "Subtotal", "amount": "$10.05"}, {"label": "Discount (VIP25)", "amount": "-$2.51"}, {"label": "Total", "amount": "$7.54", "emphasis": true}]'''
+
+# ---------------------------------------------------------------- collaboration
+
+[[exercises]]
+slug = "multi-currency-change"
+kind = "requirement_change"
+title = "Requirement change: invoices in EUR and GBP"
+prompt = """
+Two days before launch, Sales signs a European customer. Product now asks for
+invoices in **EUR and GBP** as well as USD, and wants discount codes to work for
+all three. Some codes may later be **fixed amounts** (for example *€5 off*)
+rather than percentages.
+
+Assess the impact on your implementation (database, API, rounding, web app,
+existing invoices) and propose a plan. Say what you would ship for the launch
+and what you would defer, and what you need to clarify with Product or Finance.
+"""
+rubric = [
+  "Identifies the affected layers: currency on invoices and amounts, API contract, formatting in the web app, existing data.",
+  "Treats money correctly: integer minor units per currency, no mixing currencies, rounding rules per currency confirmed with Finance.",
+  "Plans a backward-compatible migration (e.g. currency column defaulting to USD) and API compatibility for existing clients.",
+  "Separates launch scope from later work (fixed-amount codes, code-currency rules) with a clear rationale.",
+  "Lists concrete questions for Product/Finance (exchange rates? per-currency codes? minimums?).",
+]
+
+[[exercises]]
+slug = "migration-rollout-plan"
+kind = "deployment_plan"
+title = "Deployment and rollback plan for the migration"
+prompt = """
+The invoices table in production has 4 million rows and is written to
+constantly. Write the deployment and rollback plan for this feature: the order
+of the migration, backend and web releases; what happens to requests in flight
+during the deploy; how you'd verify success; and exactly how you would roll back
+if discounts are calculated wrongly after release.
+"""
+rubric = [
+  "Orders the release safely: additive migration first, then backend that tolerates both schemas, then the web app.",
+  "Considers the cost of the ALTER on a large, busy table and how to limit locking or impact.",
+  "Defines verification: metrics, logs or queries that show discounts are correct after release.",
+  "Gives a concrete rollback: feature flag or code rollback without dropping columns, and how to correct wrongly stored discounts.",
+  "Communicates with stakeholders (Finance, Support) about timing and risk.",
+]

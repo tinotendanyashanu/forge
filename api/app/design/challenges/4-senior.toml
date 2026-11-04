@@ -1,0 +1,116 @@
+level = "senior"
+
+[[challenges]]
+slug = "settlement-engine"
+title = "Design a fault-tolerant settlement engine"
+skills = ["distributed-systems", "senior-practices"]
+competencies = ["consistency", "failure_recovery", "observability"]
+prerequisites = ["distributed-systems"]
+business_context = "A payments company must settle merchant balances daily with partner banks, where errors cost real money and regulators audit the process."
+functional = ["Aggregate the day's transactions per merchant.", "Generate settlement files for partner banks.", "Track acknowledgements and failures.", "Support corrections without rewriting history."]
+non_functional = ["Settlement runs are deterministic and repeatable.", "Every number is traceable to source transactions."]
+scale = ["Hypothetical: 30 million transactions per day across 100,000 merchants."]
+reliability = ["A crashed run can resume without double-paying or skipping anyone."]
+security = ["Settlement files are signed and access-controlled.", "Four-eyes approval for manual corrections."]
+constraints = ["Bank cut-off times are fixed and cannot be missed."]
+hints = ["What makes a settlement run safe to re-run from the middle?", "How do corrections work if history is immutable?"]
+failure_scenarios = ["worker-crash", "duplicate-delivery", "postgres-unavailable", "incompatible-schema"]
+expected_concepts = ["Immutable ledger with compensating entries", "Idempotent, checkpointed batch stages", "Reconciliation with bank acknowledgements", "Operational runbooks and alerting before cut-off"]
+common_mistakes = ["Mutating balances during settlement.", "All-or-nothing runs that must restart from scratch.", "No reconciliation of bank responses."]
+follow_ups = ["How would you settle intraday instead of daily?", "How do you test a settlement change safely before cut-off?"]
+[challenges.rubric_focus]
+data_consistency = "Deterministic aggregation over an immutable ledger."
+reliability = "Checkpointed, idempotent stages that resume safely."
+operational_complexity = "Monitoring and runbooks tied to cut-off times."
+
+[[challenges]]
+slug = "globally-distributed-system"
+title = "Design a globally distributed system"
+skills = ["distributed-systems", "system-design"]
+competencies = ["distributed_systems", "consistency", "cost_optimization"]
+prerequisites = ["distributed-systems"]
+business_context = "A collaborative document product is expanding to users in North America, Europe and Asia who expect fast edits wherever they are."
+functional = ["Users edit shared documents.", "Users see others' edits quickly.", "Data residency for EU customers."]
+non_functional = ["Low latency for users in each region.", "Edits are never lost and converge for all collaborators."]
+scale = ["Hypothetical: 10 million monthly users across three regions."]
+reliability = ["Losing one region must not take the product down globally."]
+security = ["EU customer data stays in the EU."]
+constraints = ["Cross-region network latency is significant and variable."]
+hints = ["Which data must be strongly consistent globally, and which can be regional?", "Where is a document's authoritative copy?"]
+failure_scenarios = ["region-outage", "traffic-10x", "duplicate-delivery", "cache-offline"]
+expected_concepts = ["Data homing per document/tenant", "Conflict resolution (CRDT/OT or single-writer)", "Regional failover with clear RPO/RTO", "Global routing to the nearest healthy region"]
+common_mistakes = ["Multi-master writes without a conflict strategy.", "Synchronous cross-region writes on every edit.", "Ignoring residency when replicating."]
+follow_ups = ["How do you migrate a document's home region?", "What do users see during a regional failover?"]
+[challenges.rubric_focus]
+data_consistency = "Explicit consistency model per data type and conflict handling."
+reliability = "Regional failure isolation and failover plan."
+cost_awareness = "Replication cost is justified by requirements."
+
+[[challenges]]
+slug = "zero-downtime-migration"
+title = "Design a zero-downtime migration strategy"
+skills = ["senior-practices", "sql"]
+competencies = ["failure_recovery", "data_modeling", "observability"]
+prerequisites = ["sql", "system-design"]
+business_context = "An order service must split a 2 TB orders table into separate orders and line-items tables and move to a new database cluster while serving traffic."
+functional = ["Migrate schema and data without downtime.", "Keep reads and writes correct throughout.", "Allow rollback at every stage."]
+non_functional = ["No user-visible errors during the migration.", "Measurable verification that old and new data match."]
+scale = ["Hypothetical: 2,000 writes per second sustained."]
+reliability = ["Any stage can be aborted without data loss."]
+security = ["Data in transit between clusters is encrypted."]
+constraints = ["Several services read the orders table directly today."]
+hints = ["What does expand-then-contract look like here?", "How do you know the new store is correct before switching reads?"]
+failure_scenarios = ["incompatible-schema", "postgres-unavailable", "queue-backlog", "traffic-10x"]
+expected_concepts = ["Expand/contract with backward-compatible stages", "Dual writes or change data capture with backfill", "Shadow reads and data verification", "Feature-flagged cut-over with rollback"]
+common_mistakes = ["A big-bang cut-over.", "Dual writes without handling partial failure.", "Dropping old columns before all readers moved."]
+follow_ups = ["How do you migrate the services that read the table directly?", "How do you throttle the backfill to protect production?"]
+[challenges.rubric_focus]
+reliability = "Every stage is reversible."
+correctness = "Verification before cut-over."
+operational_complexity = "Observability and throttling during migration."
+
+[[challenges]]
+slug = "financial-ledger"
+title = "Design a highly available financial ledger"
+skills = ["distributed-systems", "sql"]
+competencies = ["consistency", "data_modeling", "security"]
+prerequisites = ["sql", "distributed-systems"]
+business_context = "A neobank needs a core ledger recording every account movement, used by cards, transfers and interest calculation."
+functional = ["Post balanced double-entry transactions.", "Query balances and history.", "Support holds and reversals.", "Produce statements."]
+non_functional = ["Balances are always consistent with entries.", "Posting stays available during partial outages."]
+scale = ["Hypothetical: 5,000 postings per second at peak."]
+reliability = ["Hypothetical target: 99.99% availability for posting."]
+security = ["Entries are immutable and tamper-evident.", "Least-privilege access for every client service."]
+constraints = ["Regulators require seven years of history."]
+hints = ["What invariant must every transaction satisfy, and where is it enforced?", "How do you serve balances quickly if they're derived from entries?"]
+failure_scenarios = ["region-outage", "duplicate-delivery", "postgres-unavailable", "traffic-10x"]
+expected_concepts = ["Double-entry with balanced transactions enforced atomically", "Immutable append-only entries and reversals", "Idempotent posting API", "Materialised balances updated transactionally"]
+common_mistakes = ["Mutable balance columns as the only record.", "Eventually consistent balance checks for overdrafts.", "No idempotency on posting."]
+follow_ups = ["How do you scale beyond a single primary?", "How do you prove the ledger hasn't been tampered with?"]
+[challenges.rubric_focus]
+data_consistency = "Balanced, atomic, idempotent postings."
+security = "Immutability and least-privilege access."
+scalability = "Path beyond one primary without breaking invariants."
+
+[[challenges]]
+slug = "event-driven-recovery"
+title = "Design an event-driven architecture with recovery guarantees"
+skills = ["distributed-systems", "system-design"]
+competencies = ["distributed_systems", "failure_recovery", "observability"]
+prerequisites = ["distributed-systems"]
+business_context = "A logistics company is decomposing a monolith into services that communicate through events, and must not lose or corrupt shipments when things fail."
+functional = ["Services publish domain events reliably.", "Consumers rebuild their state from events.", "Failed events can be inspected and replayed."]
+non_functional = ["No event is lost between a database write and its publication.", "Consumers tolerate duplicates and reordering."]
+scale = ["Hypothetical: 10,000 events per second."]
+reliability = ["Any consumer can be rebuilt from history after a bug."]
+security = ["Event payloads containing personal data are protected and can be erased."]
+constraints = ["Teams own and deploy services independently."]
+hints = ["How do you write to your database and publish an event atomically?", "What does a consumer do with an event it has already seen?"]
+failure_scenarios = ["duplicate-delivery", "worker-crash", "queue-backlog", "incompatible-schema"]
+expected_concepts = ["Transactional outbox", "Idempotent consumers with dedupe", "Dead-letter queues and replay", "Schema evolution and event versioning"]
+common_mistakes = ["Dual writes to the database and broker.", "Assuming exactly-once delivery.", "Breaking event schemas without versioning."]
+follow_ups = ["How do you erase personal data from an event log?", "How do you detect a consumer silently falling behind?"]
+[challenges.rubric_focus]
+reliability = "Outbox and replay give recovery guarantees."
+data_consistency = "Idempotency and ordering assumptions are explicit."
+operational_complexity = "Lag monitoring and dead-letter handling."

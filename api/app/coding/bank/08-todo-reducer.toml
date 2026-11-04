@@ -1,0 +1,147 @@
+slug = "todo-reducer"
+title = "Fix a mutating reducer"
+area = "react"
+skill = "react"
+prerequisites = ["typescript"]
+difficulty = "beginner"
+entrypoint = "todoReducer"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+A component's list doesn't re-render after toggling a todo. The reducer mutates state,
+so React sees the same object and skips the update. Fix `todoReducer(state, action)` so
+it returns **new** state for every change and the **same** state object when nothing changes.
+
+Actions: `{ type: "add", id, text }`, `{ type: "toggle", id }`, `{ type: "remove", id }`.
+Unknown actions return the current state unchanged.
+"""
+constraints = ["Never mutate state or the todos inside it.", "Toggle/remove of a missing id returns the same state object."]
+rubric = [
+  "Produces new arrays and new todo objects for changed items only.",
+  "Returns the identical state reference when nothing changes.",
+  "Handles unknown actions without throwing.",
+]
+misconceptions = [
+  "Mutating and then spreading (`{...state}`) still mutates the shared todo objects.",
+  "Returning a new object for no-op actions causes needless re-renders.",
+]
+hints = ["Use map() to replace only the matching todo with a copy.", "Compare: did anything actually change? If not, return state."]
+
+[languages.typescript]
+starter = '''
+type Todo = { id: number; text: string; done: boolean };
+type State = { todos: Todo[] };
+type Action =
+  | { type: "add"; id: number; text: string }
+  | { type: "toggle"; id: number }
+  | { type: "remove"; id: number };
+
+export function todoReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "add":
+      state.todos.push({ id: action.id, text: action.text, done: false });
+      return state;
+    case "toggle": {
+      const todo = state.todos.find((t) => t.id === action.id);
+      if (todo) todo.done = !todo.done;
+      return { ...state };
+    }
+    case "remove":
+      state.todos = state.todos.filter((t) => t.id !== action.id);
+      return state;
+    default:
+      return state;
+  }
+}
+'''
+reference = '''
+type Todo = { id: number; text: string; done: boolean };
+type State = { todos: Todo[] };
+type Action =
+  | { type: "add"; id: number; text: string }
+  | { type: "toggle"; id: number }
+  | { type: "remove"; id: number };
+
+export function todoReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "add":
+      return { ...state, todos: [...state.todos, { id: action.id, text: action.text, done: false }] };
+    case "toggle": {
+      if (!state.todos.some((t) => t.id === action.id)) return state;
+      return { ...state, todos: state.todos.map((t) => (t.id === action.id ? { ...t, done: !t.done } : t)) };
+    }
+    case "remove": {
+      if (!state.todos.some((t) => t.id === action.id)) return state;
+      return { ...state, todos: state.todos.filter((t) => t.id !== action.id) };
+    }
+    default:
+      return state;
+  }
+}
+'''
+
+[driver.typescript]
+code = '''
+const freeze = (v) => {
+  if (v && typeof v === "object") { Object.values(v).forEach(freeze); Object.freeze(v); }
+  return v;
+};
+
+// Runs the action on a deeply frozen state: any mutation throws.
+export function apply(solution, state, action) {
+  return solution.todoReducer(freeze(structuredClone(state)), action);
+}
+
+export function sameReference(solution, state, action) {
+  const s = freeze(structuredClone(state));
+  return solution.todoReducer(s, action) === s;
+}
+
+export function untouchedItemsShared(solution) {
+  const s = freeze({ todos: [{ id: 1, text: "a", done: false }, { id: 2, text: "b", done: false }] });
+  const next = solution.todoReducer(s, { type: "toggle", id: 2 });
+  return next.todos[0] === s.todos[0] && next.todos[1] !== s.todos[1];
+}
+'''
+
+[[tests]]
+name = "Add returns new state"
+visibility = "public"
+call = "driver:apply"
+args = [{ todos = [] }, { type = "add", id = 1, text = "Ship it" }]
+expected = { todos = [{ id = 1, text = "Ship it", done = false }] }
+
+[[tests]]
+name = "Toggle without mutation"
+visibility = "public"
+call = "driver:apply"
+args = [{ todos = [{ id = 1, text = "a", done = false }] }, { type = "toggle", id = 1 }]
+expected = { todos = [{ id = 1, text = "a", done = true }] }
+
+[[tests]]
+name = "Remove without mutation"
+visibility = "hidden"
+call = "driver:apply"
+args = [{ todos = [{ id = 1, text = "a", done = false }, { id = 2, text = "b", done = true }] }, { type = "remove", id = 1 }]
+expected = { todos = [{ id = 2, text = "b", done = true }] }
+
+[[tests]]
+name = "Toggle of a missing id keeps the same state"
+visibility = "hidden"
+call = "driver:sameReference"
+args = [{ todos = [{ id = 1, text = "a", done = false }] }, { type = "toggle", id = 9 }]
+expected = true
+
+[[tests]]
+name = "Unknown action keeps the same state"
+visibility = "hidden"
+call = "driver:sameReference"
+args = [{ todos = [] }, { type = "rename", id = 1 }]
+expected = true
+
+[[tests]]
+name = "Unchanged todos keep their identity"
+visibility = "hidden"
+call = "driver:untouchedItemsShared"
+args = []
+expected = true

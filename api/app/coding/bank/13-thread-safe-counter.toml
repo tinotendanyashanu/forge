@@ -1,0 +1,179 @@
+slug = "thread-safe-counter"
+title = "A counter that survives threads"
+area = "concurrency"
+skill = "python"
+prerequisites = ["python"]
+difficulty = "advanced"
+entrypoint = "Counter"
+time_limit_ms = 5000
+memory_limit_mb = 128
+description = """
+`Counter.increment()` loses updates when called from many threads because `+=` is a
+read-modify-write. Make `Counter` thread-safe: `increment(n=1)` adds `n` and returns the
+new value; `value` is a read-only property. Also implement `increment_if_below(limit)`
+which increments by one only if the current value is below `limit`, returning whether it
+did. This check-then-act must be atomic too.
+"""
+constraints = ["Use threading primitives from the standard library.", "Correctness must not depend on timing: tests force thread switches between every line you execute."]
+rubric = [
+  "Guards every read-modify-write with the same lock.",
+  "Makes check-then-act (increment_if_below) atomic under one lock acquisition.",
+  "Keeps critical sections small and avoids deadlocks (no nested locking).",
+]
+misconceptions = [
+  "Believing the GIL makes `x += 1` atomic.",
+  "Locking the check and the increment separately still allows overshooting the limit.",
+]
+hints = ["threading.Lock() used as a context manager.", "Hold the lock across both the comparison and the increment."]
+
+[languages.python]
+starter = '''
+class Counter:
+    def __init__(self) -> None:
+        self._value = 0
+
+    @property
+    def value(self) -> int:
+        return self._value
+
+    def increment(self, n: int = 1) -> int:
+        current = self._value
+        self._value = current + n
+        return self._value
+
+    def increment_if_below(self, limit: int) -> bool:
+        if self._value < limit:
+            self.increment()
+            return True
+        return False
+'''
+reference = '''
+import threading
+
+
+class Counter:
+    def __init__(self) -> None:
+        self._value = 0
+        self._lock = threading.Lock()
+
+    @property
+    def value(self) -> int:
+        with self._lock:
+            return self._value
+
+    def increment(self, n: int = 1) -> int:
+        with self._lock:
+            self._value += n
+            return self._value
+
+    def increment_if_below(self, limit: int) -> bool:
+        with self._lock:
+            if self._value < limit:
+                self._value += 1
+                return True
+            return False
+'''
+
+[driver.python]
+code = '''
+import sys
+import threading
+import time
+
+
+def _yield_between_lines(solution):
+    """Deterministic interleaving: every line executed in the learner's module
+    yields the interpreter, so an unguarded read-modify-write is always split
+    across threads. Code that holds a lock stays correct: it yields while
+    holding the lock."""
+    path = solution.__file__
+
+    def local(frame, event, arg):
+        if event == "line":
+            time.sleep(0)
+        return local
+
+    def tracer(frame, event, arg):
+        return local if frame.f_code.co_filename == path else None
+
+    return tracer
+
+
+def _hammer(solution, fn, threads):
+    barrier = threading.Barrier(threads)
+
+    def worker():
+        barrier.wait()
+        fn()
+
+    ts = [threading.Thread(target=worker) for _ in range(threads)]
+    threading.settrace(_yield_between_lines(solution))
+    try:
+        for t in ts:
+            t.start()
+        for t in ts:
+            t.join()
+    finally:
+        threading.settrace(None)
+
+
+def concurrent_increments(solution, threads, per_thread):
+    c = solution.Counter()
+
+    def work():
+        for _ in range(per_thread):
+            c.increment()
+
+    _hammer(solution, work, threads)
+    return c.value
+
+
+def concurrent_limit(solution, threads, per_thread, limit):
+    c = solution.Counter()
+    granted = []
+    lock = threading.Lock()
+
+    def work():
+        local = 0
+        for _ in range(per_thread):
+            if c.increment_if_below(limit):
+                local += 1
+        with lock:
+            granted.append(local)
+
+    _hammer(solution, work, threads)
+    return [c.value, sum(granted)]
+
+
+def sequential(solution):
+    c = solution.Counter()
+    return [c.increment(), c.increment(5), c.value, c.increment_if_below(7), c.increment_if_below(7), c.value]
+'''
+
+[[tests]]
+name = "Sequential behaviour"
+visibility = "public"
+call = "driver:sequential"
+args = []
+expected = [1, 6, 6, true, false, 7]
+
+[[tests]]
+name = "No lost updates under contention"
+visibility = "public"
+call = "driver:concurrent_increments"
+args = [8, 400]
+expected = 3200
+
+[[tests]]
+name = "Heavy contention"
+visibility = "hidden"
+call = "driver:concurrent_increments"
+args = [16, 250]
+expected = 4000
+
+[[tests]]
+name = "Limit is never exceeded"
+visibility = "hidden"
+call = "driver:concurrent_limit"
+args = [16, 200, 1500]
+expected = [1500, 1500]

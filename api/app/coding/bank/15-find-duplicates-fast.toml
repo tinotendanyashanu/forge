@@ -1,0 +1,84 @@
+slug = "find-duplicates-fast"
+title = "Find duplicates at scale"
+area = "performance"
+skill = "programming-fundamentals"
+prerequisites = []
+difficulty = "advanced"
+entrypoint = "find_duplicates"
+time_limit_ms = 2000
+memory_limit_mb = 128
+description = """
+`find_duplicates(ids)` returns the sorted list of values that appear more than once.
+The current version is correct but quadratic and times out on production batches of
+200,000 IDs. Make it fast (O(n log n) or better) without changing its output.
+"""
+constraints = ["Must handle 200,000 items within the time limit.", "Return each duplicate once, sorted ascending."]
+rubric = [
+  "Replaces nested scanning with a hash-based count or a single sort.",
+  "Returns each duplicate once, in ascending order.",
+  "Explains the complexity of the new approach.",
+]
+misconceptions = [
+  "`x in list` inside a loop is O(n) per check, making the whole thing O(n²).",
+  "Micro-optimising the inner loop instead of changing the algorithm.",
+]
+hints = ["A set gives O(1) average membership checks.", "Track 'seen' and 'duplicates' as two sets."]
+
+[languages.python]
+starter = '''
+def find_duplicates(ids):
+    result = []
+    for i, x in enumerate(ids):
+        if x in ids[i + 1:] and x not in result:
+            result.append(x)
+    return sorted(result)
+'''
+reference = '''
+def find_duplicates(ids):
+    seen, dupes = set(), set()
+    for x in ids:
+        if x in seen:
+            dupes.add(x)
+        else:
+            seen.add(x)
+    return sorted(dupes)
+'''
+
+[driver.python]
+code = '''
+import random
+
+def large(solution, n, seed):
+    rng = random.Random(seed)
+    ids = list(range(n))
+    extras = rng.sample(ids, 50)
+    ids.extend(extras)
+    rng.shuffle(ids)
+    result = solution.find_duplicates(ids)
+    return [len(result), result == sorted(set(extras))]
+'''
+
+[[tests]]
+name = "Small example"
+visibility = "public"
+args = [[3, 1, 3, 2, 1]]
+expected = [1, 3]
+
+[[tests]]
+name = "No duplicates"
+visibility = "public"
+args = [[1, 2, 3]]
+expected = []
+
+[[tests]]
+name = "Value repeated many times appears once"
+visibility = "hidden"
+args = [[7, 7, 7, 7]]
+expected = [7]
+
+[[tests]]
+name = "200,000 IDs within the time limit"
+visibility = "hidden"
+call = "driver:large"
+args = [200000, 42]
+expected = [50, true]

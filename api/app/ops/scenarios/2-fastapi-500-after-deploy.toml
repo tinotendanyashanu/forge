@@ -1,0 +1,520 @@
+level = "beginner"
+
+[[scenarios]]
+slug = "fastapi-500-after-deploy"
+title = "Order history returns HTTP 500 after a release"
+summary = "Minutes after orders-api v2.4.0 shipped, a third of order-history requests return 500. Work out which requests fail and why."
+business_context = "Tidewater Books lets customers view past orders and download invoices. orders-api is a FastAPI service with 6 replicas behind an API gateway. Support tickets are rising, and customers can't download invoices for returns."
+skills = ["fastapi", "http", "devops"]
+competencies = ["http_debugging", "deployment_engineering", "observability", "root_cause_analysis"]
+learning_outcomes = [
+  "Use the error log's exception type to tell a response-validation failure from an application bug or a database error.",
+  "Find the request property that separates failing from succeeding requests (here: old vs new orders).",
+  "Decide between a rollback and a forward fix based on risk and data compatibility.",
+]
+initial_symptoms = [
+  "Alert: orders-api 5xx rate above 5% for 4 minutes.",
+  "Support: 'My order history page shows Something went wrong'.",
+  "Only GET /api/orders/{id} and GET /api/orders are affected; checkout works.",
+]
+customer_impact = "About 35% of order-history and invoice requests fail; new orders and checkout are unaffected."
+start_time = "2026-04-02T09:30:00Z"
+history = [[-90, "healthy"], [-11, "failing"]]
+initial_condition = "failing"
+verify_minutes = 5
+target_minutes = 15
+
+spoiler_terms = ["loyalty_tier", "response_model", "response model", "older orders", "historical orders", "before march", "pre-march"]
+key_evidence = ["log-validation-error", "diff-order-schema", "artifact-null-counts"]
+contributing_factors = [
+  "Test fixtures only contained orders created after the loyalty feature, all with a tier.",
+  "No canary: the release went to all 6 replicas at once.",
+  "The 5xx alert fires on rate, not on the first ResponseValidationError after a deploy.",
+]
+investigation_path = [
+  "See that errors start right after the v2.4.0 rollout and only hit order read endpoints.",
+  "Read the error log: ResponseValidationError for loyalty_tier, input None.",
+  "Compare failing and succeeding request ids: failing orders are older.",
+  "Check the data: 3.1 M orders predate loyalty tiers and have NULL.",
+  "Roll back (fast, safe: no migration) or ship the Optional[...] fix.",
+]
+explanation = "FastAPI validates responses against response_model. v2.4.0 added a required loyalty_tier: str field to OrderOut. Orders created before the loyalty programme have loyalty_tier = NULL, so serialising them raises ResponseValidationError, which FastAPI turns into a 500. The database and the code paths are fine; the contract is wrong for existing data. Rolling back is safe because the release made no schema change."
+prevention = [
+  "Make new response fields Optional (or give them defaults) when existing rows may lack them.",
+  "Add tests that serialise old-shaped fixtures, including NULLs, through every response model.",
+  "Canary releases with automated rollback on a 5xx increase.",
+  "Alert on new exception types appearing after a deploy.",
+]
+
+[[scenarios.services]]
+id = "gw"
+name = "api-gateway"
+kind = "api_gateway"
+depends_on = ["api", "checkout"]
+
+[[scenarios.services]]
+id = "api"
+name = "orders-api"
+kind = "service"
+depends_on = ["db"]
+description = "FastAPI 0.115, 6 replicas. Serves order history and invoices."
+
+[[scenarios.services]]
+id = "checkout"
+name = "checkout-service"
+kind = "service"
+depends_on = ["db"]
+
+[[scenarios.services]]
+id = "db"
+name = "orders-db (PostgreSQL)"
+kind = "postgres"
+
+[scenarios.conditions.healthy]
+label = "Healthy"
+phase = "healthy"
+summary = "All services healthy."
+[scenarios.conditions.healthy.metrics]
+"gw.throughput" = 2100
+"gw.error_rate" = { v = 0.2, jitter = 0.3 }
+"api.throughput" = 820
+"api.error_rate" = { v = 0.2, jitter = 0.3 }
+"api.p50" = 38
+"api.p95" = 110
+"api.p99" = 190
+"api.cpu" = 28
+"api.memory" = 380
+"checkout.throughput" = 240
+"checkout.error_rate" = { v = 0.1, jitter = 0.3 }
+"checkout.p95" = 210
+"db.cpu" = 31
+"db.p95" = 7
+"db.db_connections" = 48
+
+[scenarios.conditions.failing]
+label = "Order reads failing"
+phase = "incident"
+symptom = "About a third of order-history requests return HTTP 500."
+inherit = "healthy"
+health = { api = "degraded", gw = "degraded" }
+summary = "About a third of order-history requests fail with 500."
+[scenarios.conditions.failing.metrics]
+"gw.error_rate" = { v = 13.5, jitter = 0.06 }
+"api.error_rate" = { v = 34.8, jitter = 0.05 }
+"api.p50" = 22
+"api.cpu" = 31
+
+[scenarios.conditions.restarted]
+label = "Restarted (same version)"
+phase = "incident"
+symptom = "Order-history requests still returning 500."
+inherit = "failing"
+summary = "Pods restarted on v2.4.0; the same requests still fail."
+
+[scenarios.conditions.scaled]
+label = "Scaled out (same version)"
+phase = "incident"
+symptom = "Order-history requests still returning 500."
+inherit = "failing"
+summary = "More replicas of v2.4.0; the error rate is unchanged."
+[scenarios.conditions.scaled.metrics]
+"api.cpu" = 19
+"db.db_connections" = 72
+
+[scenarios.conditions.rolling_back]
+label = "Rolling back"
+phase = "recovering"
+symptom = "Rollout in progress; 500s falling."
+inherit = "healthy"
+auto_after = 3
+auto_to = "recovered"
+health = { api = "degraded" }
+summary = "v2.3.2 is replacing v2.4.0 pod by pod."
+[scenarios.conditions.rolling_back.metrics]
+"api.error_rate" = { ramp = [30, 0.3], minutes = 3 }
+"gw.error_rate" = { ramp = [11, 0.2], minutes = 3 }
+
+[scenarios.conditions.hotfixing]
+label = "Hotfix rolling out"
+phase = "recovering"
+symptom = "Rollout in progress; 500s falling."
+inherit = "healthy"
+auto_after = 6
+auto_to = "recovered"
+health = { api = "degraded" }
+summary = "v2.4.1 (loyalty_tier optional) is building and rolling out."
+[scenarios.conditions.hotfixing.metrics]
+"api.error_rate" = { ramp = [34, 0.3], minutes = 6 }
+"gw.error_rate" = { ramp = [13, 0.2], minutes = 6 }
+
+[scenarios.conditions.recovered]
+label = "Recovered"
+phase = "recovered"
+inherit = "healthy"
+summary = "Order history and invoices load normally."
+
+[[scenarios.logs]]
+id = "log-validation-error"
+t = -10.6
+service = "api"
+level = "error"
+message = "fastapi.exceptions.ResponseValidationError: 1 validation error: ('response', 'loyalty_tier') Input should be a valid string [type=string_type, input_value=None]"
+fields = { request_id = "q-51f0", path = "/api/orders/1180442", status = 500 }
+
+[[scenarios.logs]]
+id = "log-500-a"
+t = -10.5
+service = "gw"
+level = "error"
+message = "upstream returned 500 for GET /api/orders/1180442"
+fields = { request_id = "q-51f0", upstream = "orders-api" }
+
+[[scenarios.logs]]
+id = "log-ok-new"
+t = -9.8
+service = "api"
+level = "info"
+message = "GET /api/orders/4471203 200 (31 ms)"
+fields = { request_id = "q-51f4" }
+
+[[scenarios.logs]]
+id = "log-validation-error-2"
+t = -7.2
+service = "api"
+level = "error"
+message = "fastapi.exceptions.ResponseValidationError: 20 validation errors: ('response', 0, 'loyalty_tier') Input should be a valid string [input_value=None] ..."
+fields = { request_id = "q-6a2c", path = "/api/orders?customer=88213", status = 500 }
+
+[[scenarios.logs]]
+id = "log-slow-query"
+t = -6.0
+service = "db"
+level = "warning"
+message = "duration: 1840 ms statement: SELECT ... FROM order_items WHERE created_at > now() - interval '90 days' GROUP BY sku"
+fields = { application_name = "analytics-cron" }
+
+[[scenarios.logs]]
+id = "log-checkout-ok"
+t = -4.0
+service = "checkout"
+level = "info"
+message = "POST /api/checkout 201 (188 ms)"
+fields = { request_id = "q-7001" }
+
+[[scenarios.logs]]
+id = "log-invoice-500"
+t = -3.1
+service = "api"
+level = "error"
+message = "fastapi.exceptions.ResponseValidationError: 1 validation error: ('response', 'loyalty_tier') Input should be a valid string [input_value=None]"
+fields = { request_id = "q-7c19", path = "/api/orders/902211/invoice", status = 500 }
+
+[[scenarios.logs]]
+id = "log-rollback-done"
+t = 2
+after = "rolling_back"
+service = "api"
+level = "info"
+message = "rollout complete: orders-api v2.3.2 6/6 ready"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-hotfix-done"
+t = 5
+after = "hotfixing"
+service = "api"
+level = "info"
+message = "rollout complete: orders-api v2.4.1 6/6 ready"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-restart"
+t = 1
+after = "restarted"
+service = "api"
+level = "error"
+message = "fastapi.exceptions.ResponseValidationError: ('response', 'loyalty_tier') Input should be a valid string [input_value=None]"
+fields = { request_id = "q-8f00", path = "/api/orders/77310", status = 500 }
+
+[[scenarios.traces]]
+id = "tr-fail"
+t = -10.6
+request_id = "q-51f0"
+title = "GET /api/orders/1180442 (500)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "gw"
+name = "GET /api/orders/{id}"
+start_ms = 0
+duration_ms = 27
+status = "error"
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "get_order"
+start_ms = 2
+duration_ms = 24
+status = "error"
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "db"
+name = "SELECT orders WHERE id = $1"
+start_ms = 4
+duration_ms = 3
+note = "Query succeeded and returned one row."
+[[scenarios.traces.spans]]
+id = "s4"
+parent = "s2"
+service = "api"
+name = "serialize_response (OrderOut)"
+start_ms = 9
+duration_ms = 6
+status = "error"
+note = "ResponseValidationError raised after the handler returned."
+
+[[scenarios.traces]]
+id = "tr-ok"
+t = -9.8
+request_id = "q-51f4"
+title = "GET /api/orders/4471203 (200)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "gw"
+name = "GET /api/orders/{id}"
+start_ms = 0
+duration_ms = 33
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "get_order"
+start_ms = 2
+duration_ms = 30
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "db"
+name = "SELECT orders WHERE id = $1"
+start_ms = 4
+duration_ms = 3
+[[scenarios.traces.spans]]
+id = "s4"
+parent = "s2"
+service = "api"
+name = "serialize_response (OrderOut)"
+start_ms = 9
+duration_ms = 4
+
+[[scenarios.deployments]]
+id = "dep-api-240"
+t = -12
+service = "api"
+version = "v2.4.0"
+author = "loyalty-team"
+summary = "Show loyalty tier on orders"
+changes = ["OrderOut: add loyalty_tier: str", "Invoice template shows tier"]
+
+[[scenarios.deployments]]
+id = "dep-checkout"
+t = -55
+service = "checkout"
+version = "v5.9.1"
+author = "payments-team"
+summary = "Update payment SDK"
+changes = ["Bump SDK 3.2 -> 3.3"]
+
+[[scenarios.artifacts]]
+id = "diff-order-schema"
+kind = "config"
+title = "orders-api v2.4.0: schemas.py diff"
+reveal = "review_diff"
+content = """
+ class OrderOut(BaseModel):
+     id: int
+     status: OrderStatus
+     total: Decimal
++    loyalty_tier: str          # new; from orders.loyalty_tier
+
+ @router.get("/orders/{order_id}", response_model=OrderOut)
+ No migration in this release (orders.loyalty_tier was added nullable in March).
+"""
+
+[[scenarios.artifacts]]
+id = "artifact-null-counts"
+kind = "database_status"
+title = "orders.loyalty_tier by creation date"
+reveal = "query_data"
+content = """
+created              rows        loyalty_tier IS NULL
+before 2026-03-01    3,104,882   3,104,882 (100%)
+since  2026-03-01      612,440           0 (0%)
+"""
+
+[[scenarios.artifacts]]
+id = "artifact-error-breakdown"
+kind = "dashboard"
+title = "orders-api 500s by endpoint and order age (last 10 min)"
+reveal = "error_breakdown"
+content = """
+endpoint                         requests   500s    500s for orders before March   after March
+GET /api/orders/{id}                4,812  1,690                         1,690             0
+GET /api/orders                     1,903    741                           741             0
+GET /api/orders/{id}/invoice          611    224                           224             0
+POST /api/checkout (checkout-svc)   2,350      2                             -             -
+"""
+
+[[scenarios.artifacts]]
+id = "artifact-db-health"
+kind = "database_status"
+title = "orders-db health"
+reveal = "db_health"
+content = """
+cpu 31%   connections 48/200   replication lag 0.1 s   locks waiting 0
+Long query (analytics-cron, read replica scheduled job): 1.8 s, runs every 15 min since February.
+"""
+
+[[scenarios.actions]]
+id = "review_diff"
+kind = "investigate"
+label = "Review the orders-api v2.4.0 diff"
+description = "Open the code changes in the most recent release."
+minutes = 2
+quality = "helpful"
+teach = "A new required field on the response model: any row without it fails validation at serialisation time."
+
+[[scenarios.actions]]
+id = "error_breakdown"
+kind = "investigate"
+label = "Break down 500s by endpoint and order age"
+description = "Slice errors to find what failing requests have in common."
+minutes = 2
+quality = "helpful"
+teach = "Every failure is an order created before March; none after. That points at data shape, not load."
+
+[[scenarios.actions]]
+id = "query_data"
+kind = "investigate"
+label = "Query loyalty_tier NULL counts (read replica)"
+description = "Read-only check of how many orders lack a loyalty tier."
+minutes = 2
+quality = "helpful"
+teach = "3.1 M historical orders have NULL. The model's contract doesn't match existing data."
+
+[[scenarios.actions]]
+id = "db_health"
+kind = "investigate"
+label = "Check orders-db health"
+description = "CPU, connections, replication lag, locks."
+minutes = 1
+command = "database-status"
+teach = "The database is healthy; the slow analytics query is a long-standing, unrelated job."
+
+[[scenarios.actions]]
+id = "rollback"
+kind = "mitigate"
+label = "Roll back orders-api to v2.3.2"
+description = "Redeploy the previous version (no schema changes in v2.4.0)."
+minutes = 1
+quality = "correct"
+transitions = { failing = "rolling_back", restarted = "rolling_back", scaled = "rolling_back" }
+outcome = { default = "Rollback started. Pods are being replaced with v2.3.2." }
+deployment = { service = "api", version = "v2.3.2", summary = "Rollback of v2.4.0" }
+teach = "The safest, fastest mitigation: the release had no migration, so the previous version is fully compatible."
+
+[[scenarios.actions]]
+id = "hotfix"
+kind = "mitigate"
+discovered_by = ["review_diff"]
+label = "Ship hotfix v2.4.1: make loyalty_tier Optional[str]"
+description = "One-line change, build and roll out (about 6 minutes)."
+minutes = 1
+requires_actions = ["review_diff"]
+quality = "helpful"
+transitions = { failing = "hotfixing", restarted = "hotfixing", scaled = "hotfixing" }
+outcome = { default = "Hotfix built and rolling out." }
+deployment = { service = "api", version = "v2.4.1", summary = "loyalty_tier Optional[str]" }
+teach = "A valid forward fix, but slower than a rollback and shipped under pressure. Prefer rollback first, then fix calmly."
+
+[[scenarios.actions]]
+id = "restart"
+kind = "mitigate"
+label = "Restart all orders-api pods"
+description = "Rolling restart of the current version."
+minutes = 2
+quality = "risky"
+mistake = "restart-before-diagnosis"
+transitions = { failing = "restarted" }
+outcome = { default = "Pods restarted on v2.4.0. The same requests still fail." }
+teach = "A deterministic code/data mismatch survives restarts. Restarting just costs time."
+
+[[scenarios.actions]]
+id = "scale"
+kind = "mitigate"
+label = "Scale orders-api from 6 to 12 replicas"
+description = "Add capacity."
+minutes = 2
+quality = "risky"
+mistake = "scale-without-bottleneck"
+transitions = { failing = "scaled", restarted = "scaled" }
+outcome = { default = "12 replicas running v2.4.0. CPU per pod drops; the error rate doesn't move." }
+teach = "Nothing was saturated. More replicas of a broken version serve the same 500s."
+
+[[scenarios.actions]]
+id = "kill_cron"
+kind = "mitigate"
+label = "Kill the slow analytics query"
+description = "Terminate the 1.8 s analytics-cron query."
+minutes = 1
+quality = "risky"
+mistake = "unsafe-database-change"
+outcome = { default = "The analytics job is cancelled (data team paged). The 500s continue." }
+teach = "The slow query is a misleading signal: long-standing, on a scheduled job, and unrelated to the failing endpoints."
+
+[[scenarios.actions]]
+id = "backfill"
+kind = "mitigate"
+discovered_by = ["query_data", "review_diff"]
+label = "Backfill loyalty_tier = 'none' for all NULL orders"
+description = "UPDATE 3.1 million rows in production."
+minutes = 6
+quality = "harmful"
+mistake = "unsafe-database-change"
+outcome = { default = "The UPDATE runs for 6 minutes, bloats the table and holds row locks; checkout slows. Errors continue until the update commits, and the data now claims a tier that never existed." }
+teach = "A mass data change under pressure to satisfy a buggy API contract: slow, risky, and it corrupts meaning. Fix the contract instead."
+
+[[scenarios.root_causes]]
+id = "rc-contract"
+text = "orders-api v2.4.0 made loyalty_tier a required string in the OrderOut response model, but historical orders have NULL, so FastAPI's response validation raises and returns 500."
+correct = true
+explanation = "The handler and the query succeed; FastAPI validates the returned object against response_model and raises ResponseValidationError for None. Only pre-March orders have NULL, which is why exactly those requests fail."
+
+[[scenarios.root_causes]]
+id = "rc-db"
+text = "A slow analytics query is overloading the orders database."
+explanation = "The query is long-standing, runs on a schedule and the database is at 31% CPU. Failing traces show the database span succeeding in 3 ms."
+
+[[scenarios.root_causes]]
+id = "rc-capacity"
+text = "orders-api doesn't have enough replicas for the traffic."
+explanation = "CPU is 28-31%, latency is low (failures are fast) and errors are deterministic per order."
+
+[[scenarios.root_causes]]
+id = "rc-checkout"
+text = "The checkout-service payment SDK upgrade broke order creation."
+explanation = "Checkout succeeds; the SDK upgrade was 55 minutes earlier and affects a different service."
+
+[[scenarios.misleading_signals]]
+signal = "Slow analytics query warning in the database log"
+why = "It has run every 15 minutes since February on a scheduled job; failing requests' database spans take 3 ms."
+
+[[scenarios.misleading_signals]]
+signal = "checkout-service deployed earlier"
+why = "Different service, different endpoint, 55 minutes before the errors started."
+
+[scenarios.rubric_focus]
+diagnostic_accuracy = "Response-model contract vs NULL historical data, not database or capacity."
+evidence_quality = "Cites ResponseValidationError on loyalty_tier and the old-vs-new order split."
+mitigation_safety = "Rollback first (no migration), avoids mass backfills and restarts."
+long_term_prevention = "Optional fields with defaults, old-shaped fixtures in tests, canaries."

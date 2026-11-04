@@ -1,0 +1,87 @@
+slug = "group-by"
+title = "Group records by key"
+area = "javascript-typescript"
+skill = "typescript"
+prerequisites = ["programming-fundamentals"]
+difficulty = "beginner"
+entrypoint = "groupBy"
+time_limit_ms = 1000
+memory_limit_mb = 64
+description = """
+Export `groupBy(items, key)` that returns an object mapping each distinct value of
+`item[key]` (as a string) to the array of items with that value, preserving input order.
+Items missing the key are grouped under `"undefined"`.
+"""
+constraints = ["Don't mutate the input.", "Preserve the original order within each group."]
+rubric = [
+  "Creates each group on first sight and appends in input order.",
+  "Converts keys to strings consistently, including missing keys.",
+  "Doesn't mutate the input array or items.",
+]
+misconceptions = [
+  "Using `obj[k] || []` without assigning the new array back loses items.",
+  "Assuming every item has the key.",
+]
+hints = ["Object keys are always strings: String(value).", "Create the array the first time you see a key, then push."]
+
+[languages.javascript]
+starter = '''
+export function groupBy(items, key) {
+  const out = {};
+  for (const item of items) {
+    (out[item[key]] || []).push(item);
+  }
+  return out;
+}
+'''
+reference = '''
+export function groupBy(items, key) {
+  const out = {};
+  for (const item of items) {
+    const k = String(item[key]);
+    if (!(k in out)) out[k] = [];
+    out[k].push(item);
+  }
+  return out;
+}
+'''
+
+[[tests]]
+name = "Groups by a string key"
+visibility = "public"
+args = [[{ t = "a", n = 1 }, { t = "b", n = 2 }, { t = "a", n = 3 }], "t"]
+expected = { a = [{ t = "a", n = 1 }, { t = "a", n = 3 }], b = [{ t = "b", n = 2 }] }
+
+[[tests]]
+name = "Empty input"
+visibility = "public"
+args = [[], "t"]
+expected = {}
+
+[[tests]]
+name = "Numeric values become string keys"
+visibility = "hidden"
+args = [[{ age = 30 }, { age = 30 }, { age = 41 }], "age"]
+expected = { "30" = [{ age = 30 }, { age = 30 }], "41" = [{ age = 41 }] }
+
+[[tests]]
+name = "Missing key groups under undefined"
+visibility = "hidden"
+args = [[{ t = "x" }, { other = 1 }], "t"]
+expected = { x = [{ t = "x" }], "undefined" = [{ other = 1 }] }
+
+[[tests]]
+name = "Input not mutated"
+visibility = "hidden"
+call = "driver:notMutated"
+args = [[{ t = "a" }, { t = "b" }]]
+expected = true
+
+[driver.javascript]
+code = '''
+export function notMutated(solution, items) {
+  const before = JSON.stringify(items);
+  solution.groupBy(items, "t");
+  return JSON.stringify(items) === before;
+}
+'''

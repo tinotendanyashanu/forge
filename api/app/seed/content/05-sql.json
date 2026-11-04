@@ -1,0 +1,267 @@
+{
+  "skill": {
+    "slug": "sql",
+    "title": "SQL",
+    "summary": "NULL logic, joins, indexing and transactions in PostgreSQL.",
+    "description": "Write queries that return what you mean, choose indexes from access patterns, read query plans, and reason about concurrent transactions."
+  },
+  "topics": [
+    {
+      "slug": "querying",
+      "title": "Querying & joins"
+    },
+    {
+      "slug": "indexing",
+      "title": "Indexing & plans"
+    },
+    {
+      "slug": "transactions",
+      "title": "Transactions"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "sql-null-comparison",
+      "topic": "querying",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Comparing with NULL",
+      "prompt": "The `users` table contains 40 rows where `deleted_at` is NULL. What does this query return?",
+      "code": "SELECT count(*) FROM users WHERE deleted_at = NULL;",
+      "code_language": "sql",
+      "options": [
+        {
+          "key": "a",
+          "text": "40"
+        },
+        {
+          "key": "b",
+          "text": "0",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "NULL"
+        },
+        {
+          "key": "d",
+          "text": "A syntax error"
+        }
+      ],
+      "explanation": "Any ordinary comparison with NULL yields NULL (unknown), not true, and `WHERE` keeps only rows where the condition is true. No rows pass, so `count(*)` returns 0. Use `deleted_at IS NULL`.",
+      "rubric": [
+        "Explains that `= NULL` evaluates to NULL (unknown).",
+        "Explains that `WHERE` keeps only rows where the condition is true.",
+        "Uses `IS NULL` as the fix."
+      ],
+      "expected_concepts": [
+        "Three-valued logic",
+        "`IS NULL`",
+        "WHERE clause semantics"
+      ],
+      "misconceptions": [
+        "NULL equals NULL.",
+        "`count(*)` returns NULL when no rows match."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Comparison functions and operators",
+          "url": "https://www.postgresql.org/docs/current/functions-comparison.html"
+        }
+      ],
+      "estimated_minutes": 2,
+      "acceptance_criteria": "Answers 0, explains that comparisons with NULL are unknown, and uses IS NULL."
+    },
+    {
+      "slug": "sql-left-join-where",
+      "topic": "querying",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A LEFT JOIN that isn't",
+      "prompt": "The intent is to list every user, with their paid orders where they exist. What does this query actually do?",
+      "code": "SELECT u.id, o.id AS order_id\nFROM users u\nLEFT JOIN orders o ON o.user_id = u.id\nWHERE o.status = 'paid';",
+      "code_language": "sql",
+      "options": [
+        {
+          "key": "a",
+          "text": "Returns every user, with NULL `order_id` for users without paid orders"
+        },
+        {
+          "key": "b",
+          "text": "Excludes users without paid orders, behaving like an inner join",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Returns every user once, ignoring the status filter"
+        },
+        {
+          "key": "d",
+          "text": "Fails because `WHERE` cannot reference the right-hand table of a LEFT JOIN"
+        }
+      ],
+      "explanation": "Unmatched users get NULL for every `o` column; `o.status = 'paid'` is then NULL and `WHERE` removes those rows. Move the condition into the join (`ON o.user_id = u.id AND o.status = 'paid'`) to keep all users.",
+      "rubric": [
+        "Explains that unmatched rows carry NULLs for the right-hand table.",
+        "Explains that the `WHERE` filter discards those NULL rows.",
+        "Moves the predicate into the `ON` clause."
+      ],
+      "expected_concepts": [
+        "Outer join semantics",
+        "ON versus WHERE",
+        "NULL in predicates"
+      ],
+      "misconceptions": [
+        "LEFT JOIN always returns every row from the left table regardless of WHERE.",
+        "Filters in ON and WHERE are equivalent for outer joins."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Joined tables",
+          "url": "https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-JOIN"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "Explains the WHERE filter removes unmatched rows and moves the predicate into the ON clause."
+    },
+    {
+      "slug": "sql-composite-index-order",
+      "topic": "indexing",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Column order in a composite index",
+      "prompt": "`orders` has a B-tree index on `(customer_id, created_at)` and many distinct customers. Which query is least able to use this index efficiently?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`WHERE customer_id = 42 ORDER BY created_at DESC LIMIT 20`"
+        },
+        {
+          "key": "b",
+          "text": "`WHERE customer_id = 42 AND created_at > now() - interval '7 days'`"
+        },
+        {
+          "key": "c",
+          "text": "`WHERE created_at > now() - interval '1 day'`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "`WHERE customer_id IN (1, 2, 3)`"
+        }
+      ],
+      "explanation": "A composite B-tree is ordered by its first column, then by the second within each first-column value. Queries that constrain the leading column can seek directly; a filter on `created_at` alone has no single range to scan. (PostgreSQL 18's skip scan can help when the leading column has few distinct values, which is not the case here.) Add an index on `created_at` if that query matters.",
+      "rubric": [
+        "Explains that composite B-tree indexes are ordered by the leading column first.",
+        "Identifies that filtering only on the second column cannot seek efficiently.",
+        "Recognises that option (a) also avoids a sort.",
+        "Proposes a separate index while noting write and storage costs."
+      ],
+      "expected_concepts": [
+        "Leftmost-prefix rule",
+        "B-tree ordering",
+        "Index-supported ORDER BY"
+      ],
+      "misconceptions": [
+        "A composite index serves any query that mentions one of its columns.",
+        "Column order in a composite index doesn't matter."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Multicolumn indexes",
+          "url": "https://www.postgresql.org/docs/current/indexes-multicolumn.html"
+        },
+        {
+          "title": "PostgreSQL docs: Indexes and ORDER BY",
+          "url": "https://www.postgresql.org/docs/current/indexes-ordering.html"
+        }
+      ],
+      "estimated_minutes": 5,
+      "acceptance_criteria": "Identifies the created_at-only query and explains leading-column ordering."
+    },
+    {
+      "slug": "sql-lost-update",
+      "topic": "transactions",
+      "difficulty": "intermediate",
+      "format": "free_text",
+      "title": "The lost update",
+      "prompt": "Two requests run this logic concurrently for the same account and the final balance is sometimes wrong. Name the anomaly, explain why PostgreSQL's default isolation level allows it, and give two different fixes.",
+      "code": "BEGIN;\nSELECT balance FROM accounts WHERE id = 1;   -- application reads 100\n-- application computes 100 - 30 = 70\nUPDATE accounts SET balance = 70 WHERE id = 1;\nCOMMIT;",
+      "code_language": "sql",
+      "hint": "Both transactions can read the same starting balance before either writes.",
+      "explanation": "This is a lost update: both read 100 and each writes its own result, so one change disappears. Under READ COMMITTED each statement sees committed data, and nothing ties the earlier read to the later write. Fixes: do the arithmetic in one statement (`SET balance = balance - 30`), lock the row with `SELECT ... FOR UPDATE`, use optimistic concurrency with a version column, or run at REPEATABLE READ/SERIALIZABLE and retry on serialization failures.",
+      "rubric": [
+        "Names the lost update anomaly and walks through the interleaving.",
+        "Explains why READ COMMITTED does not prevent it.",
+        "Gives an atomic single-statement update as one fix.",
+        "Gives a locking (`FOR UPDATE`) or optimistic-concurrency fix as another.",
+        "Mentions stronger isolation levels require retry handling."
+      ],
+      "expected_concepts": [
+        "Lost update",
+        "READ COMMITTED",
+        "Row-level locking",
+        "Optimistic concurrency",
+        "Serialization failures and retries"
+      ],
+      "misconceptions": [
+        "Wrapping statements in a transaction automatically prevents all concurrency anomalies.",
+        "Higher isolation levels need no application-side handling."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Transaction isolation",
+          "url": "https://www.postgresql.org/docs/current/transaction-iso.html"
+        },
+        {
+          "title": "PostgreSQL docs: Explicit locking",
+          "url": "https://www.postgresql.org/docs/current/explicit-locking.html"
+        }
+      ],
+      "estimated_minutes": 8,
+      "acceptance_criteria": "Names the lost update, explains why READ COMMITTED allows it, and gives two valid fixes."
+    },
+    {
+      "slug": "sql-unused-index",
+      "topic": "indexing",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Why isn't my index used?",
+      "prompt": "`users` has 5 million rows and a B-tree index on `email`. This query is slow and `EXPLAIN ANALYZE` shows a sequential scan. Explain the most likely cause, how you would confirm it, how you would fix it, and at least two other reasons PostgreSQL might legitimately skip an index.",
+      "code": "SELECT * FROM users WHERE lower(email) = lower($1);",
+      "code_language": "sql",
+      "hint": "What exactly is stored in the index, and what does the query compare?",
+      "explanation": "The index stores `email`, but the query filters on `lower(email)`, an expression the index cannot answer. Create an expression index on `lower(email)` (or use a case-insensitive type such as `citext`), then confirm with `EXPLAIN (ANALYZE, BUFFERS)`. The planner may also skip an index when a predicate matches a large fraction of rows, when statistics are stale (`ANALYZE`), on type mismatches, or when the table is small.",
+      "rubric": [
+        "Identifies that the index cannot serve a predicate on `lower(email)`.",
+        "Proposes an expression index on `lower(email)` or a case-insensitive type.",
+        "Describes confirming the fix with `EXPLAIN ANALYZE`.",
+        "Gives at least two other legitimate reasons, such as low selectivity or stale statistics.",
+        "Considers enforcing uniqueness on the normalised value."
+      ],
+      "expected_concepts": [
+        "Expression indexes",
+        "Query planner cost estimates",
+        "Selectivity",
+        "Table statistics",
+        "EXPLAIN ANALYZE"
+      ],
+      "misconceptions": [
+        "PostgreSQL always uses an index if one exists on the column.",
+        "A sequential scan is always a sign of a bug."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Indexes on expressions",
+          "url": "https://www.postgresql.org/docs/current/indexes-expressional.html"
+        },
+        {
+          "title": "PostgreSQL docs: Using EXPLAIN",
+          "url": "https://www.postgresql.org/docs/current/using-explain.html"
+        }
+      ],
+      "estimated_minutes": 10,
+      "acceptance_criteria": "Identifies the lower(email) mismatch, proposes an expression index, and names another legitimate reason for a sequential scan."
+    }
+  ]
+}

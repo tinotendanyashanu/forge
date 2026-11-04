@@ -1,0 +1,264 @@
+{
+  "skill": {
+    "slug": "python",
+    "title": "Python",
+    "summary": "The data model, scope, mutability and concurrency behaviour behind everyday Python.",
+    "description": "Build an accurate model of what Python does at runtime: object identity, references, default arguments, closures and the trade-offs between threads, processes and asyncio."
+  },
+  "topics": [
+    {
+      "slug": "data-model",
+      "title": "Data model & mutability"
+    },
+    {
+      "slug": "functions",
+      "title": "Functions & scope"
+    },
+    {
+      "slug": "concurrency",
+      "title": "Concurrency"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "py-mutable-default-argument",
+      "topic": "functions",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "The surprising default argument",
+      "prompt": "What does the second `print` call output?",
+      "code": "def add_item(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n\nprint(add_item(\"a\"))\nprint(add_item(\"b\"))",
+      "code_language": "python",
+      "hint": "When is the expression `[]` in the signature evaluated: once, or on every call?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`['b']`"
+        },
+        {
+          "key": "b",
+          "text": "`['a', 'b']`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`['b', 'a']`"
+        },
+        {
+          "key": "d",
+          "text": "It raises `TypeError` because lists cannot be default values"
+        }
+      ],
+      "explanation": "Default values are evaluated once, when `def` runs, so every call that omits `bucket` shares the same list object. The second call appends to the list that already contains `'a'`. The idiomatic fix is `bucket=None` and creating a new list inside the function.",
+      "rubric": [
+        "Identifies that default values are evaluated once at function definition time.",
+        "Explains that all calls without `bucket` share one mutable list.",
+        "Proposes the `None` sentinel pattern as a fix."
+      ],
+      "expected_concepts": [
+        "Default argument evaluation time",
+        "Shared mutable state",
+        "None sentinel pattern"
+      ],
+      "misconceptions": [
+        "Default values are re-created on every call.",
+        "Mutable defaults are rejected by the interpreter."
+      ],
+      "resources": [
+        {
+          "title": "Python tutorial: Default argument values",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html#default-argument-values"
+        }
+      ],
+      "estimated_minutes": 3,
+      "acceptance_criteria": "States the second call prints ['a', 'b'] and attributes it to the default list being created once at definition time."
+    },
+    {
+      "slug": "py-equality-vs-identity",
+      "topic": "data-model",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Equality versus identity",
+      "prompt": "What does this program print?",
+      "code": "a = [1, 2]\nb = [1, 2]\nprint(a == b, a is b)",
+      "code_language": "python",
+      "hint": "`==` asks whether two values are equal. `is` asks something else.",
+      "options": [
+        {
+          "key": "a",
+          "text": "`True True`"
+        },
+        {
+          "key": "b",
+          "text": "`True False`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`False False`"
+        },
+        {
+          "key": "d",
+          "text": "`False True`"
+        }
+      ],
+      "explanation": "`==` compares values using `__eq__`, and the lists hold equal elements. `is` compares identity, and the two literals create two distinct list objects. Use `is` for singletons such as `None`, not for comparing values.",
+      "rubric": [
+        "Distinguishes value equality (`==`) from object identity (`is`).",
+        "Recognises that two list literals create two separate objects.",
+        "Knows `is` is appropriate for singletons such as `None`."
+      ],
+      "expected_concepts": [
+        "Object identity",
+        "Value equality and `__eq__`",
+        "Singleton comparison with `is None`"
+      ],
+      "misconceptions": [
+        "`is` is a stricter or faster form of `==`.",
+        "Equal literals always refer to the same object."
+      ],
+      "resources": [
+        {
+          "title": "Python reference: Identity comparisons",
+          "url": "https://docs.python.org/3/reference/expressions.html#is-not"
+        },
+        {
+          "title": "Python reference: Objects, values and types",
+          "url": "https://docs.python.org/3/reference/datamodel.html#objects-values-and-types"
+        }
+      ],
+      "estimated_minutes": 2,
+      "acceptance_criteria": "Answers True False and distinguishes value equality from object identity."
+    },
+    {
+      "slug": "py-shallow-vs-deep-copy",
+      "topic": "data-model",
+      "difficulty": "intermediate",
+      "format": "free_text",
+      "title": "References, shallow copies and deep copies",
+      "prompt": "Explain the difference between assigning a reference, making a shallow copy and making a deep copy. Use a nested list as an example and state exactly what each approach lets a later mutation affect.",
+      "hint": "Consider `a = [[1], [2]]; b = a.copy(); a[0].append(9)`. What does `b` contain now?",
+      "explanation": "Assignment binds a second name to the same object. A shallow copy creates a new outer container whose elements are the same inner objects, so mutating an inner list is visible through both. A deep copy recursively copies nested mutable objects, so no mutable state is shared. Deep copies cost more and are unnecessary for immutable contents.",
+      "rubric": [
+        "Explains that assignment creates another reference to the same object.",
+        "Explains that a shallow copy creates a new outer container but shares the inner objects.",
+        "Explains that a deep copy recursively copies nested objects.",
+        "Uses a concrete nested example and states the observable difference after mutation.",
+        "Mentions the cost trade-off or that immutable contents make deep copies unnecessary."
+      ],
+      "expected_concepts": [
+        "Name binding and references",
+        "Shallow copy semantics",
+        "`copy.deepcopy`",
+        "Mutable versus immutable objects"
+      ],
+      "misconceptions": [
+        "`list.copy()` or slicing produces a fully independent copy of nested data.",
+        "Assignment copies the object."
+      ],
+      "resources": [
+        {
+          "title": "Python library: copy — shallow and deep copy operations",
+          "url": "https://docs.python.org/3/library/copy.html"
+        }
+      ],
+      "estimated_minutes": 6,
+      "acceptance_criteria": "Correctly describes what assignment, a shallow copy and a deep copy each share after a nested mutation."
+    },
+    {
+      "slug": "py-late-binding-closures",
+      "topic": "functions",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Closures created in a loop",
+      "prompt": "What does this program print?",
+      "code": "fns = [lambda: i for i in range(3)]\nprint([f() for f in fns])",
+      "code_language": "python",
+      "hint": "Does each lambda capture the value of `i` or the variable `i`?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`[0, 1, 2]`"
+        },
+        {
+          "key": "b",
+          "text": "`[2, 2, 2]`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`[3, 3, 3]`"
+        },
+        {
+          "key": "d",
+          "text": "It raises `NameError` because `i` is out of scope"
+        }
+      ],
+      "explanation": "Closures capture variables, not values, and look them up when called. All three lambdas share the comprehension's single `i`, which is 2 after the last iteration. Bind the current value with a default argument (`lambda i=i: i`) or `functools.partial`.",
+      "rubric": [
+        "States that closures capture variables and resolve them at call time (late binding).",
+        "Identifies that the loop variable's final value is 2, not 3.",
+        "Offers a fix such as a default argument or `functools.partial`."
+      ],
+      "expected_concepts": [
+        "Late binding in closures",
+        "Comprehension scope",
+        "Capturing values with default arguments"
+      ],
+      "misconceptions": [
+        "Each lambda snapshots `i` when it is created.",
+        "The loop variable ends one past the last value produced by `range`.",
+        "Comprehension variables are inaccessible to closures defined inside them."
+      ],
+      "resources": [
+        {
+          "title": "Python FAQ: Why do lambdas defined in a loop all return the same result?",
+          "url": "https://docs.python.org/3/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result"
+        }
+      ],
+      "estimated_minutes": 4,
+      "acceptance_criteria": "Answers [2, 2, 2] and explains late binding of the shared loop variable."
+    },
+    {
+      "slug": "py-threads-processes-asyncio",
+      "topic": "concurrency",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Choosing threads, processes or asyncio",
+      "prompt": "You have two workloads: (1) resizing thousands of images in pure Python, and (2) calling a slow third-party HTTP API ten thousand times. For each, would you use threads, processes or asyncio in standard CPython, and why? Describe what limits each approach.",
+      "hint": "Separate work that waits on I/O from work that keeps the CPU busy, then consider what the GIL serialises.",
+      "explanation": "In standard CPython the GIL lets only one thread execute Python bytecode at a time, so threads do not speed up CPU-bound pure-Python work; processes (e.g. `ProcessPoolExecutor`) do, at the cost of serialisation and memory. I/O-bound work spends its time waiting, so threads or asyncio both help; asyncio scales to many concurrent requests cheaply but requires non-blocking libraries throughout. Free-threaded CPython builds (3.13+) change the CPU-bound picture but are opt-in.",
+      "rubric": [
+        "Classifies image resizing as CPU-bound and the API calls as I/O-bound.",
+        "Explains that the GIL prevents threads from running Python bytecode in parallel in standard CPython.",
+        "Recommends processes for the CPU-bound workload and notes serialisation or memory costs.",
+        "Recommends asyncio or threads for I/O-bound work and notes asyncio needs non-blocking libraries.",
+        "Mentions bounding concurrency (e.g. a semaphore or pool size) to respect the third-party API."
+      ],
+      "expected_concepts": [
+        "Global Interpreter Lock",
+        "CPU-bound versus I/O-bound work",
+        "Process pools",
+        "Event loop and non-blocking I/O",
+        "Bounded concurrency"
+      ],
+      "misconceptions": [
+        "Threads always make Python code run in parallel.",
+        "asyncio speeds up CPU-bound work.",
+        "Calling a blocking library from a coroutine is fine because it is inside `async def`."
+      ],
+      "resources": [
+        {
+          "title": "Python library: concurrent.futures",
+          "url": "https://docs.python.org/3/library/concurrent.futures.html"
+        },
+        {
+          "title": "Python library: asyncio",
+          "url": "https://docs.python.org/3/library/asyncio.html"
+        }
+      ],
+      "estimated_minutes": 10,
+      "acceptance_criteria": "Matches processes to the CPU-bound workload and asyncio or threads to the I/O-bound one, justified by the GIL."
+    }
+  ]
+}

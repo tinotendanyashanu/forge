@@ -1,0 +1,132 @@
+slug = "idempotent-handler"
+title = "Idempotency keys for POST"
+area = "api-design"
+skill = "http"
+prerequisites = ["http"]
+difficulty = "advanced"
+entrypoint = "IdempotencyStore"
+time_limit_ms = 2000
+memory_limit_mb = 64
+description = """
+Clients retry `POST /payments` after timeouts. Implement `IdempotencyStore` with
+`handle(key, body, create)`:
+
+* First call for a key: call `create(body)` once and store `[201, result]`; return it.
+* Retry with the same key and an identical body: return the stored response with status
+  `200` and **do not** call `create` again.
+* Same key with a different body: return `[409, "key reused with different body"]`.
+* If `create` raises, store nothing so the client can retry, and re-raise.
+
+`body` is a dict; compare it by value.
+"""
+constraints = ["create must run at most once per key.", "Treat bodies with the same content but different key order as identical."]
+rubric = [
+  "Stores a fingerprint of the request alongside the response.",
+  "Rejects mismatched bodies instead of replaying the wrong response.",
+  "Leaves no record when creation fails.",
+]
+misconceptions = [
+  "Deduplicating on the key alone replays a response for a different request.",
+  "Recording the key before create() succeeds blocks legitimate retries after failures.",
+]
+hints = ["json.dumps(body, sort_keys=True) gives a stable fingerprint.", "Only write to the store after create() returns."]
+
+[languages.python]
+starter = '''
+class IdempotencyStore:
+    def __init__(self) -> None:
+        self.responses = {}
+
+    def handle(self, key, body, create):
+        if key in self.responses:
+            return self.responses[key]
+        result = create(body)
+        self.responses[key] = [201, result]
+        return self.responses[key]
+'''
+reference = '''
+import json
+
+
+class IdempotencyStore:
+    def __init__(self) -> None:
+        self._records: dict[str, tuple[str, object]] = {}
+
+    def handle(self, key, body, create):
+        fingerprint = json.dumps(body, sort_keys=True)
+        record = self._records.get(key)
+        if record is not None:
+            stored_fingerprint, result = record
+            if stored_fingerprint != fingerprint:
+                return [409, "key reused with different body"]
+            return [200, result]
+        result = create(body)
+        self._records[key] = (fingerprint, result)
+        return [201, result]
+'''
+
+[driver.python]
+code = '''
+def scenario(solution, steps):
+    """steps: [key, body, fail?]. Returns each response plus how often create ran."""
+    store = solution.IdempotencyStore()
+    calls = {"n": 0}
+
+    def make_create(fail):
+        def create(body):
+            calls["n"] += 1
+            if fail:
+                raise RuntimeError("payment provider down")
+            return {"payment_id": calls["n"], "amount": body["amount"]}
+        return create
+
+    out = []
+    for key, body, fail in steps:
+        try:
+            out.append(store.handle(key, body, make_create(fail)))
+        except RuntimeError:
+            out.append("error")
+    return [out, calls["n"]]
+'''
+
+[[tests]]
+name = "First request creates"
+visibility = "public"
+call = "driver:scenario"
+args = [[["k1", { amount = 5 }, false]]]
+expected = [[[201, { payment_id = 1, amount = 5 }]], 1]
+
+[[tests]]
+name = "Retry replays without creating again"
+visibility = "public"
+call = "driver:scenario"
+args = [[["k1", { amount = 5 }, false], ["k1", { amount = 5 }, false]]]
+expected = [[[201, { payment_id = 1, amount = 5 }], [200, { payment_id = 1, amount = 5 }]], 1]
+
+[[tests]]
+name = "Different body with same key conflicts"
+visibility = "hidden"
+call = "driver:scenario"
+args = [[["k1", { amount = 5 }, false], ["k1", { amount = 9 }, false]]]
+expected = [[[201, { payment_id = 1, amount = 5 }], [409, "key reused with different body"]], 1]
+
+[[tests]]
+name = "Failure stores nothing and allows retry"
+visibility = "hidden"
+call = "driver:scenario"
+args = [[["k1", { amount = 5 }, true], ["k1", { amount = 5 }, false]]]
+expected_json = '[["error", [201, {"payment_id": 2, "amount": 5}]], 2]'
+
+[[tests]]
+name = "Key order doesn't matter"
+visibility = "hidden"
+call = "driver:scenario"
+args = [[["k1", { amount = 5, currency = "EUR" }, false], ["k1", { currency = "EUR", amount = 5 }, false]]]
+expected = [[[201, { payment_id = 1, amount = 5 }], [200, { payment_id = 1, amount = 5 }]], 1]
+
+[[tests]]
+name = "Different keys are independent"
+visibility = "hidden"
+call = "driver:scenario"
+args = [[["a", { amount = 1 }, false], ["b", { amount = 1 }, false]]]
+expected = [[[201, { payment_id = 1, amount = 1 }], [201, { payment_id = 2, amount = 1 }]], 2]

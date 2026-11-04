@@ -1,0 +1,532 @@
+level = "advanced"
+
+[[scenarios]]
+slug = "payment-timeout-duplicates"
+title = "Payment timeouts, and customers charged twice"
+summary = "Checkout payments are timing out, and support has the first reports of double charges. Stop the damage without losing real payments."
+business_context = "Cobalt Gear's checkout-service charges cards through an external payment provider (3 s client timeout, automatic retries). It's the first day of a product drop. Every duplicate charge becomes a refund, a support ticket and a trust problem; every failed checkout is a lost sale."
+skills = ["distributed-systems", "http", "devops"]
+competencies = ["distributed_systems", "reliability", "http_debugging", "technical_communication", "root_cause_analysis"]
+learning_outcomes = [
+  "Recognise that a timeout means 'outcome unknown', not 'failed', for side-effecting calls.",
+  "Find how retries without idempotency keys turn timeouts into duplicate charges.",
+  "See how your own retries amplify a dependency's partial degradation.",
+  "Choose mitigations that protect money first, and avoid irreversible bulk actions.",
+]
+initial_symptoms = [
+  "Alert: checkout payment error rate above 15%.",
+  "Support: 6 customers report two identical charges for one order.",
+  "Payment provider latency on our dashboards is above 4 s.",
+]
+customer_impact = "About one in five checkouts fails; an unknown number of customers have been charged two or three times."
+start_time = "2026-09-04T16:00:00Z"
+history = [[-120, "healthy"], [-16, "provider_slow"]]
+initial_condition = "provider_slow"
+verify_minutes = 6
+target_minutes = 25
+
+spoiler_terms = ["idempotency", "idempotency-key", "idempotency key", "concurrency limit", "retry amplification"]
+key_evidence = ["recon-report", "diff-idempotency", "log-dup-charge", "provider-status"]
+contributing_factors = [
+  "The HTTP client refactor had no test asserting the Idempotency-Key header.",
+  "Retries had no jitter or budget, so they tripled traffic during degradation.",
+  "A timeout is reported to the customer as a failure even though the charge may have succeeded.",
+  "No reconciliation alert compares provider charges with orders in near real time.",
+  "Product-drop traffic took the merchant close to the provider's concurrency limit.",
+]
+investigation_path = [
+  "Treat timeouts as unknown outcomes: check the provider side (reconciliation) for charges without orders or duplicates.",
+  "See that each duplicated order has 2-3 charges a few seconds apart: the retry policy.",
+  "Find why retries aren't idempotent: v7.3 dropped the Idempotency-Key header.",
+  "Read the provider status page: degradation is per merchant, above the concurrency limit, and our retries keep us above it.",
+  "Pause retries (stop duplicates and amplification), then restore idempotency keys; reconcile and refund verified duplicates.",
+]
+explanation = "The provider slowed down for merchants above 200 concurrent requests. checkout-service times out after 3 s and retries up to 3 times. Since v7.3 refactored the HTTP client, the Idempotency-Key header is no longer sent, so each retry is a new charge request; if the original succeeded after our timeout, the customer is charged again. Retries also tripled our concurrency, keeping us above the provider's limit and sustaining the slowdown. Pausing retries removes both the duplicates and the amplification; restoring idempotency keys makes future retries safe."
+prevention = [
+  "Always send an idempotency key derived from the order/payment attempt; test for it.",
+  "Retry with exponential backoff, jitter and a retry budget; never retry non-idempotent calls blindly.",
+  "Model payment outcome as pending on timeout and confirm via webhook or status lookup.",
+  "Continuous reconciliation with alerts on charges without orders and duplicate charges.",
+  "Know your provider's limits and shed load before you hit them.",
+]
+
+[[scenarios.services]]
+id = "web"
+name = "storefront"
+kind = "web_frontend"
+depends_on = ["checkout"]
+
+[[scenarios.services]]
+id = "checkout"
+name = "checkout-service"
+kind = "service"
+depends_on = ["db", "pay"]
+description = "Payment client timeout 3 s, retries 3, no backoff."
+
+[[scenarios.services]]
+id = "pay"
+name = "payment provider (external)"
+kind = "payment_provider"
+description = "Per-merchant concurrency limit 200."
+
+[[scenarios.services]]
+id = "db"
+name = "orders-db (PostgreSQL)"
+kind = "postgres"
+
+[[scenarios.services]]
+id = "recon"
+name = "reconciliation-worker"
+kind = "worker"
+depends_on = ["db", "pay"]
+
+[scenarios.conditions.healthy]
+label = "Healthy"
+phase = "healthy"
+summary = "All services healthy."
+[scenarios.conditions.healthy.metrics]
+"web.throughput" = 4200
+"checkout.throughput" = 260
+"checkout.error_rate" = { v = 0.4, jitter = 0.3 }
+"checkout.p50" = 640
+"checkout.p95" = 1300
+"checkout.p99" = 1900
+"pay.throughput" = 265
+"pay.p95" = 900
+"pay.error_rate" = { v = 0.3, jitter = 0.3 }
+"db.cpu" = 26
+"db.db_connections" = 70
+"recon.worker_rate" = 270
+
+[scenarios.conditions.provider_slow]
+label = "Provider slow, retries duplicating"
+phase = "incident"
+symptom = "About 22% of payments failing; checkout p95 about 9 s; customers reporting double charges."
+inherit = "healthy"
+health = { checkout = "degraded", pay = "degraded", web = "degraded" }
+summary = "Payment calls time out at 3 s and are retried without idempotency keys; retries triple our load on the provider."
+[scenarios.conditions.provider_slow.metrics]
+"checkout.error_rate" = { v = 21.6, jitter = 0.05 }
+"checkout.p50" = 3400
+"checkout.p95" = { v = 9150, jitter = 0.01 }
+"checkout.p99" = { v = 9300, jitter = 0.01 }
+"pay.throughput" = { v = 690, jitter = 0.04 }
+"pay.p95" = { v = 4300, jitter = 0.04 }
+"pay.error_rate" = { v = 31, jitter = 0.05 }
+"recon.worker_rate" = 640
+
+[scenarios.conditions.retry_storm]
+label = "Retry storm"
+phase = "worse"
+symptom = "About 58% of payments failing; checkout p95 about 50 s."
+inherit = "provider_slow"
+health = { checkout = "down", pay = "degraded", web = "degraded" }
+summary = "Five retries with a 10 s timeout: concurrency far above the provider limit; more duplicates and almost every checkout fails."
+[scenarios.conditions.retry_storm.metrics]
+"checkout.error_rate" = { v = 58, jitter = 0.04 }
+"checkout.p95" = { v = 50200, jitter = 0.01 }
+"checkout.p99" = { v = 50600, jitter = 0.01 }
+"pay.throughput" = { v = 1240, jitter = 0.04 }
+"pay.p95" = { v = 9800, jitter = 0.03 }
+"pay.error_rate" = { v = 62, jitter = 0.04 }
+
+[scenarios.conditions.safe_retries]
+label = "Retries idempotent, provider still slow"
+phase = "incident"
+symptom = "Payments still failing at about 22%; no new double-charge reports."
+inherit = "provider_slow"
+summary = "No new duplicates: retries carry idempotency keys. Retries still keep the provider above its concurrency limit."
+
+[scenarios.conditions.no_retries]
+label = "Retries paused"
+phase = "recovering"
+symptom = "Payment latency and failures falling."
+inherit = "healthy"
+auto_after = 5
+auto_to = "recovered"
+health = { checkout = "degraded" }
+summary = "Load on the provider dropped by two thirds; its latency is falling back under our timeout. No new duplicates."
+[scenarios.conditions.no_retries.metrics]
+"pay.throughput" = { ramp = [300, 265], minutes = 5 }
+"pay.p95" = { ramp = [3200, 950], minutes = 5 }
+"checkout.error_rate" = { ramp = [11, 0.5], minutes = 5 }
+"checkout.p95" = { ramp = [3100, 1350], minutes = 5 }
+
+[scenarios.conditions.pending_mode]
+label = "Payments confirmed asynchronously"
+phase = "recovering"
+symptom = "Checkouts accepted as 'payment pending'; failures falling."
+inherit = "healthy"
+auto_after = 6
+auto_to = "recovered"
+health = { checkout = "degraded" }
+summary = "Checkout returns 'payment pending' and confirms via webhook; no synchronous retries."
+[scenarios.conditions.pending_mode.metrics]
+"pay.p95" = { ramp = [3000, 950], minutes = 6 }
+"checkout.p95" = { ramp = [2000, 1300], minutes = 6 }
+"checkout.error_rate" = { ramp = [6, 0.4], minutes = 6 }
+
+[scenarios.conditions.recovered]
+label = "Recovered"
+phase = "recovered"
+inherit = "healthy"
+summary = "Payments succeed within normal latency; no new duplicates."
+
+[[scenarios.logs]]
+id = "log-timeout-1"
+t = -15.2
+service = "checkout"
+level = "warning"
+message = "payment charge timed out after 3000 ms; retrying (attempt 2/3)"
+fields = { request_id = "p-3d10", order_id = "O-771204", amount = "129.00 EUR" }
+
+[[scenarios.logs]]
+id = "log-dup-charge"
+t = -14.9
+service = "recon"
+level = "error"
+message = "order O-771204 has 2 successful charges: ch_9Fz1 (16:00:47.1) and ch_9Fz7 (16:00:50.3), no idempotency key on either"
+fields = { order_id = "O-771204" }
+
+[[scenarios.logs]]
+id = "log-final-fail"
+t = -14.6
+service = "checkout"
+level = "error"
+message = "payment failed after 3 attempts: ReadTimeout; order O-771204 marked payment_failed"
+fields = { request_id = "p-3d10", order_id = "O-771204" }
+
+[[scenarios.logs]]
+id = "log-provider-429"
+t = -9.0
+service = "pay"
+level = "warning"
+message = "HTTP 429 merchant_concurrency_exceeded (limit 200, current 541)"
+fields = { request_id = "p-4410" }
+
+[[scenarios.logs]]
+id = "log-db-deadlock"
+t = -7.5
+service = "db"
+level = "warning"
+message = "deadlock detected; process 8812 waits for ShareLock on transaction 99102; resolved by aborting 8812"
+fields = { application_name = "inventory-sync" }
+
+[[scenarios.logs]]
+id = "log-double-click"
+t = -6.0
+service = "web"
+level = "info"
+message = "client retry: pay button pressed twice within 400 ms (request deduplicated by storefront)"
+fields = { request_id = "p-5001" }
+
+[[scenarios.logs]]
+id = "log-timeout-2"
+t = -2.1
+service = "checkout"
+level = "warning"
+message = "payment charge timed out after 3000 ms; retrying (attempt 3/3)"
+fields = { request_id = "p-7aa2", order_id = "O-772980", amount = "89.00 EUR" }
+
+[[scenarios.logs]]
+id = "log-retries-paused"
+t = 0
+after = "no_retries"
+service = "checkout"
+level = "info"
+message = "feature flag payment_auto_retry disabled; timeouts now return 'payment pending, we will email you'"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-storm"
+t = 1
+after = "retry_storm"
+service = "pay"
+level = "error"
+message = "HTTP 429 merchant_concurrency_exceeded (limit 200, current 1180)"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-recovered"
+t = 2
+after = "recovered"
+service = "recon"
+level = "info"
+message = "no new duplicate charges in the last 5 minutes; 43 historical duplicates flagged for review"
+fields = {}
+
+[[scenarios.traces]]
+id = "tr-dup"
+t = -15.2
+request_id = "p-3d10"
+title = "POST /api/checkout/O-771204/pay (3 attempts)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "checkout"
+name = "pay_order"
+start_ms = 0
+duration_ms = 9120
+status = "error"
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "pay"
+name = "POST /v1/charges (attempt 1)"
+start_ms = 5
+duration_ms = 3000
+status = "error"
+note = "Client timed out. Provider later recorded the charge as succeeded (ch_9Fz1)."
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s1"
+service = "pay"
+name = "POST /v1/charges (attempt 2)"
+start_ms = 3010
+duration_ms = 2100
+note = "Succeeded (ch_9Fz7). Response arrived after the client gave up on attempt 1 only."
+[[scenarios.traces.spans]]
+id = "s4"
+parent = "s1"
+service = "checkout"
+name = "handle attempt 2 response"
+start_ms = 5110
+duration_ms = 4000
+status = "error"
+note = "Response parsing timed out under load; attempt 3 was skipped, order marked failed."
+
+[[scenarios.deployments]]
+id = "dep-73"
+t = -26
+service = "checkout"
+version = "v7.3.0"
+author = "payments-team"
+summary = "Migrate payment client to shared HTTP wrapper"
+changes = ["Use platform http_client with retries=3", "Remove bespoke PaymentSession class"]
+
+[[scenarios.deployments]]
+id = "dep-web"
+t = -70
+service = "web"
+version = "v12.0.0"
+author = "web-team"
+summary = "Product drop landing page"
+changes = ["Drop countdown", "Pay button debounce 400 ms"]
+
+[[scenarios.artifacts]]
+id = "recon-report"
+kind = "dashboard"
+title = "Reconciliation: provider charges vs orders (since 15:44)"
+reveal = "reconciliation"
+content = """
+charges succeeded at provider     3,912
+orders paid                       3,604
+orders with 2 charges                38   (2-3 s apart, same amount)
+orders with 3 charges                 5
+charges with no paid order          262   (order marked payment_failed after a timeout)
+Duplicates began 15:44; none in the previous 30 days.
+"""
+
+[[scenarios.artifacts]]
+id = "diff-idempotency"
+kind = "config"
+title = "checkout-service v7.3.0: payment client diff"
+reveal = "review_diff"
+content = """
+-class PaymentSession:
+-    def charge(self, order, amount):
+-        return self.post("/v1/charges", json=..., headers={"Idempotency-Key": f"order-{order.id}-{order.attempt}"})
++def charge(order, amount):
++    return http_client.post(PROVIDER + "/v1/charges", json=..., timeout=3, retries=3)   # header not set
+"""
+
+[[scenarios.artifacts]]
+id = "provider-status"
+kind = "other"
+title = "Payment provider status page"
+reveal = "provider_status"
+content = """
+15:41 UTC  Investigating: elevated latency for card charges for some merchants.
+15:52 UTC  Identified: merchants exceeding their concurrency limit receive queued or delayed responses.
+           Requests with an Idempotency-Key are safely de-duplicated on retry.
+"""
+
+[[scenarios.artifacts]]
+id = "retry-breakdown"
+kind = "dashboard"
+title = "checkout -> provider requests per order (last 15 min)"
+reveal = "retry_breakdown"
+content = """
+attempts per order   orders   share
+1                    2,110    61%
+2                      702    20%
+3                      641    19%
+Provider requests/min: 690 (orders/min: 260). In-flight to provider: about 540.
+"""
+
+[[scenarios.artifacts]]
+id = "db-health"
+kind = "database_status"
+title = "orders-db health"
+reveal = "db_health"
+content = """
+cpu 26%  connections 70/300  deadlocks last hour: 1 (inventory-sync, unrelated tables)
+orders table: no duplicate order ids (unique constraint intact).
+"""
+
+[[scenarios.actions]]
+id = "reconciliation"
+kind = "investigate"
+label = "Run reconciliation: provider charges vs orders"
+description = "Compare successful provider charges with paid orders."
+minutes = 3
+quality = "helpful"
+teach = "Timeouts hide successful charges: 262 charges belong to 'failed' orders and 43 orders were charged more than once."
+
+[[scenarios.actions]]
+id = "review_diff"
+kind = "investigate"
+label = "Review the checkout-service v7.3.0 diff"
+description = "Open the payment client refactor."
+minutes = 2
+quality = "helpful"
+teach = "The shared wrapper retries automatically and dropped the Idempotency-Key header."
+
+[[scenarios.actions]]
+id = "provider_status"
+kind = "investigate"
+label = "Check the payment provider status page"
+description = "Read the provider's incident notes."
+minutes = 1
+quality = "helpful"
+teach = "The provider slows merchants above their concurrency limit, and says idempotent retries are safe."
+
+[[scenarios.actions]]
+id = "retry_breakdown"
+kind = "investigate"
+label = "Break down provider requests per order"
+description = "How many charge attempts each order makes."
+minutes = 2
+quality = "helpful"
+teach = "Retries roughly triple provider traffic, keeping us above the 200 concurrency limit."
+
+[[scenarios.actions]]
+id = "db_health"
+kind = "investigate"
+label = "Check orders-db health"
+description = "Load, deadlocks, uniqueness."
+minutes = 1
+command = "database-status"
+teach = "The database is fine; the deadlock is an unrelated job and orders themselves aren't duplicated: charges are."
+
+[[scenarios.actions]]
+id = "pause_retries"
+kind = "mitigate"
+discovered_by = ["retry_breakdown", "review_diff", "reconciliation"]
+label = "Disable automatic payment retries (flag payment_auto_retry)"
+description = "On timeout, show 'payment pending' and confirm later instead of retrying."
+minutes = 1
+quality = "correct"
+transitions = { provider_slow = "no_retries", safe_retries = "no_retries", retry_storm = "no_retries" }
+outcome = { default = "Retries off. Provider traffic drops to one request per order; no new duplicate charges can be created." }
+teach = "Stops the money-losing behaviour immediately and removes the load amplification. Reversible with a flag."
+
+[[scenarios.actions]]
+id = "enable_idempotency"
+kind = "mitigate"
+discovered_by = ["review_diff"]
+label = "Hotfix: restore Idempotency-Key on charge requests"
+description = "Add order-based idempotency keys in the shared client call (build and deploy)."
+minutes = 3
+requires_actions = ["review_diff"]
+quality = "correct"
+transitions = { provider_slow = "safe_retries", retry_storm = "safe_retries" }
+outcome = { provider_slow = "Retries are now safe: the provider de-duplicates them. They still add load.", no_retries = "Keys restored. When retries are re-enabled they'll be safe.", default = "Idempotency keys restored." }
+deployment = { service = "checkout", version = "v7.3.1", summary = "Restore Idempotency-Key header" }
+teach = "Fixes the defect that turns retries into duplicate charges. Pair it with backoff before re-enabling retries."
+
+[[scenarios.actions]]
+id = "pending_mode"
+kind = "mitigate"
+discovered_by = ["reconciliation", "provider_status"]
+label = "Switch checkout to asynchronous payment confirmation"
+description = "Accept the order as 'payment pending' and confirm via provider webhooks."
+minutes = 2
+quality = "helpful"
+transitions = { provider_slow = "pending_mode", safe_retries = "pending_mode", retry_storm = "pending_mode" }
+outcome = { default = "Checkout no longer retries synchronously; customers see 'payment pending' and get an email when confirmed." }
+teach = "Turns unknown outcomes into an explicit pending state. A strong design, if the webhook path is already built and tested."
+
+[[scenarios.actions]]
+id = "more_retries"
+kind = "mitigate"
+label = "Increase retries to 5 and the timeout to 10 s"
+description = "Give payments more chances to succeed."
+minutes = 1
+quality = "harmful"
+mistake = "retry-amplification"
+transitions = { provider_slow = "retry_storm", safe_retries = "retry_storm" }
+outcome = { default = "Requests to the provider jump above 1,000 in flight. Latency and payment failures rise sharply." }
+teach = "More retries against a saturated dependency make everything worse, and without idempotency each one risks a duplicate charge."
+
+[[scenarios.actions]]
+id = "failover_provider"
+kind = "mitigate"
+label = "Fail over all payments to the backup provider"
+description = "Route new charges to the secondary provider."
+minutes = 2
+quality = "risky"
+mistake = "ignore-data-safety"
+outcome = { default = "New charges now go to the backup provider. Reconciliation must now cover two providers." }
+teach = "Failover can be right for a full outage, but with unknown in-flight outcomes it creates cross-provider duplicates. Stop retries first."
+
+[[scenarios.actions]]
+id = "auto_refund"
+kind = "mitigate"
+discovered_by = ["reconciliation"]
+label = "Automatically refund every order with more than one charge"
+description = "Bulk refund script over today's charges."
+minutes = 2
+requires_actions = ["reconciliation"]
+quality = "harmful"
+mistake = "ignore-data-safety"
+outcome = { default = "Refunds issued for 43 orders, including 4 customers who legitimately bought the same item twice. Refunds can't be recalled, and new duplicates keep arriving because retries are still on." }
+teach = "Irreversible bulk actions during an incident need verification and a stopped bleed first."
+
+[[scenarios.root_causes]]
+id = "rc-retries"
+text = "checkout-service v7.3 retries timed-out charge requests without an Idempotency-Key, so slow but successful charges are repeated; the retries also triple load and keep us above the provider's concurrency limit."
+correct = true
+explanation = "Reconciliation shows duplicates 2-3 s apart starting right after v7.3; the diff shows the header removed and retries=3; the provider throttles merchants above 200 concurrent requests, and retries put us at about 540."
+
+[[scenarios.root_causes]]
+id = "rc-provider"
+text = "The payment provider had an outage, which is entirely outside our control."
+explanation = "The provider degraded only for merchants above their limit; our retries kept us there, and the duplicates are caused by our client, not by the provider."
+
+[[scenarios.root_causes]]
+id = "rc-double-click"
+text = "Customers double-clicked the pay button during the product drop."
+explanation = "The storefront debounces clicks and deduplicates them; duplicate charges come from server-side retries within one request."
+
+[[scenarios.root_causes]]
+id = "rc-db"
+text = "A database deadlock created duplicate orders."
+explanation = "The deadlock was in an unrelated job; orders aren't duplicated (unique constraint), charges are."
+
+[[scenarios.misleading_signals]]
+signal = "Provider status page shows an incident"
+why = "True but incomplete: the provider only slows merchants above their concurrency limit, and our retries put us there."
+
+[[scenarios.misleading_signals]]
+signal = "Deadlock in the database log"
+why = "An unrelated inventory job; order rows are unique and healthy."
+
+[[scenarios.misleading_signals]]
+signal = "Double-click events in the storefront"
+why = "Already debounced and deduplicated in the browser; not the source of duplicate charges."
+
+[scenarios.rubric_focus]
+diagnostic_accuracy = "Non-idempotent retries on timeouts (v7.3 header removal) plus retry amplification."
+evidence_quality = "Reconciliation duplicates, the diff, provider concurrency 429s, attempts per order."
+mitigation_safety = "Pause retries first; no bulk refunds or blind failover; restore idempotency before re-enabling retries."
+reliability_awareness = "Treats timeouts as unknown outcomes and plans reconciliation of affected customers."

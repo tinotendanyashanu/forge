@@ -1,0 +1,340 @@
+# FORGE Career competency framework. Versioned: any change creates a new
+# framework version; reports keep the version they were computed with.
+version = "2026.11-1"
+title = "FORGE full-stack engineering competency framework"
+
+# ---------------------------------------------------------------- rules
+# How a dimension demonstrates a level. Evidence must be at the level's
+# difficulty or harder (junior <- beginner, mid <- intermediate, senior <- advanced).
+[rules]
+score_threshold = 0.7          # reliability-weighted mean score of qualifying evidence
+weak_threshold = 0.4           # below this (with enough weight) is a demonstrated weakness
+default_freshness_days = 365
+foundation_threshold = 0.5
+foundation_min_weight = 1.0
+min_weight = { junior = 1.5, mid = 2.0, senior = 2.5 }       # sum of evidence reliabilities
+min_sessions = { junior = 1, mid = 2, senior = 2 }           # independent sessions
+verified_required = ["mid", "senior"]                       # where the dimension has a verifiable source
+reasoning_required = ["senior"]                             # at least one explained-reasoning item
+insufficient_coverage = 0.6                                 # below this share of benchmark dimensions with evidence
+
+# Reliability of each evidence kind (weights the mean; verified kinds are objective).
+[rules.reliability]
+coding_objective = 1.0       # hidden tests executed in the verified sandbox
+simulation = 1.0             # deterministic FORGE OPS outcome
+knowledge_objective = 1.0    # deterministically graded questions
+rubric_ai = 0.5              # AI rubric judgment of explanations (advisory)
+architecture_ai = 0.5        # AI evaluation of designs and failure analysis (advisory)
+communication_ai = 0.5       # AI evaluation of judgment and communication scenarios (advisory)
+self_report = 0.0            # shown as context only; never demonstrates a level
+
+# ---------------------------------------------------------------- dimensions
+
+[[dimensions]]
+key = "programming_fundamentals"
+title = "Programming fundamentals"
+why = "Every other skill rests on writing correct, clear code with the right data structures."
+knowledge = "Data structures, complexity, control flow, error handling, language semantics."
+implementation = "Solve well-specified problems correctly, including edge cases."
+debugging = "Find logic errors from failing cases and stack traces."
+architecture = "Decompose problems into functions and modules with clear contracts."
+critical_gap = "Cannot produce correct code for routine problems; edge cases consistently fail."
+skills = ["programming-fundamentals"]
+coding_areas = ["foundations", "algorithms"]
+levels = { foundation = "Writes simple programs that work on the happy path.", junior = "Solves routine problems correctly with edge cases handled.", mid = "Chooses appropriate data structures and reasons about complexity.", senior = "Writes performant, idiomatic solutions and explains trade-offs." }
+
+[[dimensions]]
+key = "python_backend"
+title = "Python & backend engineering"
+why = "Backend services carry business logic, data integrity and most failure modes."
+knowledge = "Python semantics, FastAPI request lifecycle, dependency injection, async I/O."
+implementation = "Build validated, correct HTTP endpoints and service logic."
+debugging = "Diagnose 500s, validation errors and resource leaks in services."
+architecture = "Structure services into layers with clear boundaries and error handling."
+critical_gap = "Cannot implement a correct, validated endpoint; mismanages resources such as DB sessions."
+skills = ["python", "fastapi"]
+coding_areas = ["python-fastapi"]
+levels = { foundation = "Writes small Python scripts and simple endpoints.", junior = "Implements validated endpoints with tests under guidance.", mid = "Owns service features end to end, including errors and resource lifetimes.", senior = "Designs service boundaries and evolves APIs safely under load." }
+
+[[dimensions]]
+key = "javascript_typescript"
+title = "JavaScript & TypeScript"
+why = "Type-safe client and server code prevents whole classes of runtime errors."
+knowledge = "JS semantics, async/await, TypeScript types, narrowing and generics."
+implementation = "Write typed data transformations and parsers that reject bad input."
+debugging = "Trace type and async bugs in browser and Node code."
+architecture = "Model domain data with types that make invalid states unrepresentable."
+critical_gap = "Relies on any/unsafe casts; cannot validate untrusted data."
+skills = ["typescript"]
+coding_areas = ["javascript-typescript"]
+levels = { foundation = "Reads and edits simple JavaScript.", junior = "Writes typed functions and handles async code correctly.", mid = "Designs types for domain data and validates untrusted input.", senior = "Sets type and module conventions for a codebase." }
+
+[[dimensions]]
+key = "react_nextjs"
+title = "React & Next.js"
+why = "User-facing reliability and accessibility depend on correct state and data flow."
+knowledge = "Components, state, effects, server vs client rendering, data fetching."
+implementation = "Build accessible components with predictable state."
+debugging = "Find stale state, effect loops and hydration issues."
+architecture = "Choose rendering and data-fetching strategies per route."
+critical_gap = "Cannot manage component state predictably; ignores accessibility."
+skills = ["react"]
+coding_areas = ["react"]
+levels = { foundation = "Builds simple components from examples.", junior = "Builds interactive, accessible components with local state.", mid = "Designs state and data flow for features; uses server rendering appropriately.", senior = "Sets frontend architecture, performance budgets and conventions." }
+
+[[dimensions]]
+key = "api_design"
+title = "API design"
+why = "APIs are long-lived contracts; mistakes are expensive to undo."
+knowledge = "HTTP semantics, status codes, idempotency, pagination, versioning."
+implementation = "Implement endpoints with correct semantics and error contracts."
+debugging = "Diagnose contract mismatches between clients and servers."
+architecture = "Design evolvable, consistent API surfaces."
+critical_gap = "Misuses HTTP semantics; designs non-idempotent retries for side effects."
+skills = ["http", "fastapi"]
+coding_areas = ["api-design", "python-fastapi"]
+design_competencies = ["api_architecture"]
+incident_competencies = ["http_debugging"]
+levels = { foundation = "Calls and reads simple REST APIs.", junior = "Implements endpoints with correct methods and status codes.", mid = "Designs resources, errors, pagination and idempotency for features.", senior = "Owns API evolution and compatibility across teams." }
+
+[[dimensions]]
+key = "database_engineering"
+title = "Database engineering"
+why = "Data outlives code; integrity and query behaviour decide correctness and performance."
+knowledge = "SQL, indexing, transactions, isolation, migrations, connection management."
+implementation = "Write correct queries and transactional updates."
+debugging = "Diagnose slow queries, locks and connection exhaustion."
+architecture = "Model data and plan safe schema evolution."
+critical_gap = "Writes queries that lose updates or corrupt data; runs unsafe migrations."
+skills = ["sql"]
+coding_areas = ["sql"]
+design_competencies = ["data_modeling"]
+incident_competencies = ["database_operations"]
+levels = { foundation = "Writes simple SELECT queries.", junior = "Writes joins, aggregates and transactions correctly.", mid = "Designs schemas and indexes; diagnoses locking and connection issues.", senior = "Plans zero-downtime migrations and data architecture." }
+
+[[dimensions]]
+key = "concurrency_consistency"
+title = "Concurrency & consistency"
+why = "Race conditions and inconsistent writes cause the hardest production bugs."
+knowledge = "Locks, isolation levels, atomicity, idempotency, consistency models."
+implementation = "Write code that stays correct under concurrent access."
+debugging = "Reproduce and diagnose races and lost updates."
+architecture = "Choose consistency guarantees per operation."
+critical_gap = "Ignores concurrent access; designs lose or duplicate writes."
+coding_areas = ["concurrency"]
+design_competencies = ["consistency"]
+levels = { foundation = "Knows that concurrent access can corrupt state.", junior = "Uses locks and transactions correctly in simple cases.", mid = "Prevents lost updates and duplicate side effects in features.", senior = "Designs consistency across services and failure modes." }
+
+[[dimensions]]
+key = "testing_quality"
+title = "Testing & software quality"
+why = "Tests are how teams change code safely."
+knowledge = "Unit, integration and contract tests; test design; fixtures."
+implementation = "Write tests that catch real bugs, including edge cases."
+debugging = "Use failing tests to localise defects."
+architecture = "Design code for testability; choose test levels deliberately."
+critical_gap = "Ships untested changes; cannot write a meaningful failing test."
+skills = ["testing"]
+coding_areas = ["testing-debugging"]
+levels = { foundation = "Runs existing tests.", junior = "Writes unit tests for new code and edge cases.", mid = "Designs test suites across levels for features.", senior = "Sets quality strategy and testing standards." }
+
+[[dimensions]]
+key = "debugging"
+title = "Debugging"
+why = "Most engineering time goes into understanding why systems misbehave."
+knowledge = "Reading stack traces, logs and traces; forming and testing hypotheses."
+implementation = "Fix defects without introducing new ones."
+debugging = "Systematically narrow causes using evidence."
+architecture = "Build systems that are diagnosable."
+critical_gap = "Changes code or systems at random instead of following evidence."
+coding_areas = ["testing-debugging"]
+incident_competencies = ["root_cause_analysis", "http_debugging"]
+evidence_dimensions = ["debugging"]
+levels = { foundation = "Reads error messages and stack traces.", junior = "Finds and fixes defects with a hypothesis-driven approach.", mid = "Debugs across services using logs, metrics and traces.", senior = "Leads investigations of complex, ambiguous failures." }
+
+[[dimensions]]
+key = "performance"
+title = "Performance optimisation"
+why = "Latency and cost scale with usage; premature or blind optimisation wastes effort."
+knowledge = "Complexity, profiling, caching, N+1 queries, memory behaviour."
+implementation = "Make code measurably faster without breaking it."
+debugging = "Find the actual bottleneck from measurements."
+architecture = "Design caching and capacity deliberately."
+critical_gap = "Optimises without measuring; scales the wrong component."
+coding_areas = ["performance"]
+design_competencies = ["scalability"]
+incident_competencies = ["performance_analysis"]
+levels = { foundation = "Knows that algorithms have different costs.", junior = "Avoids obvious inefficiencies (N+1, quadratic loops).", mid = "Profiles and fixes bottlenecks; uses caching correctly.", senior = "Sets performance budgets and capacity plans." }
+
+[[dimensions]]
+key = "security"
+title = "Security"
+why = "Security failures harm users and are often irreversible."
+knowledge = "AuthN/AuthZ, input validation, injection, secrets, abuse prevention."
+implementation = "Write code that validates input and enforces authorisation."
+debugging = "Recognise and contain abuse and vulnerabilities."
+architecture = "Design least-privilege, defence-in-depth systems."
+critical_gap = "Weakens security controls under pressure; trusts unvalidated input."
+skills = ["security"]
+coding_areas = ["security", "auth"]
+design_competencies = ["security"]
+incident_competencies = ["security_response"]
+critical_mistakes = ["weaken-security"]
+levels = { foundation = "Knows common vulnerability classes.", junior = "Validates input and checks authorisation in features.", mid = "Threat-models features; handles abuse and secrets correctly.", senior = "Owns security architecture and incident response decisions." }
+
+[[dimensions]]
+key = "system_architecture"
+title = "System architecture"
+why = "Architecture decisions set the limits of reliability, cost and velocity for years."
+knowledge = "Components, data flow, scaling patterns, trade-offs."
+implementation = "Turn requirements into a coherent design."
+debugging = "Find architectural causes of recurring problems."
+architecture = "Justify decisions from requirements and document trade-offs."
+critical_gap = "Proposes designs that don't meet stated requirements or can't justify choices."
+skills = ["system-design"]
+design_competencies = ["api_architecture", "scalability", "data_modeling", "cost_optimization", "technical_communication"]
+all_design_evidence = true
+levels = { foundation = "Describes the parts of a simple web system.", junior = "Designs a simple service with a database and cache.", mid = "Designs features across services with explicit trade-offs.", senior = "Designs systems under scale, failure and cost constraints and defends them." }
+
+[[dimensions]]
+key = "distributed_systems"
+title = "Distributed systems"
+why = "Networks fail, messages duplicate and clocks drift; correctness must survive that."
+knowledge = "Queues, retries, idempotency, partitions, replication."
+implementation = "Build consumers and clients that tolerate retries and duplicates."
+debugging = "Diagnose poison messages, retry storms and partial failures."
+architecture = "Design for at-least-once delivery and partial failure."
+critical_gap = "Assumes exactly-once delivery; retries non-idempotent operations."
+skills = ["distributed-systems"]
+design_competencies = ["distributed_systems"]
+incident_competencies = ["distributed_systems"]
+failure_evidence = true
+critical_mistakes = ["retry-amplification", "ignore-data-safety"]
+levels = { foundation = "Knows that remote calls can fail.", junior = "Handles timeouts and retries for simple calls.", mid = "Builds idempotent consumers and safe retry policies.", senior = "Designs systems that stay correct under partition and duplication." }
+
+[[dimensions]]
+key = "devops_deployment"
+title = "DevOps & deployment"
+why = "How code ships decides how often it breaks production and how fast it recovers."
+knowledge = "CI/CD, rollouts, rollbacks, feature flags, migrations in deploys."
+implementation = "Ship changes safely with reversible steps."
+debugging = "Correlate failures with deployments and configuration changes."
+architecture = "Design release processes with canaries and fast rollback."
+critical_gap = "Rolls back or deploys blindly; ships irreversible changes without a plan."
+skills = ["devops"]
+incident_competencies = ["deployment_engineering"]
+critical_mistakes = ["rollback-blindly"]
+levels = { foundation = "Runs an app locally and deploys with help.", junior = "Uses CI and follows release procedures.", mid = "Plans safe rollouts, flags and rollbacks for features.", senior = "Designs release engineering and migration strategy." }
+
+[[dimensions]]
+key = "production_reliability"
+title = "Production reliability"
+why = "Users experience the system in production, not in tests."
+knowledge = "Observability, SLOs, incident response, mitigation versus fix."
+implementation = "Mitigate safely and verify recovery."
+debugging = "Triage incidents from metrics, logs and traces."
+architecture = "Design for graceful degradation and recovery."
+critical_gap = "Takes dangerous actions during incidents; declares recovery without verification."
+coding_areas = ["production"]
+design_competencies = ["failure_recovery", "observability"]
+incident_competencies = ["reliability", "observability"]
+all_incident_evidence = true
+failure_evidence = true
+critical_mistakes = ["unsafe-database-change", "restart-before-diagnosis"]
+levels = { foundation = "Knows what monitoring and alerts are for.", junior = "Follows runbooks and escalates with evidence.", mid = "Investigates and mitigates incidents safely; verifies recovery.", senior = "Leads incidents and drives reliability improvements." }
+
+[[dimensions]]
+key = "technical_communication"
+title = "Technical communication"
+why = "Engineering is collaborative; unclear reasoning costs teams time and trust."
+knowledge = "Structuring explanations, audience awareness, written decisions."
+implementation = "Write clear analyses, ADRs and postmortems."
+debugging = "Communicate status and uncertainty during incidents."
+architecture = "Explain trade-offs to technical and non-technical audiences."
+critical_gap = "Cannot explain reasoning or decisions clearly."
+design_competencies = ["technical_communication"]
+incident_competencies = ["technical_communication"]
+judgment_tags = ["communication"]
+incident_review_evidence = true
+levels = { foundation = "Describes what they did.", junior = "Explains decisions and asks precise questions.", mid = "Writes clear designs and incident analyses for peers.", senior = "Aligns stakeholders on trade-offs and risk." }
+
+[[dimensions]]
+key = "code_review_maintainability"
+title = "Code review & maintainability"
+why = "Reviews spread knowledge and catch defects before users do."
+knowledge = "Readability, cohesion, naming, review etiquette, risk spotting."
+implementation = "Refactor safely; leave code easier to change."
+debugging = "Spot defects and risks in others' changes."
+architecture = "Keep module boundaries and conventions coherent."
+critical_gap = "Approves risky changes without noticing defects, or reviews destructively."
+skills = ["senior-practices"]
+judgment_tags = ["code_review"]
+levels = { foundation = "Reads others' code.", junior = "Gives and responds to review feedback constructively.", mid = "Finds correctness and maintainability issues in reviews.", senior = "Sets review culture and maintainability standards." }
+
+[[dimensions]]
+key = "engineering_judgment"
+title = "Engineering judgment"
+why = "Senior engineers are trusted to make sound decisions under uncertainty."
+knowledge = "Risk, cost, reversibility, prioritisation, stakeholder needs."
+implementation = "Make and justify decisions with alternatives considered."
+debugging = "Choose what to investigate first under pressure."
+architecture = "Balance delivery, quality and long-term cost."
+critical_gap = "Makes irreversible or high-risk decisions without weighing alternatives."
+skills = ["senior-practices"]
+judgment_tags = ["judgment"]
+levels = { foundation = "Follows team decisions.", junior = "Raises risks and asks for guidance appropriately.", mid = "Makes sound feature-level decisions with explicit trade-offs.", senior = "Makes and owns cross-team technical decisions under uncertainty." }
+
+# ---------------------------------------------------------------- tracks
+# gates: must reach the level shown (mandatory). required: should reach it;
+# misses are weaknesses, not blockers. Strong scores elsewhere never offset a gate.
+
+[[tracks]]
+key = "fullstack"
+title = "Full-Stack Engineer"
+description = "Builds features end to end: UI, API, data and operations."
+[tracks.levels.foundation]
+gates = { programming_fundamentals = "foundation" }
+required = { javascript_typescript = "foundation", python_backend = "foundation" }
+[tracks.levels.junior]
+gates = { programming_fundamentals = "junior", python_backend = "junior", api_design = "junior", database_engineering = "junior", testing_quality = "junior" }
+required = { javascript_typescript = "junior", react_nextjs = "junior", debugging = "junior", security = "foundation", technical_communication = "foundation" }
+[tracks.levels.mid]
+gates = { python_backend = "mid", react_nextjs = "mid", api_design = "mid", database_engineering = "mid", debugging = "mid", testing_quality = "junior", security = "junior" }
+required = { javascript_typescript = "mid", concurrency_consistency = "junior", performance = "junior", system_architecture = "junior", production_reliability = "junior", devops_deployment = "junior", technical_communication = "junior", code_review_maintainability = "junior" }
+[tracks.levels.senior]
+gates = { system_architecture = "senior", python_backend = "mid", react_nextjs = "mid", database_engineering = "mid", debugging = "senior", production_reliability = "senior", security = "mid", technical_communication = "mid", engineering_judgment = "mid", distributed_systems = "mid" }
+required = { api_design = "senior", concurrency_consistency = "mid", testing_quality = "mid", performance = "mid", devops_deployment = "mid", code_review_maintainability = "mid", javascript_typescript = "mid" }
+
+[[tracks]]
+key = "backend"
+title = "Backend Engineer"
+description = "Builds and operates services, APIs and data systems."
+[tracks.levels.foundation]
+gates = { programming_fundamentals = "foundation" }
+required = { python_backend = "foundation" }
+[tracks.levels.junior]
+gates = { programming_fundamentals = "junior", python_backend = "junior", api_design = "junior", database_engineering = "junior", testing_quality = "junior" }
+required = { debugging = "junior", security = "foundation", technical_communication = "foundation" }
+[tracks.levels.mid]
+gates = { python_backend = "mid", api_design = "mid", database_engineering = "mid", concurrency_consistency = "junior", debugging = "mid", testing_quality = "junior", security = "junior" }
+required = { performance = "junior", system_architecture = "junior", distributed_systems = "junior", production_reliability = "junior", devops_deployment = "junior", technical_communication = "junior" }
+[tracks.levels.senior]
+gates = { system_architecture = "senior", python_backend = "mid", database_engineering = "senior", concurrency_consistency = "mid", distributed_systems = "senior", debugging = "senior", production_reliability = "senior", security = "mid", technical_communication = "mid", engineering_judgment = "mid" }
+required = { api_design = "senior", performance = "mid", devops_deployment = "mid", testing_quality = "mid", code_review_maintainability = "mid" }
+
+[[tracks]]
+key = "frontend"
+title = "Frontend Engineer"
+description = "Builds accessible, performant user interfaces and their data flow."
+[tracks.levels.foundation]
+gates = { programming_fundamentals = "foundation" }
+required = { javascript_typescript = "foundation" }
+[tracks.levels.junior]
+gates = { programming_fundamentals = "junior", javascript_typescript = "junior", react_nextjs = "junior", testing_quality = "junior" }
+required = { api_design = "foundation", debugging = "junior", security = "foundation", technical_communication = "foundation" }
+[tracks.levels.mid]
+gates = { javascript_typescript = "mid", react_nextjs = "mid", api_design = "junior", testing_quality = "junior", debugging = "mid", security = "junior" }
+required = { performance = "junior", system_architecture = "junior", technical_communication = "junior", code_review_maintainability = "junior" }
+[tracks.levels.senior]
+gates = { javascript_typescript = "senior", react_nextjs = "senior", performance = "mid", system_architecture = "mid", debugging = "senior", security = "mid", technical_communication = "mid", engineering_judgment = "mid" }
+required = { api_design = "mid", testing_quality = "mid", production_reliability = "mid", code_review_maintainability = "mid" }

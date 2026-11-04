@@ -1,0 +1,251 @@
+slug = "payments-double-charge"
+title = "Stop double charges in the payment ledger"
+level = "senior"
+task_type = "bug_fix"
+skill = "sql"
+area = "concurrency"
+prerequisites = ["sql", "python"]
+stack = ["Python 3.12", "psycopg 3", "PostgreSQL (READ COMMITTED)"]
+dimensions = ["concurrency_consistency", "database_engineering", "production_reliability"]
+competencies = ["debugging", "database", "implementation", "judgment", "codebase_comprehension"]
+estimated_minutes = 120
+time_limit_ms = 8000
+memory_limit_mb = 256
+rubric_version = "payments-idempotency-v1"
+summary = "Customers were charged twice when the app retried payments, and wallets drifted from the ledger. Make process_payment idempotent and race-free under concurrent retries in PostgreSQL, without changing the isolation level."
+
+description = """
+After incident **INC-2291**, two problems remain in `payments/service.py`:
+
+1. **Double charges.** Mobile clients retry with the same idempotency key while
+   the first request is still running. Both requests see "no payment yet" and
+   both charge the customer.
+2. **Lost updates.** Concurrent payments on one wallet read the balance, subtract
+   in Python and write the result back, so one debit overwrites another and the
+   wallet no longer matches its ledger.
+
+Every existing public test passes on the current code; the bugs only appear
+under concurrency. Read `docs/INC-2291-double-charges.md` first.
+"""
+
+architecture = """
+API workers call `payments.service.process_payment(conn, account_id=...,
+amount_cents=..., idempotency_key=...)` with a psycopg 3 connection (autocommit
+off) from a pool. PostgreSQL runs at READ COMMITTED. Tables: `accounts`,
+`payments` (one row per charge attempt, keyed by idempotency key) and
+`ledger_entries` (one negative entry per successful debit). Schema changes go in
+a new file under `migrations/`; `payments.db.apply_migrations` applies them in
+order. Domain errors live in `payments/errors.py`.
+"""
+
+setup = """
+**Run tests** starts a private PostgreSQL inside the sandbox (Unix socket only,
+no network), resets the schema, applies every file in `migrations/` and calls
+`process_payment` sequentially and from several threads, each with its own
+connection. Concurrency tests release all threads together with a barrier.
+
+Don't change the isolation level, and don't use Python-side locks: there are
+many API processes in production.
+"""
+
+misconceptions = [
+  "Check-then-insert on the idempotency key is a race: both requests can see no row before either inserts.",
+  "Wrapping read-then-write in one transaction does not prevent lost updates at READ COMMITTED.",
+  "A Python threading.Lock only protects one process; production runs many.",
+  "Catching the unique-violation error and returning an error to the client instead of the original payment's result.",
+  "Re-evaluating a declined payment on retry: the first decision for a key is final.",
+]
+hints = [
+  "Let the database decide who owns a key: a UNIQUE constraint plus INSERT ... ON CONFLICT DO NOTHING RETURNING id.",
+  "When a concurrent transaction holds the conflicting row, ON CONFLICT waits for it to commit; then read its result.",
+  "A single UPDATE ... SET balance = balance - %s WHERE id = %s AND balance >= %s checks and debits atomically; look at rowcount.",
+]
+rubric = [
+  "Makes the database enforce one payment per key (unique constraint in a new migration) instead of relying on application checks.",
+  "Claims the key and debits atomically, so concurrent retries return the original result and never charge twice.",
+  "Debits with a single conditional UPDATE (or a row lock), so concurrent payments never lose updates or overdraw.",
+  "Detects key reuse with different parameters and raises IdempotencyConflict without side effects.",
+  "Leaves the connection usable after every outcome (commit or roll back), including errors.",
+  "Explains the concurrency reasoning (what each statement locks and why READ COMMITTED is enough).",
+]
+
+[ticket]
+key = "INC-2291-1"
+title = "process_payment must be idempotent and race-free under concurrent retries"
+type = "Bug (incident follow-up)"
+priority = "Critical"
+reporter = "Payments on-call"
+body = """
+Follow-up actions 1 and 2 from INC-2291. `process_payment` must stay correct
+when the same request arrives several times at once, and when many payments hit
+one wallet concurrently, across many API processes.
+
+Return value is unchanged: `{"payment_id", "status", "replayed"}`.
+"""
+acceptance_criteria = [
+  "Concurrent or repeated calls with the same idempotency key create exactly one payment and at most one ledger entry; every call returns the same payment_id and status, and exactly one returns replayed=false.",
+  "Concurrent payments with different keys never overdraw a wallet and never lose an update: the final balance equals the starting balance plus the ledger total.",
+  "A payment the wallet can't cover is stored as declined with no ledger entry; retrying its key returns the declined result even if the balance has since increased.",
+  "Reusing a key with a different account or amount raises payments.errors.IdempotencyConflict and changes nothing.",
+  "amount_cents <= 0 raises ValueError and an unknown account raises payments.errors.AccountNotFound; neither writes anything.",
+  "Schema changes are in a new migration; the isolation level is unchanged; the connection has no open transaction after every call.",
+]
+
+# ---------------------------------------------------------------- tests
+
+[[tests]]
+name = "A payment debits the wallet once"
+visibility = "public"
+suite = "python"
+call = "sequential"
+competency = "implementation"
+args_json = '[[[1, 1000]], [[1, 300, "a"]]]'
+expected_json = '''{"results": [["p1", "succeeded", false, true]], "balances": [[1, 700]],
+  "payments": [["a", 1, 300, "succeeded"]], "ledger_entries": 1, "ledger_total": -300}'''
+
+[[tests]]
+name = "A retried key returns the original payment"
+visibility = "public"
+suite = "python"
+call = "sequential"
+competency = "codebase_comprehension"
+args_json = '[[[1, 1000]], [[1, 300, "a"], [1, 300, "a"]]]'
+expected_json = '''{"results": [["p1", "succeeded", false, true], ["p1", "succeeded", true, true]], "balances": [[1, 700]],
+  "payments": [["a", 1, 300, "succeeded"]], "ledger_entries": 1, "ledger_total": -300}'''
+
+[[tests]]
+name = "Insufficient funds are declined without a ledger entry"
+visibility = "public"
+suite = "python"
+call = "sequential"
+competency = "implementation"
+args_json = '[[[1, 100]], [[1, 500, "a"]]]'
+expected_json = '''{"results": [["p1", "declined", false, true]], "balances": [[1, 100]],
+  "payments": [["a", 1, 500, "declined"]], "ledger_entries": 0, "ledger_total": 0}'''
+
+[[tests]]
+name = "Concurrent retries charge once (smoke test)"
+visibility = "public"
+suite = "python"
+call = "concurrent_retries"
+competency = "debugging"
+args = [1000, 6, 100, 3]
+expected = { good_rounds = 3, final_balance = 700, ledger_total = -300, errors = [] }
+
+[[tests]]
+name = "Many concurrent retries of the same key charge exactly once"
+visibility = "hidden"
+suite = "python"
+call = "concurrent_retries"
+competency = "debugging"
+args = [10000, 10, 100, 8]
+expected = { good_rounds = 8, final_balance = 9200, ledger_total = -800, errors = [] }
+
+[[tests]]
+name = "Concurrent payments never overdraw or lose updates"
+visibility = "hidden"
+suite = "python"
+call = "concurrent_spend"
+competency = "database"
+args = [1000, 10, 20, 7]
+expected = { succeeded = 142, final_balance = 6, ledger_total = -994, balanced = true, errors = [] }
+
+[[tests]]
+name = "A declined payment stays declined when retried"
+visibility = "hidden"
+suite = "python"
+call = "declined_is_final"
+competency = "judgment"
+args = [100, 500, 1000]
+expected_json = '''{"first": ["p1", "declined", false], "retry": ["p1", "declined", true], "balances": [[1, 1100]],
+  "payments": [["late", 1, 500, "declined"]], "ledger_entries": 0, "ledger_total": 0}'''
+
+[[tests]]
+name = "Reusing a key with different parameters is a conflict"
+visibility = "hidden"
+suite = "python"
+call = "sequential"
+competency = "implementation"
+args_json = '[[[1, 1000], [2, 1000]], [[1, 100, "k"], [1, 200, "k"], [2, 100, "k"], [1, 50, "m"]]]'
+expected_json = '''{"results": [["p1", "succeeded", false, true], ["error", "IdempotencyConflict", true],
+    ["error", "IdempotencyConflict", true], ["p2", "succeeded", false, true]],
+  "balances": [[1, 850], [2, 1000]], "payments": [["k", 1, 100, "succeeded"], ["m", 1, 50, "succeeded"]],
+  "ledger_entries": 2, "ledger_total": -150}'''
+
+[[tests]]
+name = "Invalid amounts are rejected before touching the database"
+visibility = "hidden"
+suite = "python"
+call = "sequential"
+competency = "implementation"
+args_json = '[[[1, 1000]], [[1, 0, "z"], [1, -5, "y"], [1, 10, "x"]]]'
+expected_json = '''{"results": [["error", "ValueError", true], ["error", "ValueError", true], ["p1", "succeeded", false, true]],
+  "balances": [[1, 990]], "payments": [["x", 1, 10, "succeeded"]], "ledger_entries": 1, "ledger_total": -10}'''
+
+[[tests]]
+name = "Unknown accounts are rejected and nothing is written"
+visibility = "hidden"
+suite = "python"
+call = "sequential"
+competency = "implementation"
+args_json = '[[[1, 1000]], [[99, 10, "u"], [1, 10, "v"]]]'
+expected_json = '''{"results": [["error", "AccountNotFound", true], ["p1", "succeeded", false, true]],
+  "balances": [[1, 990]], "payments": [["v", 1, 10, "succeeded"]], "ledger_entries": 1, "ledger_total": -10}'''
+
+# ---------------------------------------------------------------- collaboration
+
+[[exercises]]
+slug = "explain-incident-to-finance"
+kind = "stakeholder_explanation"
+title = "Explain the root cause to Finance"
+prompt = """
+The Head of Finance asks you directly: *"How did we charge people twice, how do
+we know it won't happen again, and can the balances we reported last month be
+trusted?"* Write the reply. Be honest about what you know and don't know.
+"""
+rubric = [
+  "Explains the race in plain language (two simultaneous attempts both seeing 'not paid yet').",
+  "Explains why the fix holds (the database enforces one payment per key and atomic debits), without jargon.",
+  "Addresses last month's balances honestly: what reconciliation can confirm, and what needs checking.",
+  "States how the team will detect a recurrence (reconciliation alerts, metrics).",
+]
+
+[[exercises]]
+slug = "zero-downtime-constraint"
+kind = "deployment_plan"
+title = "Ship the unique constraint without downtime"
+prompt = """
+Production's `payments` table has 60 million rows, **including the historical
+duplicate keys from the incident**, and takes 400 writes per second. Your
+migration adds a UNIQUE constraint on `idempotency_key`.
+
+Write the rollout plan: how to deal with existing duplicates, how to build the
+constraint without blocking writes, the order of deploying code and schema, how
+to verify, and how to roll back.
+"""
+rubric = [
+  "Recognises the migration would fail (existing duplicates) or lock the table, and plans for both.",
+  "Resolves historical duplicates safely (identify, keep the original, coordinate with Finance) before enforcing.",
+  "Uses a non-blocking approach (CREATE UNIQUE INDEX CONCURRENTLY, then ADD CONSTRAINT ... USING INDEX).",
+  "Orders code and schema changes so each step is safe if the next is delayed, and defines verification.",
+  "Gives a realistic rollback for each step.",
+]
+
+[[exercises]]
+slug = "review-alternative-design"
+kind = "review_junior_code"
+title = "Review a teammate's alternative fix"
+prompt = """
+A teammate opened a competing fix: it wraps `process_payment` in a
+`threading.Lock()` held for the whole function, plus `SET TRANSACTION
+ISOLATION LEVEL SERIALIZABLE` "to be extra safe". Their tests pass locally.
+
+Write the code review you would leave: what is right, what is wrong, what would
+happen in production, and what you'd ask them to change. Be kind and specific.
+"""
+rubric = [
+  "Explains why a process-local lock does not protect multiple API processes.",
+  "Discusses SERIALIZABLE trade-offs: serialization failures need retry logic; throughput and latency costs.",
+  "Recognises what the teammate got right and keeps the tone constructive.",
+  "Proposes a concrete alternative and how to test it under real concurrency.",
+]

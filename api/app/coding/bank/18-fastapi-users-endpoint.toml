@@ -1,0 +1,187 @@
+slug = "fastapi-users-endpoint"
+title = "A validated FastAPI endpoint"
+area = "python-fastapi"
+skill = "fastapi"
+prerequisites = ["python", "http"]
+difficulty = "intermediate"
+entrypoint = "create_app"
+time_limit_ms = 4000
+memory_limit_mb = 192
+description = """
+Implement `create_app() -> FastAPI` with an in-memory user service. Each call returns
+a fresh app with empty storage.
+
+`POST /users` accepts JSON `{"email", "name", "age"?}` and responds **201** with
+`{"id", "email", "name", "age"}`. Ids start at 1.
+
+* `email`: must look like `local@domain.tld`; store it lower-cased.
+* `name`: surrounding whitespace is stripped; 1 to 50 characters after stripping.
+* `age`: optional (`null` when omitted); an integer from 13 to 120.
+* Unknown fields are rejected.
+* Invalid input returns **422** (FastAPI's validation response).
+* A second user with the same email, in any letter case, returns **409** with
+  `{"detail": "email already registered"}`.
+
+`GET /users/{user_id}` returns **200** with the user, or **404** with
+`{"detail": "user not found"}`.
+"""
+constraints = ["Use Pydantic models for input and output; don't validate by hand inside the handler.", "Keep storage inside create_app so each app is independent."]
+rubric = [
+  "Declares a strict input model (extra fields forbidden, constrained types) and an explicit response model.",
+  "Returns the right status codes: 201 on create, 409 on duplicates, 404 when missing, 422 for invalid input.",
+  "Normalises data deliberately (lower-cased email, stripped name) before checking uniqueness.",
+]
+misconceptions = [
+  "Accepting `dict` bodies skips validation entirely and silently stores attacker-controlled fields.",
+  "Checking duplicates before normalising the email lets `Ada@x.io` and `ada@x.io` both register.",
+  "Returning 200 for creation or 400 for validation errors breaks client expectations.",
+]
+hints = ["Pydantic v2: ConfigDict(extra='forbid', str_strip_whitespace=True) and Field(ge=..., le=...).", "Raise HTTPException(status_code=409, detail=...) and set status_code=201 on the route."]
+
+[languages.python]
+starter = '''
+from fastapi import FastAPI
+
+
+def create_app() -> FastAPI:
+    app = FastAPI()
+    users = {}
+
+    @app.post("/users")
+    def create_user(payload: dict):
+        user_id = len(users) + 1
+        users[user_id] = {"id": user_id, **payload}
+        return users[user_id]
+
+    @app.get("/users/{user_id}")
+    def get_user(user_id: int):
+        return users.get(user_id)
+
+    return app
+'''
+reference = '''
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class UserIn(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=254)
+    name: str = Field(min_length=1, max_length=50)
+    age: int | None = Field(default=None, ge=13, le=120)
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, value: str) -> str:
+        return value.lower()
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    name: str
+    age: int | None
+
+
+def create_app() -> FastAPI:
+    app = FastAPI()
+    users: dict[int, UserOut] = {}
+    ids_by_email: dict[str, int] = {}
+
+    @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=UserOut)
+    def create_user(payload: UserIn) -> UserOut:
+        if payload.email in ids_by_email:
+            raise HTTPException(status.HTTP_409_CONFLICT, "email already registered")
+        user = UserOut(id=len(users) + 1, **payload.model_dump())
+        users[user.id] = user
+        ids_by_email[user.email] = user.id
+        return user
+
+    @app.get("/users/{user_id}", response_model=UserOut)
+    def get_user(user_id: int) -> UserOut:
+        if user_id not in users:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "user not found")
+        return users[user_id]
+
+    return app
+'''
+
+[driver.python]
+code = '''
+from fastapi.testclient import TestClient
+
+
+def http(solution, requests):
+    """Sends [method, path, json] requests to a fresh app. 422 bodies are
+    framework-specific, so only their status code is compared."""
+    client = TestClient(solution.create_app())
+    out = []
+    for method, path, body in requests:
+        response = client.request(method, path, json=body) if body is not None else client.request(method, path)
+        out.append([response.status_code, None if response.status_code == 422 else response.json()])
+    return out
+'''
+
+[[tests]]
+name = "Creates a user"
+visibility = "public"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"email": "ada@example.com", "name": "Ada", "age": 36}]]]'
+expected_json = '[[201, {"id": 1, "email": "ada@example.com", "name": "Ada", "age": 36}]]'
+
+[[tests]]
+name = "Rejects an invalid email"
+visibility = "public"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"email": "not-an-email", "name": "X"}]]]'
+expected_json = '[[422, null]]'
+
+[[tests]]
+name = "Duplicate email in another letter case conflicts"
+visibility = "hidden"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"email": "Ada@Example.com", "name": "Ada"}], ["POST", "/users", {"email": "ada@example.COM", "name": "Imposter"}]]]'
+expected_json = '[[201, {"id": 1, "email": "ada@example.com", "name": "Ada", "age": null}], [409, {"detail": "email already registered"}]]'
+
+[[tests]]
+name = "Unknown fields are rejected"
+visibility = "hidden"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"email": "e@x.io", "name": "Eve", "is_admin": true}]]]'
+expected_json = '[[422, null]]'
+
+[[tests]]
+name = "Age bounds"
+visibility = "hidden"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"email": "a@x.io", "name": "Kid", "age": 12}], ["POST", "/users", {"email": "b@x.io", "name": "Old", "age": 121}], ["POST", "/users", {"email": "c@x.io", "name": "Ok", "age": 13}]]]'
+expected_json = '[[422, null], [422, null], [201, {"id": 1, "email": "c@x.io", "name": "Ok", "age": 13}]]'
+
+[[tests]]
+name = "Blank names are rejected and names are trimmed"
+visibility = "hidden"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"email": "a@x.io", "name": "   "}], ["POST", "/users", {"email": "b@x.io", "name": "  Grace  "}]]]'
+expected_json = '[[422, null], [201, {"id": 1, "email": "b@x.io", "name": "Grace", "age": null}]]'
+
+[[tests]]
+name = "Missing fields are rejected"
+visibility = "hidden"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"name": "No email"}]]]'
+expected_json = '[[422, null]]'
+
+[[tests]]
+name = "Fetch existing and missing users"
+visibility = "hidden"
+call = "driver:http"
+args_json = '[[["POST", "/users", {"email": "l@x.io", "name": "Linus"}], ["GET", "/users/1", null], ["GET", "/users/2", null]]]'
+expected_json = '[[201, {"id": 1, "email": "l@x.io", "name": "Linus", "age": null}], [200, {"id": 1, "email": "l@x.io", "name": "Linus", "age": null}], [404, {"detail": "user not found"}]]'
+
+[[tests]]
+name = "Path parameters are validated"
+visibility = "hidden"
+call = "driver:http"
+args_json = '[[["GET", "/users/abc", null]]]'
+expected_json = '[[422, null]]'

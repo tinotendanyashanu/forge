@@ -1,0 +1,535 @@
+level = "intermediate"
+
+[[scenarios]]
+slug = "redis-outage-latency"
+title = "Product pages slow down every few minutes"
+summary = "Product-page latency spikes in waves, and the database is working harder than ever. The cache keeps restarting. Find out what is killing it."
+business_context = "Harbor Outdoor's catalog-api serves product pages from Redis (6 GB memory limit on the container), with PostgreSQL behind it. A recommendations feature launched yesterday. Slow product pages directly reduce conversion during a holiday sale."
+skills = ["devops", "distributed-systems", "system-design"]
+competencies = ["performance_analysis", "distributed_systems", "observability", "reliability", "root_cause_analysis"]
+learning_outcomes = [
+  "Recognise a cold-cache stampede: hit rate collapses, database load rises, latency follows.",
+  "Read container restart reasons (OOMKilled) and memory growth to find why a cache dies.",
+  "Separate the trigger (keys without TTL) from the amplifier (slow cache timeouts on misses).",
+  "Prefer stopping the growth over resizing or flushing under pressure.",
+]
+initial_symptoms = [
+  "Alert: catalog-api p95 latency above 1.5 s, recurring roughly every 15 minutes.",
+  "Alert: orders-db CPU above 85%.",
+  "Redis container restarted 3 times in the last hour.",
+]
+customer_impact = "Product pages take 2-4 seconds for a few minutes after each cache restart; some time out."
+start_time = "2026-11-28T18:00:00Z"
+history = [[-120, "healthy"], [-60, "growing"], [-4, "cold"]]
+initial_condition = "cold"
+verify_minutes = 6
+target_minutes = 25
+
+spoiler_terms = ["ttl", "no expiry", "without expiry", "never expire", "reco:", "recommendation keys", "recommendations cache", "maxmemory", "noeviction"]
+key_evidence = ["redis-info", "log-oomkilled", "deploy-reco-diff", "key-sample"]
+contributing_factors = [
+  "Redis maxmemory was not set, so the kernel OOM-killed the container instead of Redis evicting keys.",
+  "catalog-api waits up to 2 s on cache operations, so a cache problem becomes a latency problem.",
+  "No request coalescing: every miss hits PostgreSQL, so restarts cause a stampede.",
+  "No alert on Redis memory growth or key count.",
+]
+investigation_path = [
+  "See the sawtooth: latency spikes line up with Redis restarts.",
+  "Check why Redis restarts: OOMKilled at the 6 GB container limit.",
+  "Check what fills memory: millions of reco:* keys with no TTL.",
+  "Line up the timeline: growth started with catalog-api v5.2 (recommendations caching).",
+  "Disable recommendation caching, then watch hit rate and database CPU recover.",
+]
+explanation = "catalog-api v5.2 caches per-user recommendations with SET but no expiry. Keys accumulate until Redis reaches the container's 6 GB limit; with no maxmemory configured, Redis doesn't evict and the kernel OOM-kills it. It restarts empty, product lookups all miss, every miss waits on a fresh connection and then queries PostgreSQL, and latency spikes until the cache warms, then the cycle repeats. The fix is to stop the unbounded growth (flag off, then TTLs and maxmemory with an eviction policy)."
+prevention = [
+  "Set TTLs on every cache key (lint or wrapper that requires one).",
+  "Configure maxmemory below the container limit with allkeys-lru for cache instances.",
+  "Short cache timeouts and a circuit breaker so cache failures degrade to misses quickly.",
+  "Request coalescing for hot keys to avoid stampedes after a cold start.",
+  "Alert on Redis used_memory growth and evictions.",
+]
+
+[[scenarios.services]]
+id = "cdn"
+name = "cdn"
+kind = "cdn"
+depends_on = ["api"]
+
+[[scenarios.services]]
+id = "api"
+name = "catalog-api"
+kind = "service"
+depends_on = ["redis", "db"]
+description = "Cache-aside reads; cache timeout 2 s."
+
+[[scenarios.services]]
+id = "redis"
+name = "catalog-cache (Redis 7)"
+kind = "redis"
+description = "Single primary, container memory limit 6 GB, maxmemory not set."
+
+[[scenarios.services]]
+id = "db"
+name = "catalog-db (PostgreSQL)"
+kind = "postgres"
+
+[scenarios.conditions.healthy]
+label = "Healthy"
+phase = "healthy"
+summary = "All services healthy."
+[scenarios.conditions.healthy.metrics]
+"cdn.throughput" = 9100
+"api.throughput" = 3100
+"api.error_rate" = { v = 0.2, jitter = 0.3 }
+"api.p50" = 24
+"api.p95" = 95
+"api.p99" = 180
+"api.cpu" = 41
+"redis.memory" = 2100
+"redis.cpu" = 18
+"redis.p95" = 1
+"db.cpu" = 22
+"db.p95" = 9
+"db.db_connections" = 60
+
+[scenarios.conditions.growing]
+label = "Cache memory growing"
+phase = "incident"
+symptom = "Product-page latency spikes roughly every 15 minutes."
+inherit = "healthy"
+summary = "Redis memory climbs steadily; the cache restarts each time it hits the container limit."
+[scenarios.conditions.growing.metrics]
+"redis.memory" = { sawtooth = [2100, 6100], period = 15, jitter = 0.01 }
+"api.p95" = { sawtooth = [110, 900], period = 15 }
+"db.cpu" = { sawtooth = [24, 80], period = 15 }
+
+[scenarios.conditions.cold]
+label = "Cache restarted cold"
+phase = "incident"
+symptom = "Product pages slow (p95 about 2.6 s); database CPU above 90%; the cache just restarted."
+inherit = "healthy"
+auto_after = 5
+auto_to = "refilling"
+health = { api = "degraded", redis = "degraded", db = "degraded" }
+summary = "Redis was OOM-killed and restarted empty; every lookup misses and PostgreSQL takes the full load."
+[scenarios.conditions.cold.metrics]
+"api.p50" = 640
+"api.p95" = { v = 2600, jitter = 0.05 }
+"api.p99" = { v = 4100, jitter = 0.04 }
+"api.error_rate" = { v = 3.8, jitter = 0.1 }
+"redis.memory" = { linear = [300, 260] }
+"db.cpu" = { v = 91, jitter = 0.02 }
+"db.p95" = 340
+"db.db_connections" = 188
+
+[scenarios.conditions.refilling]
+label = "Cache refilling (still leaking)"
+phase = "incident"
+symptom = "Latency easing since the cache restart."
+inherit = "healthy"
+auto_after = 10
+auto_to = "cold"
+health = { api = "degraded" }
+summary = "The cache warms up and latency eases, but recommendation keys keep filling memory toward the limit."
+[scenarios.conditions.refilling.metrics]
+"redis.memory" = { linear = [1600, 450], max = 6100 }
+"api.p95" = { ramp = [1500, 160], minutes = 4 }
+"db.cpu" = { ramp = [80, 30], minutes = 4 }
+
+[scenarios.conditions.flushed]
+label = "Cache flushed"
+phase = "worse"
+symptom = "Product pages failing; database CPU at 99%."
+inherit = "cold"
+auto_after = 5
+auto_to = "refilling"
+health = { api = "down", redis = "degraded", db = "degraded" }
+summary = "FLUSHALL emptied the cache: a full stampede on PostgreSQL."
+[scenarios.conditions.flushed.metrics]
+"api.error_rate" = { v = 14, jitter = 0.08 }
+"db.cpu" = { v = 99, jitter = 0.0 }
+
+[scenarios.conditions.stopped_growth_cold]
+label = "Growth stopped, cache cold"
+phase = "recovering"
+symptom = "Latency and database load falling."
+inherit = "cold"
+auto_after = 5
+auto_to = "recovered"
+health = { api = "degraded" }
+summary = "No more recommendation keys are written; the cache is warming up and should now stay up."
+[scenarios.conditions.stopped_growth_cold.metrics]
+"api.p95" = { ramp = [2400, 100], minutes = 5 }
+"db.cpu" = { ramp = [88, 24], minutes = 5 }
+"redis.memory" = { ramp = [400, 1900], minutes = 5 }
+"api.error_rate" = { ramp = [3, 0.2], minutes = 5 }
+
+[scenarios.conditions.stopped_growth]
+label = "Growth stopped"
+phase = "recovering"
+symptom = "Metrics stable."
+inherit = "healthy"
+auto_after = 3
+auto_to = "recovered"
+summary = "No more recommendation keys are written; memory is stable."
+[scenarios.conditions.stopped_growth.metrics]
+"redis.memory" = { v = 4200, jitter = 0.01 }
+
+[scenarios.conditions.recovered]
+label = "Recovered"
+phase = "recovered"
+inherit = "healthy"
+summary = "Hit rate, latency and database load back to normal; Redis memory stable."
+[scenarios.conditions.recovered.metrics]
+"redis.memory" = { v = 2300, jitter = 0.01 }
+
+[[scenarios.logs]]
+id = "log-oomkilled"
+t = -4.2
+service = "redis"
+level = "critical"
+message = "container catalog-cache terminated: reason=OOMKilled exit_code=137 (memory limit 6144Mi)"
+fields = { restarts = 3 }
+
+[[scenarios.logs]]
+id = "log-redis-start"
+t = -4.0
+service = "redis"
+level = "warning"
+message = "Server initialized. WARNING: no RDB/AOF loaded, starting with empty dataset"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-cache-timeout"
+t = -3.6
+service = "api"
+level = "warning"
+message = "cache GET product:88213 failed: TimeoutError after 2000 ms; falling back to database"
+fields = { request_id = "c-11a0" }
+
+[[scenarios.logs]]
+id = "log-db-slow"
+t = -3.0
+service = "db"
+level = "warning"
+message = "duration: 1210 ms statement: SELECT ... FROM products p JOIN inventory i ... WHERE p.id = $1"
+fields = { application_name = "catalog-api" }
+
+[[scenarios.logs]]
+id = "log-api-504"
+t = -2.4
+service = "cdn"
+level = "error"
+message = "origin timeout after 5000 ms for /p/trail-runner-x"
+fields = { request_id = "c-11f9" }
+
+[[scenarios.logs]]
+id = "log-vacuum"
+t = -35
+service = "db"
+level = "info"
+message = "automatic vacuum of table catalog.public.inventory: pages removed 18210"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-oomkilled-prev"
+t = -19.5
+service = "redis"
+level = "critical"
+message = "container catalog-cache terminated: reason=OOMKilled exit_code=137 (memory limit 6144Mi)"
+fields = { restarts = 2 }
+
+[[scenarios.logs]]
+id = "log-reco-set"
+t = -1.5
+service = "api"
+level = "debug"
+message = "SET reco:user:5512093 (2.1 KB) ttl=none"
+fields = { request_id = "c-12b4" }
+reveal = "redis_info"
+
+[[scenarios.logs]]
+id = "log-flag-off"
+t = 0
+after = "stopped_growth_cold"
+service = "api"
+level = "info"
+message = "feature flag cache_recommendations disabled; recommendations served uncached (p95 40 ms)"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-flushall"
+t = 0
+after = "flushed"
+service = "redis"
+level = "warning"
+message = "FLUSHALL executed by admin; 0 keys"
+fields = {}
+
+[[scenarios.traces]]
+id = "tr-cold"
+t = -3.6
+request_id = "c-11a0"
+title = "GET /api/products/88213 (cold cache)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "api"
+name = "GET /api/products/{id}"
+start_ms = 0
+duration_ms = 3310
+status = "ok"
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "redis"
+name = "GET product:88213"
+start_ms = 2
+duration_ms = 2000
+status = "error"
+note = "Timed out: Redis was restarting."
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s1"
+service = "db"
+name = "SELECT product + inventory"
+start_ms = 2005
+duration_ms = 1210
+note = "Slow because every request is now hitting the database."
+[[scenarios.traces.spans]]
+id = "s4"
+parent = "s1"
+service = "redis"
+name = "SET product:88213"
+start_ms = 3220
+duration_ms = 1
+
+[[scenarios.traces]]
+id = "tr-warm"
+t = -50
+request_id = "c-0f12"
+title = "GET /api/products/88213 (warm cache)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "api"
+name = "GET /api/products/{id}"
+start_ms = 0
+duration_ms = 21
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "redis"
+name = "GET product:88213"
+start_ms = 2
+duration_ms = 1
+note = "Hit."
+
+[[scenarios.deployments]]
+id = "dep-reco"
+t = -62
+service = "api"
+version = "v5.2.0"
+author = "personalisation-team"
+summary = "Cache per-user recommendations in Redis (flag cache_recommendations)"
+changes = ["redis.set(f'reco:user:{id}', payload)", "Flag cache_recommendations on"]
+
+[[scenarios.deployments]]
+id = "dep-db-params"
+t = -140
+service = "db"
+version = "params-2026-11"
+author = "dba-team"
+summary = "work_mem 16MB -> 32MB"
+changes = ["Tune work_mem"]
+
+[[scenarios.artifacts]]
+id = "redis-info"
+kind = "service_status"
+title = "Redis INFO (now, and just before the last crash)"
+reveal = "redis_info"
+content = """
+                     now (cold)        before last crash
+used_memory          0.4 GB            6.0 GB
+maxmemory            0 (unlimited)     0 (unlimited)
+maxmemory_policy     noeviction        noeviction
+keys                 41,220            9,882,410
+keyspace_hit_rate    12%               97%
+evicted_keys         0                 0
+"""
+
+[[scenarios.artifacts]]
+id = "key-sample"
+kind = "other"
+title = "Key pattern sample (SCAN before the last crash, from the RDB of a replica snapshot)"
+reveal = "key_sample"
+content = """
+pattern            keys        memory    keys with TTL
+reco:user:*        9,610,004   5.4 GB    0%
+product:*          241,900     0.5 GB    100% (ttl 3600)
+session:*          30,506      0.1 GB    100% (ttl 1800)
+"""
+
+[[scenarios.artifacts]]
+id = "deploy-reco-diff"
+kind = "config"
+title = "catalog-api v5.2.0: recommendations cache diff"
+reveal = "review_diff"
+content = """
++def cache_recommendations(user_id, payload):
++    redis.set(f"reco:user:{user_id}", json.dumps(payload))   # no ex=, no TTL
+ def cache_product(p):
+     redis.set(f"product:{p.id}", dump(p), ex=3600)
+"""
+
+[[scenarios.artifacts]]
+id = "db-status"
+kind = "database_status"
+title = "catalog-db status"
+reveal = "db_status"
+content = """
+cpu 91%   connections 188/300   cache hit 99.1%   longest query 1.4 s (products+inventory lookup)
+Query mix: 96% product lookups normally served by Redis. No new queries, no lock waits.
+Autovacuum on inventory finished 35 min ago (normal).
+"""
+
+[[scenarios.actions]]
+id = "redis_info"
+kind = "investigate"
+label = "Inspect Redis INFO and restart reasons"
+description = "Memory, policy, keys, hit rate."
+minutes = 2
+quality = "helpful"
+teach = "No maxmemory, noeviction, 10 M keys before the crash: Redis grew until the container was OOM-killed."
+
+[[scenarios.actions]]
+id = "key_sample"
+kind = "investigate"
+label = "Sample key patterns and TTLs"
+description = "Which keys use the memory, and do they expire?"
+minutes = 3
+requires_actions = ["redis_info"]
+quality = "helpful"
+teach = "reco:user:* keys take 5.4 GB and none expire."
+
+[[scenarios.actions]]
+id = "review_diff"
+kind = "investigate"
+label = "Review the catalog-api v5.2.0 diff"
+description = "Open the recommendations caching change."
+minutes = 2
+quality = "helpful"
+teach = "redis.set without ex= creates keys that live forever."
+
+[[scenarios.actions]]
+id = "db_status"
+kind = "investigate"
+label = "Inspect catalog-db load"
+description = "CPU, connections, query mix."
+minutes = 2
+command = "database-status"
+teach = "The database is busy only because the cache is cold: same queries, no locks. A consequence, not a cause."
+
+[[scenarios.actions]]
+id = "disable_flag"
+kind = "mitigate"
+discovered_by = ["review_diff", "key_sample"]
+label = "Disable feature flag cache_recommendations"
+description = "Serve recommendations uncached; stop writing reco keys."
+minutes = 1
+quality = "correct"
+transitions = { cold = "stopped_growth_cold", refilling = "stopped_growth", growing = "stopped_growth", flushed = "stopped_growth_cold" }
+outcome = { cold = "No more reco keys are written. The cache is still cold, but it can now warm up and stay up.", default = "No more reco keys are written. Memory stops growing." }
+teach = "Stops the unbounded growth immediately and is reversible. Uncached recommendations are cheap enough to serve directly."
+
+[[scenarios.actions]]
+id = "set_maxmemory"
+kind = "mitigate"
+discovered_by = ["redis_info"]
+label = "Set maxmemory 5gb with allkeys-lru (CONFIG SET)"
+description = "Let Redis evict keys instead of being OOM-killed."
+minutes = 1
+quality = "helpful"
+transitions = { cold = "stopped_growth_cold", refilling = "stopped_growth", growing = "stopped_growth" }
+outcome = { default = "Redis now evicts least-recently-used keys at 5 GB instead of crashing. Recommendation keys will churn product keys out of the cache until the code is fixed." }
+teach = "A sound safety net that stops the crash loop. On its own it lets reco keys compete with product keys, so fix the TTLs too."
+
+[[scenarios.actions]]
+id = "raise_limit"
+kind = "mitigate"
+label = "Raise the Redis container memory limit to 12 GB"
+description = "Restart Redis with a bigger memory limit."
+minutes = 2
+quality = "risky"
+mistake = "scale-without-bottleneck"
+transitions = { refilling = "cold", growing = "cold" }
+outcome = { default = "Redis restarts with a 12 GB limit. The restart empties the cache again; latency spikes while it refills." }
+teach = "More memory only delays the next OOM kill, and the restart itself causes another cold-cache stampede."
+
+[[scenarios.actions]]
+id = "flushall"
+kind = "mitigate"
+discovered_by = ["redis_info"]
+label = "FLUSHALL to clear the cache"
+description = "Delete every key in Redis."
+minutes = 1
+quality = "harmful"
+mistake = "ignore-data-safety"
+transitions = { cold = "flushed", refilling = "flushed", growing = "flushed" }
+outcome = { default = "All keys deleted, including warm product and session keys. Every request misses at once." }
+teach = "Flushing a cache during a load problem triggers a full stampede and logs users out (sessions)."
+
+[[scenarios.actions]]
+id = "scale_db"
+kind = "mitigate"
+label = "Add two PostgreSQL read replicas"
+description = "Provision replicas to absorb read load (about 30 minutes)."
+minutes = 3
+quality = "risky"
+mistake = "scale-without-bottleneck"
+outcome = { default = "Replicas are provisioning; they won't be ready for 30 minutes. The cache keeps crashing in the meantime." }
+teach = "The database load is a symptom of the cold cache. Fix the cache; don't scale its victim."
+
+[[scenarios.actions]]
+id = "longer_timeout"
+kind = "mitigate"
+label = "Increase catalog-api cache timeout from 2 s to 5 s"
+description = "Give Redis more time to answer."
+minutes = 1
+quality = "harmful"
+mistake = "retry-amplification"
+outcome = { default = "Requests now wait up to 5 s on a restarting cache before falling back. p99 latency gets worse." }
+teach = "Longer timeouts on a failing dependency make every miss slower. Cache timeouts should be short."
+
+[[scenarios.root_causes]]
+id = "rc-ttl"
+text = "catalog-api v5.2 writes per-user recommendation keys to Redis without a TTL; with no maxmemory, Redis grows until the container is OOM-killed, restarts cold and causes a database stampede."
+correct = true
+explanation = "Memory grows in a sawtooth that matches OOMKilled restarts. 9.6 M reco:user:* keys with no TTL use 5.4 GB. Each restart empties the cache, misses hit PostgreSQL and latency spikes until the cache refills."
+
+[[scenarios.root_causes]]
+id = "rc-db"
+text = "PostgreSQL is overloaded after the work_mem change and autovacuum, slowing product lookups."
+explanation = "Database load rises only after each cache restart; the parameter change was days ago, and autovacuum is routine."
+
+[[scenarios.root_causes]]
+id = "rc-traffic"
+text = "Holiday-sale traffic exceeds catalog-api capacity."
+explanation = "Traffic is flat; latency spikes are periodic and line up with Redis restarts."
+
+[[scenarios.root_causes]]
+id = "rc-network"
+text = "Network instability between catalog-api and Redis causes timeouts."
+explanation = "Timeouts happen only while Redis is restarting after OOM kills; there are no timeouts between restarts."
+
+[[scenarios.misleading_signals]]
+signal = "PostgreSQL CPU at 91%"
+why = "A consequence of the cold cache: the same queries, which Redis normally absorbs, all reach the database at once."
+
+[[scenarios.misleading_signals]]
+signal = "Autovacuum and a recent work_mem change"
+why = "Routine maintenance and an old parameter change; neither lines up with the periodic spikes."
+
+[scenarios.rubric_focus]
+diagnostic_accuracy = "TTL-less keys growing to the container limit; OOM kill and cold-cache stampede."
+evidence_quality = "OOMKilled restarts, INFO memory and policy, reco:user key sample, v5.2 diff."
+mitigation_safety = "Flag off and/or maxmemory+LRU; no FLUSHALL, no longer timeouts, no blind resizing."
+technical_reasoning = "Explains trigger (growth) vs amplifier (slow fallback, no coalescing)."

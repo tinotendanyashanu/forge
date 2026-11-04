@@ -1,0 +1,197 @@
+slug = "postgres-concurrent-withdrawals"
+title = "Concurrent withdrawals in PostgreSQL"
+area = "concurrency"
+skill = "sql"
+prerequisites = ["sql"]
+difficulty = "advanced"
+entrypoint = "withdraw"
+time_limit_ms = 6000
+memory_limit_mb = 256
+description = """
+A wallet service runs many workers against **PostgreSQL** (default READ COMMITTED
+isolation). Implement `withdraw(conn, account_id, amount) -> bool` using a psycopg 3
+connection (autocommit off):
+
+* Withdraw `amount` from `accounts(id, balance)` only if the balance covers it, and
+  return `True`. Otherwise change nothing and return `False`.
+* Unknown accounts return `False`.
+* Raise `ValueError` if `amount <= 0`, without touching the database.
+* Commit your work. Leave the connection ready for the next call, even after a refusal.
+
+The hidden tests run many withdrawals **concurrently** from separate connections. The
+balance must never go negative and no withdrawal may be lost.
+"""
+constraints = [
+  "Use PostgreSQL itself for correctness; no Python-side locks.",
+  "Don't change the isolation level; make it correct under READ COMMITTED.",
+]
+rubric = [
+  "Makes check-and-debit atomic: a conditional UPDATE (`balance >= amount`) or a row lock with SELECT ... FOR UPDATE.",
+  "Commits on success and ends the transaction on refusal so the connection stays usable.",
+  "Explains why read-then-write loses updates under READ COMMITTED.",
+]
+misconceptions = [
+  "Reading the balance, checking it in Python, then writing a computed value is a lost update under concurrency.",
+  "Wrapping the read and write in one transaction doesn't prevent the race at READ COMMITTED.",
+  "Leaving a transaction open after returning False makes later calls see stale data or fail.",
+]
+hints = [
+  "Can a single UPDATE statement both check and change the balance? Look at its rowcount.",
+  "`with conn.transaction():` commits on success and rolls back on exceptions.",
+]
+
+[languages.python]
+starter = '''
+def withdraw(conn, account_id, amount):
+    row = conn.execute("SELECT balance FROM accounts WHERE id = %s", (account_id,)).fetchone()
+    if row is None:
+        return False
+    balance = row[0]
+    if balance < amount:
+        conn.commit()
+        return False
+    conn.execute("UPDATE accounts SET balance = %s WHERE id = %s", (balance - amount, account_id))
+    conn.commit()
+    return True
+'''
+reference = '''
+def withdraw(conn, account_id, amount):
+    if amount <= 0:
+        raise ValueError("amount must be positive")
+    with conn.transaction():
+        cur = conn.execute(
+            "UPDATE accounts SET balance = balance - %s WHERE id = %s AND balance >= %s",
+            (amount, account_id, amount),
+        )
+        return cur.rowcount == 1
+'''
+
+[driver.python]
+code = '''
+import os
+import shutil
+import subprocess
+import threading
+
+import psycopg
+
+_DSN = None
+
+
+def _db():
+    """Starts a private PostgreSQL on a Unix socket in /tmp (no TCP, no network)."""
+    global _DSN
+    if _DSN is None:
+        data = "/tmp/pgdata"
+        shutil.copytree("/opt/pgtemplate", data)
+        os.chmod(data, 0o700)
+        subprocess.run(
+            ["/opt/pgbin/pg_ctl", "-D", data, "-l", "/tmp/pg.log", "-w", "-t", "20", "start"],
+            check=True, capture_output=True,
+        )
+        _DSN = "host=/tmp dbname=postgres user=forge"
+    return _DSN
+
+
+def _reset(balances):
+    with psycopg.connect(_db(), autocommit=True) as c:
+        c.execute("DROP TABLE IF EXISTS accounts")
+        c.execute("CREATE TABLE accounts (id int PRIMARY KEY, balance int NOT NULL)")
+        for account, balance in balances:
+            c.execute("INSERT INTO accounts VALUES (%s, %s)", (account, balance))
+
+
+def _balances():
+    with psycopg.connect(_db(), autocommit=True) as c:
+        return [list(r) for r in c.execute("SELECT id, balance FROM accounts ORDER BY id")]
+
+
+def sequential(solution, balances, ops):
+    _reset(balances)
+    results = []
+    with psycopg.connect(_db()) as conn:
+        for account, amount in ops:
+            results.append(solution.withdraw(conn, account, amount))
+    return [results, _balances()]
+
+
+def invalid_amount(solution, amount):
+    _reset([[1, 100]])
+    with psycopg.connect(_db()) as conn:
+        try:
+            solution.withdraw(conn, 1, amount)
+            outcome = "no error"
+        except ValueError:
+            outcome = "ValueError"
+    return [outcome, _balances()]
+
+
+def concurrent(solution, start, threads, per_thread, amount):
+    """Every thread has its own connection; a barrier releases them together."""
+    _reset([[1, start]])
+    barrier = threading.Barrier(threads)
+    granted, errors, lock = [], set(), threading.Lock()
+
+    def work():
+        ok = 0
+        with psycopg.connect(_db()) as conn:
+            barrier.wait()
+            for _ in range(per_thread):
+                try:
+                    if solution.withdraw(conn, 1, amount):
+                        ok += 1
+                except Exception as exc:  # noqa: BLE001
+                    errors.add(type(exc).__name__)
+                    conn.rollback()
+        with lock:
+            granted.append(ok)
+
+    workers = [threading.Thread(target=work) for _ in range(threads)]
+    for t in workers:
+        t.start()
+    for t in workers:
+        t.join()
+    return {"granted": sum(granted), "final_balance": _balances()[0][1], "errors": sorted(errors)}
+'''
+
+[[tests]]
+name = "Sequential withdrawals"
+visibility = "public"
+call = "driver:sequential"
+args = [[[1, 100]], [[1, 30], [1, 80], [1, 70]]]
+expected = [[true, false, true], [[1, 0]]]
+
+[[tests]]
+name = "Unknown account"
+visibility = "public"
+call = "driver:sequential"
+args = [[[1, 100]], [[2, 10]]]
+expected = [[false], [[1, 100]]]
+
+[[tests]]
+name = "Non-positive amounts raise before touching the database"
+visibility = "hidden"
+call = "driver:invalid_amount"
+args = [0]
+expected = ["ValueError", [[1, 100]]]
+
+[[tests]]
+name = "Connection stays usable after a refusal"
+visibility = "hidden"
+call = "driver:sequential"
+args = [[[1, 10], [2, 50]], [[1, 20], [2, 50], [1, 10]]]
+expected = [[false, true, true], [[1, 0], [2, 0]]]
+
+[[tests]]
+name = "Concurrent withdrawals never overdraw or lose updates"
+visibility = "hidden"
+call = "driver:concurrent"
+args = [1000, 8, 25, 10]
+expected = { granted = 100, final_balance = 0, errors = [] }
+
+[[tests]]
+name = "Heavier contention with uneven demand"
+visibility = "hidden"
+call = "driver:concurrent"
+args = [995, 12, 20, 7]
+expected = { granted = 142, final_balance = 1, errors = [] }

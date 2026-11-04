@@ -1,0 +1,78 @@
+slug = "two-sum-indices"
+title = "Two sum"
+area = "algorithms"
+skill = "programming-fundamentals"
+prerequisites = []
+difficulty = "beginner"
+entrypoint = "two_sum"
+time_limit_ms = 1500
+memory_limit_mb = 64
+description = """
+Return the indices `[i, j]` (with `i < j`) of the two numbers in `nums` that add up to
+`target`. Exactly one valid pair exists. The same element may not be used twice.
+"""
+constraints = ["2 <= len(nums) <= 100000", "Aim for O(n) time."]
+rubric = [
+  "Never pairs an element with itself.",
+  "Returns indices, not values, in ascending order.",
+  "Uses a hash map for O(n) time rather than nested loops.",
+]
+misconceptions = [
+  "Inserting the current value before looking up its complement, which can pair an element with itself.",
+  "Sorting the array loses the original indices.",
+]
+hints = ["For each number, what value would complete the pair?", "Store each value's index as you go and look up the complement before inserting."]
+
+[languages.python]
+starter = '''
+def two_sum(nums: list[int], target: int) -> list[int]:
+    raise NotImplementedError
+'''
+reference = '''
+def two_sum(nums: list[int], target: int) -> list[int]:
+    seen: dict[int, int] = {}
+    for i, n in enumerate(nums):
+        j = seen.get(target - n)
+        if j is not None:
+            return [j, i]
+        seen[n] = i
+    raise ValueError("no pair")
+'''
+
+[[tests]]
+name = "Basic pair"
+visibility = "public"
+args = [[2, 7, 11, 15], 9]
+expected = [0, 1]
+
+[[tests]]
+name = "Pair at the end"
+visibility = "public"
+args = [[3, 2, 4], 6]
+expected = [1, 2]
+
+[[tests]]
+name = "Does not reuse one element"
+visibility = "hidden"
+args = [[3, 3], 6]
+expected = [0, 1]
+
+[[tests]]
+name = "Negative numbers"
+visibility = "hidden"
+args = [[-1, -2, -3, -4, -5], -8]
+expected = [2, 4]
+
+[[tests]]
+name = "Large input in linear time"
+visibility = "hidden"
+call = "driver:large"
+args = [100000]
+expected = [99998, 99999]
+
+[driver.python]
+code = '''
+def large(solution, n):
+    nums = list(range(n))
+    return solution.two_sum(nums, (n - 2) + (n - 1))
+'''

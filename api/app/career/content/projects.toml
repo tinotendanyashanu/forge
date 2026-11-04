@@ -1,0 +1,115 @@
+# Take-home projects. FORGE does not inspect external repositories. A project
+# is verified only through its linked coding-lab challenges (hidden tests in the
+# verified sandbox); the written submission is reviewed by the AI (advisory).
+
+[[projects]]
+slug = "fastapi-postgres-service"
+title = "Build a FastAPI service with PostgreSQL"
+level = "mid"
+dimensions = ["python_backend", "api_design", "database_engineering", "testing_quality"]
+hours = 6
+summary = "A small orders service: create, list and fetch orders with validation, pagination and transactional stock updates."
+requirements = ["POST /orders validates input and reserves stock atomically", "GET /orders supports cursor pagination", "Errors use a consistent JSON shape with correct status codes", "Migrations create the schema", "Tests cover validation, concurrency on stock, and pagination"]
+acceptance = ["Two concurrent orders for the last item: exactly one succeeds", "Invalid payloads return 422 with field errors", "Pagination is stable while new orders are inserted"]
+architecture = "Layered: routers, services, repositories; one transaction per request; no business logic in routers."
+linked_challenges = ["fastapi-users-endpoint", "atomic-transfer", "pagination-params"]
+rubric = { correctness = "Meets every acceptance criterion with evidence (tests).", data_integrity = "Atomic stock updates; constraints in the database.", api_contract = "Consistent errors, status codes and pagination.", testing = "Meaningful tests including concurrency.", documentation = "README explains decisions and trade-offs." }
+starter = """
+app/main.py        # FastAPI app factory
+app/db.py          # engine and session dependency (use try/finally!)
+app/models.py      # Order, Product
+tests/test_orders.py
+README.md          # explain your decisions here
+"""
+
+[[projects]]
+slug = "secure-auth-flow"
+title = "Implement a secure authentication flow"
+level = "mid"
+dimensions = ["security", "python_backend", "api_design"]
+hours = 5
+summary = "Sign-up, login, password reset and session handling for a web app."
+requirements = ["Passwords hashed with a slow KDF", "Login rate-limited per account and IP", "Password reset uses signed, expiring, single-use tokens", "No user enumeration through responses or timing", "Sessions can be revoked"]
+acceptance = ["Reset tokens expire and can't be reused", "Ten failed logins trigger rate limiting", "Responses don't reveal whether an email exists"]
+architecture = "Auth logic isolated in a service; secrets from configuration; audit log of security events."
+linked_challenges = ["authorize-action", "safe-join-path"]
+rubric = { security_controls = "Hashing, rate limits, tokens and enumeration resistance are correct.", threat_model = "Explains threats considered and mitigations.", correctness = "Acceptance criteria met with tests.", operability = "Audit logging and revocation." }
+starter = """
+app/auth/service.py
+app/auth/routes.py
+tests/test_auth.py
+THREAT_MODEL.md
+"""
+
+[[projects]]
+slug = "react-dashboard"
+title = "Develop a React dashboard consuming an API"
+level = "mid"
+dimensions = ["react_nextjs", "javascript_typescript", "api_design"]
+hours = 5
+summary = "A typed dashboard showing paginated orders with filters, loading and error states."
+requirements = ["Typed API client that validates responses", "Filters reflected in the URL", "Loading, empty and error states", "Accessible table with keyboard navigation"]
+acceptance = ["Invalid API data is rejected with a clear error", "Back/forward restores filters", "Screen reader announces loading state"]
+architecture = "Server components for data fetching where possible; client components only for interactivity."
+linked_challenges = ["parse-user", "todo-reducer", "group-by"]
+rubric = { correctness = "Requirements met.", types = "Types model the domain and untrusted data is validated.", accessibility = "Keyboard and screen-reader support.", state = "Predictable state and URL sync." }
+starter = """
+app/orders/page.tsx
+lib/api.ts
+components/orders-table.tsx
+README.md
+"""
+
+[[projects]]
+slug = "fix-backend-codebase"
+title = "Fix an existing backend codebase"
+level = "mid"
+dimensions = ["debugging", "testing_quality", "code_review_maintainability"]
+hours = 4
+summary = "A service with failing tests, a resource leak and an intermittent 500. Find and fix the defects without rewriting it."
+requirements = ["All existing tests pass", "Add a regression test for each defect fixed", "Write a short incident-style note per defect"]
+acceptance = ["No resource leaks under load", "Regression tests fail before the fix and pass after"]
+architecture = "Minimal, reviewable changes; no rewrites."
+linked_challenges = ["fix-median", "lru-cache"]
+rubric = { diagnosis = "Each defect's root cause is identified with evidence.", fixes = "Fixes are minimal and correct.", tests = "Regression tests prove the fixes.", communication = "Notes are clear and blameless." }
+starter = """
+service/handlers.py   # contains the leak
+service/stats.py      # contains the off-by-one
+tests/
+NOTES.md
+"""
+
+[[projects]]
+slug = "optimise-slow-endpoint"
+title = "Optimise a slow database endpoint"
+level = "senior"
+dimensions = ["performance", "database_engineering"]
+hours = 4
+summary = "An endpoint takes 4 s at p95. Measure, find the bottleneck and fix it."
+requirements = ["Measure before and after", "Fix N+1 queries and add appropriate indexes", "Explain the query plan changes"]
+acceptance = ["p95 under 200 ms on the provided dataset", "No change in response content"]
+architecture = "Prefer query and index fixes over caching unless justified."
+linked_challenges = ["find-duplicates-fast", "top-customers-sql"]
+rubric = { measurement = "Before/after numbers and method.", root_cause = "Identifies the actual bottleneck.", fix = "Correct, minimal fix.", tradeoffs = "Explains costs of indexes or caching." }
+starter = """
+app/reports.py
+scripts/load_data.py
+PERF_NOTES.md
+"""
+
+[[projects]]
+slug = "scalable-booking-design"
+title = "Design and document a scalable booking system"
+level = "senior"
+dimensions = ["system_architecture", "concurrency_consistency", "technical_communication"]
+hours = 4
+summary = "Design a booking system that never double-books under load, and document it."
+requirements = ["Architecture diagram and data model", "Double-booking prevention under concurrency", "Failure handling for payments", "ADRs for key decisions"]
+acceptance = ["The design explains exactly how double bookings are prevented", "Each ADR lists alternatives and revisit conditions"]
+architecture = "Use the FORGE Design lab challenge 'booking-no-double-reservation' for the diagram and evaluation."
+linked_challenges = ["atomic-transfer", "idempotent-handler"]
+rubric = { consistency = "Correct, explained double-booking prevention.", reliability = "Failure modes handled.", documentation = "Clear ADRs with alternatives.", tradeoffs = "Costs and limits explained." }
+starter = """
+DESIGN.md
+adr/0001-booking-consistency.md
+"""

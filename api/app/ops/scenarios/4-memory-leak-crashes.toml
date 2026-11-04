@@ -1,0 +1,511 @@
+level = "intermediate"
+
+[[scenarios]]
+slug = "memory-leak-crashes"
+title = "Image service pods keep crashing"
+summary = "media-api pods restart every 10-12 minutes and image requests fail in bursts. Figure out what is consuming memory."
+business_context = "Pinecrest Travel's media-api (Python, 5 pods, 1 GiB memory limit each) resizes and serves listing photos. Listings without images convert far worse, and partners are reporting broken thumbnails."
+skills = ["devops", "python", "system-design"]
+competencies = ["performance_analysis", "observability", "reliability", "deployment_engineering", "root_cause_analysis"]
+learning_outcomes = [
+  "Recognise a leak by its sawtooth: memory rises steadily, then drops at each OOM kill.",
+  "Use restart reasons and heap profiles to find what is retained, rather than guessing.",
+  "Distinguish 'buys time' mitigations (bigger limits, restarts) from fixes.",
+  "Separate GC pauses and CPU spikes (symptoms) from the leak (cause).",
+]
+initial_symptoms = [
+  "Alert: media-api pod restarts > 10 in 30 minutes.",
+  "Partners report intermittent 502s on /img/* URLs.",
+  "CPU on media-api spikes shortly before each restart.",
+]
+customer_impact = "About 8% of image requests fail with 502, in bursts every few minutes; listings show broken thumbnails."
+start_time = "2026-05-19T11:00:00Z"
+history = [[-120, "healthy"], [-48, "leaking"]]
+initial_condition = "leaking"
+verify_minutes = 12
+target_minutes = 25
+
+spoiler_terms = ["unbounded", "lru_cache", "lru cache", "maxsize", "in-memory cache", "in-process cache", "thumbnail cache", "tracking parameters", "utm"]
+key_evidence = ["log-oom", "heap-profile", "diff-lru", "artifact-restarts"]
+contributing_factors = [
+  "The cache key includes the full query string, so tracking parameters make every request a new key.",
+  "Load tests replayed a fixed URL list, so the cache never grew in testing.",
+  "No alert on memory growth rate; the first alert was restarts.",
+  "Liveness probes kill pods during GC pauses, adding restarts.",
+]
+investigation_path = [
+  "Notice the memory sawtooth on every pod, period about 11 minutes.",
+  "Confirm restarts are OOMKilled at the 1 GiB limit, not liveness failures alone.",
+  "Take a heap profile: one dict-backed cache holds most of the heap.",
+  "Line up with media-api v4.1 (thumbnail cache, maxsize=None, key includes query string).",
+  "Roll back or bound the cache; verify memory stays flat across a full previous cycle.",
+]
+explanation = "media-api v4.1 added @lru_cache(maxsize=None) around thumbnail generation, keyed by the full URL. Partners append tracking parameters (utm_*, session ids), so nearly every request creates a new entry holding resized image bytes. The cache never evicts, memory grows about 80 MB per minute per pod, GC works harder (CPU spikes) and the pod is OOM-killed at 1 GiB. Requests in flight on the dying pod return 502. Restarting or raising the limit only resets the clock."
+prevention = [
+  "Bound in-process caches (maxsize) and normalise cache keys (drop tracking parameters).",
+  "Prefer a shared, bounded cache or CDN for image derivatives.",
+  "Load-test with realistic, high-cardinality URL sets.",
+  "Alert on memory growth rate and OOMKilled restarts separately from availability.",
+]
+
+[[scenarios.services]]
+id = "cdn"
+name = "image CDN"
+kind = "cdn"
+depends_on = ["api"]
+
+[[scenarios.services]]
+id = "api"
+name = "media-api"
+kind = "service"
+depends_on = ["store"]
+description = "Python 3.12, 5 pods, memory limit 1 GiB, liveness probe /healthz every 10 s."
+
+[[scenarios.services]]
+id = "store"
+name = "image originals (object storage)"
+kind = "object_storage"
+
+[[scenarios.services]]
+id = "mon"
+name = "monitoring"
+kind = "monitoring"
+
+[scenarios.conditions.healthy]
+label = "Healthy"
+phase = "healthy"
+summary = "All services healthy."
+[scenarios.conditions.healthy.metrics]
+"cdn.throughput" = 5400
+"cdn.error_rate" = { v = 0.1, jitter = 0.3 }
+"api.throughput" = 1300
+"api.error_rate" = { v = 0.2, jitter = 0.3 }
+"api.p50" = 60
+"api.p95" = 210
+"api.p99" = 390
+"api.cpu" = 38
+"api.memory" = { v = 310, jitter = 0.02 }
+"store.p95" = 35
+
+[scenarios.conditions.leaking]
+label = "Leaking and crashing"
+phase = "incident"
+symptom = "media-api pods restarting every 10-12 minutes; bursts of 502s on images."
+inherit = "healthy"
+health = { api = "degraded", cdn = "degraded" }
+summary = "Memory climbs about 80 MB/min per pod; pods are OOM-killed near 1 GiB and restart."
+[scenarios.conditions.leaking.metrics]
+"api.memory" = { sawtooth = [300, 1020], period = 11, jitter = 0.01 }
+"api.cpu" = { sawtooth = [36, 88], period = 11 }
+"api.error_rate" = { sawtooth = [0.5, 19], period = 11, jitter = 0.05 }
+"api.p95" = { sawtooth = [220, 2600], period = 11 }
+"api.p99" = { sawtooth = [400, 5100], period = 11 }
+"cdn.error_rate" = { sawtooth = [0.2, 7.5], period = 11 }
+
+[scenarios.conditions.big_limit]
+label = "Larger limit, still leaking"
+phase = "recovering"
+symptom = "Pods restarted with more memory; no crashes so far."
+inherit = "healthy"
+auto_after = 18
+auto_to = "leaking"
+health = { api = "degraded" }
+summary = "With a 2 GiB limit the pods survive longer, but memory is still climbing."
+[scenarios.conditions.big_limit.metrics]
+"api.memory" = { linear = [320, 85], max = 2040, jitter = 0.01 }
+"api.cpu" = { linear = [38, 2.2], max = 90 }
+"api.p95" = { linear = [220, 60], max = 2600 }
+
+[scenarios.conditions.restarted]
+label = "Restarted, still leaking"
+phase = "recovering"
+symptom = "Pods restarted; image requests succeeding for now."
+inherit = "healthy"
+auto_after = 8
+auto_to = "leaking"
+summary = "Fresh pods have low memory again, but it's rising at the same rate."
+[scenarios.conditions.restarted.metrics]
+"api.memory" = { linear = [300, 82], max = 1020, jitter = 0.01 }
+
+[scenarios.conditions.probe_off]
+label = "Liveness probe disabled"
+phase = "worse"
+symptom = "Image requests timing out in bursts; pods still restarting."
+inherit = "leaking"
+health = { api = "degraded", cdn = "degraded" }
+summary = "Pods in long GC pauses are no longer restarted early; they hang until OOM-killed, so requests time out instead of failing fast."
+[scenarios.conditions.probe_off.metrics]
+"api.p99" = { sawtooth = [400, 30000], period = 11 }
+"api.error_rate" = { sawtooth = [0.5, 26], period = 11 }
+
+[scenarios.conditions.rolling_back]
+label = "Rolling back"
+phase = "recovering"
+symptom = "Rollout in progress."
+inherit = "healthy"
+auto_after = 4
+auto_to = "recovered"
+summary = "media-api v4.0.3 is replacing v4.1.0."
+[scenarios.conditions.rolling_back.metrics]
+"api.memory" = { ramp = [700, 310], minutes = 4 }
+"api.error_rate" = { ramp = [8, 0.2], minutes = 4 }
+
+[scenarios.conditions.bounded]
+label = "Cache bounded"
+phase = "recovering"
+symptom = "Rollout in progress."
+inherit = "healthy"
+auto_after = 5
+auto_to = "recovered"
+summary = "Hotfix v4.1.1 caps the cache at 256 entries and normalises keys."
+[scenarios.conditions.bounded.metrics]
+"api.memory" = { ramp = [650, 360], minutes = 5 }
+"api.error_rate" = { ramp = [6, 0.2], minutes = 5 }
+
+[scenarios.conditions.recovered]
+label = "Recovered"
+phase = "recovered"
+inherit = "healthy"
+summary = "Memory flat, no restarts, image errors back to baseline."
+
+[[scenarios.logs]]
+id = "log-oom"
+t = -3.3
+service = "api"
+level = "critical"
+message = "container media-api terminated: reason=OOMKilled exit_code=137 (limit 1Gi)"
+fields = { pod = "media-api-6f8c-x2", restarts = 5 }
+
+[[scenarios.logs]]
+id = "log-gc"
+t = -4.1
+service = "api"
+level = "warning"
+message = "gc: generation 2 collection took 2.8 s (objects 1.9M)"
+fields = { pod = "media-api-6f8c-x2" }
+
+[[scenarios.logs]]
+id = "log-liveness"
+t = -3.9
+service = "api"
+level = "warning"
+message = "Liveness probe failed: Get http://10.2.3.14:8080/healthz: context deadline exceeded"
+fields = { pod = "media-api-6f8c-k9" }
+
+[[scenarios.logs]]
+id = "log-502"
+t = -3.3
+service = "cdn"
+level = "error"
+message = "502 from origin for /img/listing/88123/thumb.webp?w=320&utm_source=partner42&sid=8f1a"
+fields = { request_id = "m-7c11" }
+
+[[scenarios.logs]]
+id = "log-normal-req"
+t = -1.2
+service = "api"
+level = "info"
+message = "GET /img/listing/44021/thumb.webp?w=320&utm_campaign=spring&sid=31aa 200 (88 ms, cache miss)"
+fields = { request_id = "m-8001" }
+
+[[scenarios.logs]]
+id = "log-store-ok"
+t = -2.0
+service = "store"
+level = "info"
+message = "GET originals: 1240 req/min, p95 34 ms, 0 errors"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-node-pressure"
+t = -26
+service = "mon"
+level = "warning"
+message = "node ip-10-2-3-0 MemoryPressure=True (evicting best-effort pods)"
+fields = { node = "ip-10-2-3-0" }
+
+[[scenarios.logs]]
+id = "log-rollback"
+t = 3
+after = "rolling_back"
+service = "api"
+level = "info"
+message = "rollout complete: media-api v4.0.3 5/5 ready"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-big-limit"
+t = 0
+after = "big_limit"
+service = "api"
+level = "info"
+message = "media-api resources updated: memory limit 2Gi; pods restarted"
+fields = {}
+
+[[scenarios.logs]]
+id = "log-steady"
+t = 8
+after = "recovered"
+service = "mon"
+level = "info"
+message = "media-api memory stable at 300-360 MiB for 10 minutes; 0 restarts"
+fields = {}
+
+[[scenarios.traces]]
+id = "tr-502"
+t = -3.3
+request_id = "m-7c11"
+title = "GET /img/listing/88123/thumb.webp (502)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "cdn"
+name = "edge fetch"
+start_ms = 0
+duration_ms = 2950
+status = "error"
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "api"
+name = "GET /img/{path}"
+start_ms = 5
+duration_ms = 2940
+status = "error"
+note = "Connection reset: the pod was OOM-killed mid-request."
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s2"
+service = "api"
+name = "gc pause"
+start_ms = 40
+duration_ms = 2800
+
+[[scenarios.traces]]
+id = "tr-ok"
+t = -1.2
+request_id = "m-8001"
+title = "GET /img/listing/44021/thumb.webp (200, cache miss)"
+[[scenarios.traces.spans]]
+id = "s1"
+service = "api"
+name = "GET /img/{path}"
+start_ms = 0
+duration_ms = 88
+[[scenarios.traces.spans]]
+id = "s2"
+parent = "s1"
+service = "store"
+name = "GET original"
+start_ms = 3
+duration_ms = 31
+[[scenarios.traces.spans]]
+id = "s3"
+parent = "s1"
+service = "api"
+name = "resize + thumbnail_cache.store"
+start_ms = 36
+duration_ms = 50
+note = "Cache key includes the full query string."
+
+[[scenarios.deployments]]
+id = "dep-41"
+t = -50
+service = "api"
+version = "v4.1.0"
+author = "media-team"
+summary = "Speed up thumbnails with an in-memory cache"
+changes = ["@lru_cache on render_thumbnail(url)", "WebP quality 80 -> 82"]
+
+[[scenarios.deployments]]
+id = "dep-node"
+t = -30
+service = "mon"
+version = "node-pool-2026-05"
+author = "platform-team"
+summary = "Node pool image update"
+changes = ["Kernel patch"]
+
+[[scenarios.artifacts]]
+id = "artifact-restarts"
+kind = "service_status"
+title = "media-api pod restarts (last 60 min)"
+reveal = "pod_status"
+content = """
+pod                 restarts  last reason   memory at restart  uptime pattern
+media-api-6f8c-x2          5  OOMKilled     1023 MiB           10-12 min
+media-api-6f8c-k9          5  OOMKilled     1022 MiB           10-12 min
+media-api-6f8c-p1          4  OOMKilled     1024 MiB           10-12 min
+media-api-6f8c-q7          5  OOMKilled     1021 MiB           10-12 min
+media-api-6f8c-z3          4  OOMKilled     1023 MiB           10-12 min
+All restarts started 47 minutes ago. Node: no evictions of media-api pods.
+"""
+
+[[scenarios.artifacts]]
+id = "heap-profile"
+kind = "other"
+title = "Heap profile of media-api-6f8c-x2 (tracemalloc, top allocations, 820 MiB in use)"
+reveal = "heap_profile"
+content = """
+size      count    allocated at
+612 MiB   48,210   media/thumbs.py:31  functools._lru_cache_wrapper (render_thumbnail) -> bytes
+ 74 MiB    2,104   PIL/Image.py:2961   resize buffers (transient)
+ 21 MiB  301,882   media/thumbs.py:31  cache keys (str) e.g. '/img/listing/88123/thumb.webp?w=320&utm_source=partner42&sid=8f1a'
+cache stats: hits 1.9%, misses 98.1%, currsize 48,210, maxsize None
+"""
+
+[[scenarios.artifacts]]
+id = "diff-lru"
+kind = "config"
+title = "media-api v4.1.0: thumbs.py diff"
+reveal = "review_diff"
+content = """
++from functools import lru_cache
++
++@lru_cache(maxsize=None)
++def render_thumbnail(url: str) -> bytes:   # url includes the full query string
++    return resize(fetch_original(url), ...)
+"""
+
+[[scenarios.actions]]
+id = "pod_status"
+kind = "investigate"
+label = "Inspect pod restarts and termination reasons"
+description = "kubectl describe-style summary for media-api pods."
+minutes = 1
+command = "service-status"
+quality = "helpful"
+teach = "Every pod is OOMKilled at the limit on a regular cadence since v4.1.0: a leak, not node pressure."
+
+[[scenarios.actions]]
+id = "heap_profile"
+kind = "investigate"
+label = "Capture a heap profile from a pod near its limit"
+description = "tracemalloc snapshot of the largest allocations."
+minutes = 3
+quality = "helpful"
+teach = "One unbounded cache holds 612 MiB of image bytes with a 2% hit rate."
+
+[[scenarios.actions]]
+id = "review_diff"
+kind = "investigate"
+label = "Review the media-api v4.1.0 diff"
+description = "Open the code change from the last release."
+minutes = 2
+quality = "helpful"
+teach = "lru_cache(maxsize=None) keyed by full URLs: unbounded by design."
+
+[[scenarios.actions]]
+id = "node_status"
+kind = "investigate"
+label = "Check node memory pressure"
+description = "Node conditions and evictions."
+minutes = 1
+teach = "One node had brief pressure 26 minutes ago and evicted best-effort pods only. Not the cause."
+
+[[scenarios.actions]]
+id = "rollback"
+kind = "mitigate"
+label = "Roll back media-api to v4.0.3"
+description = "Redeploy the previous release."
+minutes = 1
+quality = "correct"
+transitions = { leaking = "rolling_back", big_limit = "rolling_back", restarted = "rolling_back", probe_off = "rolling_back" }
+outcome = { default = "Rollback started; pods are being replaced with v4.0.3." }
+deployment = { service = "api", version = "v4.0.3", summary = "Rollback of v4.1.0" }
+teach = "Removes the leak with a known-good version; thumbnails get a little slower, which the CDN absorbs."
+
+[[scenarios.actions]]
+id = "hotfix_bound"
+kind = "mitigate"
+discovered_by = ["heap_profile", "review_diff"]
+label = "Ship hotfix v4.1.1: lru_cache(maxsize=256) and strip tracking params from the key"
+description = "Bound the cache and normalise keys (build and roll out, about 5 minutes)."
+minutes = 1
+requires_actions = ["heap_profile"]
+quality = "helpful"
+transitions = { leaking = "bounded", big_limit = "bounded", restarted = "bounded", probe_off = "bounded" }
+outcome = { default = "Hotfix building and rolling out." }
+deployment = { service = "api", version = "v4.1.1", summary = "Bound thumbnail cache" }
+teach = "A real fix, justified by the heap profile. Slightly more risk than a rollback under pressure, but keeps the speed-up."
+
+[[scenarios.actions]]
+id = "raise_limit"
+kind = "mitigate"
+label = "Raise media-api memory limit to 2 GiB"
+description = "Update the deployment's resources."
+minutes = 2
+quality = "risky"
+mistake = "scale-without-bottleneck"
+transitions = { leaking = "big_limit" }
+outcome = { default = "Pods restart with 2 GiB. They'll last about twice as long before the next OOM kill." }
+teach = "Buys time only; GC pauses get longer as the heap grows, and the leak still wins."
+
+[[scenarios.actions]]
+id = "restart"
+kind = "mitigate"
+label = "Restart all media-api pods"
+description = "Rolling restart."
+minutes = 2
+once = false
+quality = "neutral"
+transitions = { leaking = "restarted", probe_off = "restarted" }
+outcome = { default = "Fresh pods start at about 300 MiB; memory resumes climbing at the same rate." }
+teach = "A restart resets the clock and discards the heap you'd need for diagnosis. Fine as a stopgap after capturing a profile."
+
+[[scenarios.actions]]
+id = "disable_probe"
+kind = "mitigate"
+label = "Disable the liveness probe"
+description = "Stop Kubernetes from restarting pods during GC pauses."
+minutes = 1
+quality = "harmful"
+mistake = "restart-before-diagnosis"
+transitions = { leaking = "probe_off" }
+outcome = { default = "Pods are no longer killed during GC pauses; they hang for longer before the OOM kill, and requests now time out instead of failing fast." }
+teach = "The probe is reacting correctly to an unhealthy pod. Disabling it hides the symptom and makes failures slower."
+
+[[scenarios.actions]]
+id = "scale_out"
+kind = "mitigate"
+label = "Scale media-api from 5 to 10 pods"
+description = "Spread load across more pods."
+minutes = 2
+quality = "risky"
+mistake = "scale-without-bottleneck"
+outcome = { default = "10 pods running. Each pod's memory still climbs at about the same rate; restarts continue." }
+teach = "Every pod leaks independently: unique URLs are spread across all pods, so each fills at a similar rate."
+
+[[scenarios.root_causes]]
+id = "rc-cache"
+text = "media-api v4.1.0 added an unbounded lru_cache keyed by full URLs (including tracking parameters), so every pod retains image bytes until it is OOM-killed."
+correct = true
+explanation = "The heap profile shows 612 MiB in the lru_cache with a 2% hit rate and maxsize=None. Restarts are OOMKilled at the limit on an 11-minute cycle that began with v4.1.0."
+
+[[scenarios.root_causes]]
+id = "rc-node"
+text = "Node memory pressure from the node-pool update is evicting media-api pods."
+explanation = "Restarts are OOMKilled at the container limit, not evictions; the pressure event was brief and affected best-effort pods."
+
+[[scenarios.root_causes]]
+id = "rc-gc"
+text = "Python's garbage collector pauses are too long and fail liveness probes."
+explanation = "Long GC pauses are a symptom of a huge heap. Liveness failures add restarts but don't explain the OOM kills."
+
+[[scenarios.root_causes]]
+id = "rc-storage"
+text = "Object storage is slow, so requests pile up in memory."
+explanation = "Storage p95 is 34 ms with no errors; requests are fast until the pod runs out of memory."
+
+[[scenarios.misleading_signals]]
+signal = "CPU spikes before each crash"
+why = "Garbage collection working on an ever-larger heap. A consequence of the leak."
+
+[[scenarios.misleading_signals]]
+signal = "Node MemoryPressure event and a node-pool update"
+why = "One short event 26 minutes ago that evicted best-effort pods; media-api pods are OOMKilled at their own limit."
+
+[scenarios.rubric_focus]
+diagnostic_accuracy = "Unbounded lru_cache keyed by high-cardinality URLs, not nodes, GC or storage."
+evidence_quality = "OOMKilled at the limit, sawtooth memory, heap profile, the v4.1.0 diff."
+mitigation_safety = "Rollback or a bounded cache; avoids disabling probes; treats limit increases and restarts as stopgaps."
+long_term_prevention = "Bounded caches, key normalisation, realistic load tests, memory growth alerts."
