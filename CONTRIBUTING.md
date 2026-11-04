@@ -2,7 +2,7 @@
 
 FORGE 1.0 is a local, single-user engineering learning platform. Contributions should preserve honest evidence, clear limits and the local-only safety boundary.
 
-**License decision pending:** review [LICENSE-GUIDANCE.md](LICENSE-GUIDANCE.md). Before submitting code or incorporating third-party material, confirm that the maintainer has selected and published the project license. This draft does not introduce a contributor license agreement or copyright assignment.
+**License:** FORGE is released under the [MIT License](LICENSE). By submitting a contribution, you agree that it is licensed under the same terms. Only contribute material you wrote or have the right to share under MIT, and keep any required third-party notices. There is no separate contributor license agreement or copyright assignment.
 
 ## Before you start
 
@@ -25,7 +25,7 @@ These are suggested areas, not assigned tasks or delivery commitments.
 
 ## Working on a change
 
-1. Once licensing is settled, fork or clone the source and create a branch for one coherent change.
+1. Fork or clone the source and create a branch for one coherent change.
 2. Keep configuration private. Use sanitized `.env.example` values and keep model keys, database backups and learner histories out of commits.
 3. Make the smallest change that solves the problem. Explain any change to evidence, scoring, execution or AI behavior.
 4. Run checks appropriate to the affected area using `docs/DEVELOPMENT.md`. Report the exact commands, outcomes and skipped checks.

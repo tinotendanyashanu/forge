@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import { CircleUserRound, Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
@@ -11,9 +11,13 @@ import { SidebarNav } from "./nav";
 function SidebarFooter({ collapsed }: { collapsed: boolean }) {
   if (collapsed) return null;
   return (
-    <p className="px-2.5 text-xs leading-relaxed text-fg-subtle">
-      FORGE 1.0 · local single-user build
-    </p>
+    <div className="mt-6 flex items-center gap-3 rounded-xl px-3 py-3">
+      <CircleUserRound className="size-8 shrink-0 text-fg-muted" aria-hidden="true" />
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-fg">Personal workspace</p>
+        <p className="mt-0.5 text-xs text-fg-subtle">FORGE 1.0 · Local</p>
+      </div>
+    </div>
   );
 }
 
@@ -89,13 +93,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside
         aria-label="Sidebar"
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-line-subtle bg-canvas py-3 transition-[width] duration-200 ease-out md:flex",
-          collapsed ? "w-[60px] px-2.5" : "w-[244px] px-3",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col bg-surface py-4 transition-[width] duration-200 ease-out md:flex",
+          collapsed ? "w-[72px] px-3" : "w-[252px] px-3",
         )}
       >
         <div
           className={cn(
-            "mb-6 flex items-center",
+            "mb-8 flex items-center px-1",
             collapsed ? "flex-col gap-2" : "justify-between",
           )}
         >
@@ -107,7 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-expanded={!collapsed}
             aria-keyshortcuts="Meta+B Control+B"
             title={collapsed ? "Expand sidebar (⌘B)" : "Collapse sidebar (⌘B)"}
-            className="flex size-8 items-center justify-center rounded-lg text-fg-subtle transition-colors hover:bg-surface hover:text-fg"
+            className="flex size-9 items-center justify-center rounded-xl text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg"
           >
             {collapsed ? (
               <PanelLeftOpen className="size-[18px]" aria-hidden="true" />
@@ -116,7 +120,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           </button>
         </div>
-        <div className="flex-1">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <SidebarNav collapsed={collapsed} />
         </div>
         <SidebarFooter collapsed={collapsed} />
@@ -158,7 +162,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-label="Navigation"
-            className="absolute inset-y-0 left-0 flex w-[280px] max-w-[85vw] flex-col border-r border-line bg-canvas px-3 py-3 animate-slide-in"
+            className="absolute inset-y-0 left-0 flex w-[280px] max-w-[85vw] flex-col bg-surface px-3 py-4 animate-slide-in"
           >
             <div className="mb-6 flex items-center justify-between">
               <Brand onNavigate={closeMobile} />
@@ -172,7 +176,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <X className="size-5" aria-hidden="true" />
               </button>
             </div>
-            <div className="flex-1">
+            <div className="min-h-0 flex-1 overflow-y-auto">
               <SidebarNav onNavigate={closeMobile} />
             </div>
             <SidebarFooter collapsed={false} />

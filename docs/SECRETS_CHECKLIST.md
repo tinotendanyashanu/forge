@@ -51,4 +51,4 @@ A **dependency vulnerability scan was not completed in the 1.0 report**. Secret 
 
 ## Final review
 
-Read the rendered README, open every image and inspect release attachments. Confirm that the local-only warning is visible, the license choice is finalized, and the private security channel works. Publishing source for local use does not authorize exposing the running application as a shared service.
+Read the rendered README, open every image and inspect release attachments. Confirm that the local-only warning is visible, the `LICENSE` file is present, and the private security channel works. Publishing source for local use does not authorize exposing the running application as a shared service.

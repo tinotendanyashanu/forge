@@ -44,10 +44,10 @@ function newId() {
 function InterviewerMark() {
   return (
     <span
-      className="flex size-7 shrink-0 items-center justify-center rounded-md bg-fg text-canvas"
+      className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-hover text-fg"
       aria-hidden="true"
     >
-      <Anvil className="size-4" strokeWidth={2.25} />
+      <Anvil className="size-[18px]" />
     </span>
   );
 }
@@ -67,7 +67,7 @@ function Turn({
     const ev = turn.evaluation;
     return (
       <div className="flex flex-col items-end gap-1.5">
-        <div className="max-w-[85%] rounded-2xl rounded-br-md bg-surface-hover px-4 py-2.5 text-[15px] leading-relaxed text-fg">
+        <div className="max-w-[90%] rounded-3xl bg-surface-hover px-5 py-3 text-base leading-7 text-fg sm:max-w-[85%]">
           {turn.kind === "answer" ? <MessageText text={turn.content} /> : <p className="text-fg-muted italic">{turn.content}</p>}
         </div>
         {ev?.status === "pending" ? (
@@ -128,7 +128,7 @@ function Turn({
       ) : null}
       <div className="flex gap-3">
         <InterviewerMark />
-        <div className="min-w-0 flex-1 text-[15px] leading-relaxed text-fg">
+        <div className="min-w-0 flex-1 pt-0.5 text-base leading-7 text-fg">
           {turn.kind === "follow_up" ? (
             <p className="mb-1 text-xs font-medium text-fg-subtle">Follow-up</p>
           ) : null}
@@ -255,8 +255,8 @@ export function InterviewChat({ initial }: { initial: InterviewState }) {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-8 pb-6 sm:px-6">
-        <div role="log" aria-label="Interview transcript" aria-live="polite" className="flex flex-col gap-6">
+      <div className="mx-auto w-full max-w-3xl flex-1 px-5 pt-10 pb-8 sm:px-6">
+        <div role="log" aria-label="Interview transcript" aria-live="polite" className="flex flex-col gap-8">
           {state.turns.map((turn) => {
             const number = turn.kind === "question" ? ++questionCount : null;
             return (
@@ -276,7 +276,7 @@ export function InterviewChat({ initial }: { initial: InterviewState }) {
 
           {pending?.action === "answers" && pending.content ? (
             <div className="flex justify-end">
-              <div className="max-w-[85%] rounded-2xl rounded-br-md bg-surface-hover px-4 py-2.5 text-[15px] leading-relaxed text-fg opacity-70">
+              <div className="max-w-[90%] rounded-3xl bg-surface-hover px-5 py-3 text-base leading-7 text-fg opacity-70 sm:max-w-[85%]">
                 <MessageText text={pending.content} />
               </div>
             </div>
@@ -294,8 +294,8 @@ export function InterviewChat({ initial }: { initial: InterviewState }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 z-20 border-t border-line-subtle bg-canvas">
-        <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6">
+      <div className="sticky bottom-0 z-20 bg-canvas">
+        <div className="mx-auto max-w-3xl px-4 pt-3 pb-4 sm:px-6">
           {failure ? (
             <div role="alert" className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-fg">
               <span className="flex items-start gap-2">
@@ -338,7 +338,7 @@ export function InterviewChat({ initial }: { initial: InterviewState }) {
                 e.preventDefault();
                 send();
               }}
-              className="rounded-2xl border border-line bg-surface transition-colors focus-within:border-neutral-500"
+              className="rounded-3xl border border-line bg-surface transition-colors focus-within:border-fg-muted"
             >
               <label htmlFor="interview-answer" className="sr-only">
                 Your answer
@@ -358,7 +358,7 @@ export function InterviewChat({ initial }: { initial: InterviewState }) {
                 disabled={busy}
                 placeholder="Reason through your answer…"
                 aria-describedby={composerHelpId}
-                className="field-sizing-content block max-h-64 min-h-20 w-full resize-none bg-transparent px-4 pt-3 text-[15px] leading-relaxed text-fg placeholder:text-fg-subtle focus:outline-none disabled:opacity-60"
+                className="field-sizing-content block max-h-64 min-h-24 w-full resize-none rounded-t-3xl bg-transparent px-5 pt-4 text-base leading-7 text-fg placeholder:text-fg-subtle focus:outline-none disabled:opacity-60"
               />
               <div className="flex items-center justify-between gap-2 px-2 pb-2">
                 <div className="flex items-center gap-1">
@@ -396,14 +396,14 @@ export function InterviewChat({ initial }: { initial: InterviewState }) {
                   size="sm"
                   disabled={busy || !draft.trim()}
                   aria-label="Send answer"
-                  className="size-8 rounded-full px-0"
+                  className="size-9 rounded-full px-0"
                 >
                   {busy ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <ArrowUp aria-hidden="true" />}
                 </Button>
               </div>
             </form>
           )}
-          <p id={composerHelpId} className={cn("mt-2 text-center text-[11px] text-fg-subtle", !open && "sr-only")}>
+          <p id={composerHelpId} className={cn("mt-3 text-center text-xs leading-relaxed text-fg-subtle", !open && "sr-only")}>
             Enter to send · Shift+Enter for a new line · Alt+H hint · Alt+K I don&apos;t know
             {challenge?.hint_blocked_reason && open ? ` · ${challenge.hint_blocked_reason}` : ""}
           </p>

@@ -18,8 +18,6 @@
 > [!WARNING]
 > **LOCAL-ONLY · SINGLE USER.** FORGE 1.0 has **no authentication**. An anonymous browser cookie identifies the learner; it does not establish a secure account. Keep the web app, API and database bound to loopback (`127.0.0.1`). **Do not expose FORGE to a shared network or the internet**, including through tunnels, proxies or public demos. Its runc container isolation is unsuitable for untrusted multi-tenant code execution. Run **one API process** because the global AI call budget is per process. Read [SECURITY.md](SECURITY.md) before running code.
 
-**Launch draft:** an open-source license has not yet been selected. See [License](#license).
-
 ## Why FORGE
 
 FORGE brings diagnostics, interviews, practical exercises and reflection into one local learning environment. Its `mastery-v1.5` engine explains what evidence is missing and supports an adaptive path with spaced review, knowledge gaps and goals.
@@ -99,7 +97,7 @@ Read the full [limitations and validation scope](docs/LIMITATIONS.md). The caree
 
 ## Contributing
 
-Contribution ideas include curriculum coverage, practical challenges, regression tests, accessibility and documentation. These are opportunities for discussion, not a promised roadmap. Start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and use the issue and pull request templates. Confirm the project license before contributing code.
+Contribution ideas include curriculum coverage, practical challenges, regression tests, accessibility and documentation. These are opportunities for discussion, not a promised roadmap. Start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and use the issue and pull request templates.
 
 Report vulnerabilities through the private route described in [SECURITY.md](SECURITY.md), rather than a public issue.
 
@@ -118,4 +116,4 @@ Report vulnerabilities through the private route described in [SECURITY.md](SECU
 
 ## License
 
-**License decision pending.** This draft intentionally includes license guidance instead of an assumed `LICENSE`. Public visibility alone does not make a repository open source; select and add an appropriate license before describing the launch that way. See [LICENSE-GUIDANCE.md](LICENSE-GUIDANCE.md) and [GitHub's licensing guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
+FORGE is open source under the [MIT License](LICENSE). You can use, copy, modify and share it, including commercially, as long as you keep the copyright and license notice. It comes with no warranty. Third-party material included in the repository is listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

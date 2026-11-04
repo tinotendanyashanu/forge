@@ -7,18 +7,18 @@ type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md";
 
 const base =
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-colors duration-150 select-none disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-colors duration-150 select-none disabled:pointer-events-none disabled:opacity-40 aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
 
 const variants: Record<Variant, string> = {
   primary: "bg-fg text-canvas hover:bg-neutral-200 active:bg-neutral-300",
   secondary:
-    "border border-line bg-surface text-fg hover:bg-surface-hover hover:border-neutral-600",
+    "border border-line bg-transparent text-fg hover:bg-surface-hover hover:border-fg-subtle",
   ghost: "text-fg-muted hover:bg-surface-hover hover:text-fg",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-[13px]",
-  md: "h-10 px-4 text-sm",
+  sm: "h-9 px-3.5 text-[13px]",
+  md: "h-11 px-5 text-sm",
 };
 
 interface StyleProps {

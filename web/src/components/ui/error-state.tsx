@@ -17,12 +17,12 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className="flex flex-col items-center rounded-xl border border-line bg-surface px-6 py-12 text-center"
+      className="flex flex-col items-center rounded-2xl border border-line-subtle bg-surface px-6 py-12 text-center"
     >
-      <span className="mb-4 flex size-10 items-center justify-center rounded-lg border border-line text-fg">
+      <span className="mb-5 flex size-12 items-center justify-center rounded-full bg-surface-hover text-fg">
         <CircleAlert className="size-5" aria-hidden="true" />
       </span>
-      <h2 className="text-[15px] font-medium text-fg">{title}</h2>
+      <h2 className="text-base font-medium text-fg">{title}</h2>
       <p className="mt-1.5 max-w-md text-sm leading-relaxed text-fg-muted">
         {description}
       </p>

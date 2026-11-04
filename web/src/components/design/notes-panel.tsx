@@ -7,9 +7,8 @@ import { fetchAdrRevisions, saveAdr } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import type { Adr, AdrContent, AdrStatus } from "@/lib/types";
 
-const field =
-  "w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-[13px] text-fg placeholder:text-fg-subtle focus:border-neutral-500 focus:outline-none";
-const labelCls = "mb-1 block text-[11px] font-medium text-fg-subtle";
+const field = "forge-field min-h-9 px-3 py-1.5 text-[13px]";
+const labelCls = "mb-1.5 block text-xs font-medium text-fg-muted";
 const STATUSES: AdrStatus[] = ["proposed", "accepted", "superseded", "rejected"];
 
 const BLANK: AdrContent = {

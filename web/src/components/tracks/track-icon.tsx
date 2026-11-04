@@ -7,6 +7,11 @@ import {
   FlaskConical,
   Globe,
   Network,
+  ShieldCheck,
+  Container,
+  GitBranch,
+  Blocks,
+  Code,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -22,6 +27,11 @@ const ICONS: Record<string, LucideIcon> = {
   http: Globe,
   testing: FlaskConical,
   "system-design": Network,
+  "programming-fundamentals": Code,
+  security: ShieldCheck,
+  devops: Container,
+  "distributed-systems": Blocks,
+  "senior-practices": GitBranch,
 };
 
 export function TrackIcon({
@@ -35,11 +45,11 @@ export function TrackIcon({
   return (
     <span
       className={cn(
-        "flex size-9 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-raised text-fg",
+        "flex size-11 shrink-0 items-center justify-center rounded-xl bg-surface-hover text-fg",
         className,
       )}
     >
-      <Icon className="size-[18px]" aria-hidden="true" />
+      <Icon className="size-5" aria-hidden="true" />
     </span>
   );
 }

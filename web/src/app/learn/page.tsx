@@ -106,7 +106,7 @@ async function Recommendations() {
     <ol className="flex flex-col gap-3">
       {recs.map((r, i) => (
         <li key={r.key} className="animate-rise-in" style={{ animationDelay: `${i * 30}ms` }}>
-          <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
+          <Card className="flex flex-col gap-5 p-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 gap-4">
               <TrackIcon slug={r.skill.slug} />
               <div className="min-w-0">
@@ -114,7 +114,7 @@ async function Recommendations() {
                   {i === 0 ? "Up next · " : ""}
                   {KIND_LABEL[r.kind]}
                 </p>
-                <h3 className="mt-1 text-[15px] font-medium text-fg">
+                <h3 className="mt-1.5 text-base font-medium text-fg">
                   {r.skill.title} · {difficultyLabel[r.activity.difficulty]}{" "}
                   <span className="font-normal text-fg-muted">
                     {r.activity.type === "interview" && r.activity.mode
@@ -155,11 +155,11 @@ async function Goals() {
   const [goals, curriculum] = await Promise.all([getGoals(), getCurriculum()]);
   const assessable = curriculum.skills.filter((s) => s.assessable);
   return (
-    <Card className="flex flex-col gap-5 p-5">
+    <Card className="flex flex-col gap-6 p-6">
       {goals && goals.length > 0 ? (
         <ul className="flex flex-wrap gap-2">
           {goals.map((g) => (
-            <li key={g.skill.slug} className="flex items-center gap-2 rounded-lg border border-line py-1 pr-1 pl-3 text-sm text-fg">
+            <li key={g.skill.slug} className="flex items-center gap-2 rounded-full border border-line py-1 pr-1 pl-3 text-sm text-fg">
               <Target className="size-3.5 text-fg-muted" aria-hidden="true" />
               {g.skill.title} · {difficultyLabel[g.target_level]}
               <form action={removeGoal}>
@@ -181,7 +181,7 @@ async function Goals() {
       <form action={setGoal} className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className="flex flex-1 flex-col gap-1.5 text-xs text-fg-subtle">
           Skill
-          <select name="skill" required className="h-9 rounded-lg border border-line bg-canvas px-2 text-sm text-fg">
+          <select name="skill" required className="forge-field">
             {curriculum.skills.map((s) => (
               <option key={s.slug} value={s.slug}>
                 {s.title}{s.assessable ? "" : " (no assessments yet)"}
@@ -191,13 +191,13 @@ async function Goals() {
         </label>
         <label className="flex flex-col gap-1.5 text-xs text-fg-subtle">
           Target level
-          <select name="level" defaultValue="intermediate" className="h-9 rounded-lg border border-line bg-canvas px-2 text-sm text-fg">
+          <select name="level" defaultValue="intermediate" className="forge-field">
             {DIFFICULTIES.map((d) => (
               <option key={d} value={d}>{difficultyLabel[d]}</option>
             ))}
           </select>
         </label>
-        <Button type="submit" variant="secondary" className="h-9">Set goal</Button>
+        <Button type="submit" variant="secondary">Set goal</Button>
       </form>
       <p className="text-xs text-fg-subtle">{assessable.length} of {curriculum.skills.length} skills have assessments today.</p>
     </Card>

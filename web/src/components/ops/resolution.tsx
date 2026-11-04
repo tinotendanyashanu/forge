@@ -12,8 +12,7 @@ import { TimeChart } from "./chart";
 import { QUALITY_LABEL, RCA_LABEL, STATUS_LABEL, pct } from "./format";
 import { useLoad } from "./use-load";
 
-const field =
-  "w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-[13px] text-fg placeholder:text-fg-subtle focus:border-neutral-500 focus:outline-none";
+const field = "forge-field min-h-9 px-3 py-1.5 text-[13px]";
 
 const RCA_FIELDS: [string, string, string, number][] = [
   ["summary", "Incident summary", "What happened, when, and how it was resolved.", 10],

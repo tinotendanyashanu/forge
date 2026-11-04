@@ -16,7 +16,7 @@ Add sanitized captures of the real UI for visible changes, with short captions. 
 
 ## Review checklist
 
-- [ ] I checked the published project license and have permission to contribute the included material.
+- [ ] I have the right to contribute this material under the project's MIT License.
 - [ ] This change preserves the local-only boundary, or clearly documents a separately reviewed boundary change.
 - [ ] Deterministic evidence remains distinct from advisory AI and mock execution.
 - [ ] I reviewed changed files and attachments for secrets and private learner data.

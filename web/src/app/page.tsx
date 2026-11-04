@@ -2,7 +2,7 @@ import { ArrowRight, BookOpen, History, Play } from "lucide-react";
 import { Suspense } from "react";
 
 import { SessionList } from "@/components/history/session-list";
-import { TrackGrid, TrackGridSkeleton } from "@/components/tracks/track-card";
+import { TrackExplorer } from "@/components/tracks/track-explorer";
 import { TrackIcon } from "@/components/tracks/track-icon";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageContainer } from "@/components/ui/page-container";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { LoadingRegion, Skeleton } from "@/components/ui/skeleton";
-import { getSessions, getSkills } from "@/lib/api";
+import { getCurriculum, getSessions } from "@/lib/api";
 import { difficultyLabel } from "@/lib/format";
 
 export default function DashboardPage() {
@@ -18,8 +18,8 @@ export default function DashboardPage() {
     <PageContainer className="flex flex-col gap-12">
       <PageHeader
         eyebrow="Dashboard"
-        title="Practise the way senior engineers think."
-        description="Pick a skill and a difficulty, answer real questions, and get feedback grounded in a rubric. Multiple-choice answers are graded; written answers are saved, not scored. The AI interviewer evaluates written answers."
+        title="Build the way you think."
+        description="Practise real engineering problems, get thoughtful feedback, and build evidence of what you can do. One skill at a time."
         actions={
           <ButtonLink href="/tracks" variant="secondary">
             <BookOpen aria-hidden="true" />
@@ -35,8 +35,7 @@ export default function DashboardPage() {
       <section aria-labelledby="skills-heading">
         <SectionHeader
           id="skills-heading"
-          title="Skill tracks"
-          description="The curriculum, in prerequisite order. Skills without questions yet are marked."
+          title="Explore your learning tracks"
           action={
             <ButtonLink href="/tracks" variant="ghost" size="sm">
               View all
@@ -47,7 +46,7 @@ export default function DashboardPage() {
         <Suspense
           fallback={
             <LoadingRegion label="Loading skills">
-              <TrackGridSkeleton />
+              <Skeleton className="h-[440px] w-full rounded-2xl" />
             </LoadingRegion>
           }
         >
@@ -72,7 +71,7 @@ export default function DashboardPage() {
 }
 
 async function Skills() {
-  const skills = await getSkills();
+  const { skills } = await getCurriculum();
   if (skills.length === 0) {
     return (
       <EmptyState
@@ -82,7 +81,7 @@ async function Skills() {
       />
     );
   }
-  return <TrackGrid skills={skills} />;
+  return <TrackExplorer skills={skills} />;
 }
 
 async function ResumeCard() {

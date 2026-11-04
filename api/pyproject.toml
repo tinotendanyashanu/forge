@@ -1,6 +1,7 @@
 [project]
 name = "forge-api"
 version = "1.0.0"
+license = "MIT"
 description = "FORGE adaptive learning platform API"
 requires-python = ">=3.12"
 

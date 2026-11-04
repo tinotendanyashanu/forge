@@ -18,21 +18,21 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between",
+        "flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between",
         className,
       )}
     >
       <div className="min-w-0">
         {eyebrow ? (
-          <div className="mb-3 text-[13px] font-medium text-fg-subtle">
+          <div className="mb-3 text-sm font-medium text-fg-muted">
             {eyebrow}
           </div>
         ) : null}
-        <h1 className="text-2xl font-semibold tracking-tight text-balance text-fg sm:text-[28px] sm:leading-tight">
+        <h1 className="max-w-3xl text-[28px] leading-tight font-semibold tracking-[-0.035em] text-balance text-fg sm:text-[34px]">
           {title}
         </h1>
         {description ? (
-          <p className="mt-2.5 max-w-2xl text-[15px] leading-relaxed text-pretty text-fg-muted">
+          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-pretty text-fg-muted sm:text-base">
             {description}
           </p>
         ) : null}
@@ -56,13 +56,13 @@ export function SectionHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4">
+    <div className="mb-5 flex items-end justify-between gap-4">
       <div>
-        <h2 id={id} className="text-[15px] font-medium text-fg">
+        <h2 id={id} className="text-lg font-semibold tracking-tight text-fg">
           {title}
         </h2>
         {description ? (
-          <p className="mt-1 text-sm text-fg-muted">{description}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{description}</p>
         ) : null}
       </div>
       {action}

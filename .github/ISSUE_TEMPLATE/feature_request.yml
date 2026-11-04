@@ -33,4 +33,4 @@ body:
     id: contribution
     attributes:
       label: Possible contribution
-      description: Optional. Explain what you could help research, implement, document or validate after scope and licensing are settled.
+      description: Optional. Explain what you could help research, implement, document or validate once the scope is agreed.

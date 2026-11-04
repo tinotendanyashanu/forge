@@ -39,7 +39,7 @@ export function StartAssessmentForm({ skill }: { skill: SkillDetail }) {
               <label
                 key={d}
                 className={cn(
-                  "relative flex cursor-pointer flex-col rounded-xl border p-4 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-fg",
+                  "relative flex cursor-pointer flex-col rounded-2xl border p-5 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-fg",
                   checked
                     ? "border-fg bg-surface-raised"
                     : "border-line bg-surface hover:border-neutral-600",
@@ -69,7 +69,7 @@ export function StartAssessmentForm({ skill }: { skill: SkillDetail }) {
                     {checked ? <span className="size-2 rounded-full bg-fg" /> : null}
                   </span>
                 </span>
-                <span className="mt-1.5 text-[13px] leading-snug text-fg-muted">
+                <span className="mt-2 text-sm leading-relaxed text-fg-muted">
                   {DESCRIPTIONS[d]}
                 </span>
                 <span className="mt-3 text-xs text-fg-subtle tabular-nums">

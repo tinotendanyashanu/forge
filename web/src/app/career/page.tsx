@@ -17,7 +17,7 @@ import { CAREER_LEVELS, CAREER_TRACKS } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Career" };
 
-const field = "w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-[13px] text-fg placeholder:text-fg-subtle focus:border-neutral-500 focus:outline-none";
+const field = "forge-field";
 
 export default function CareerPage({ searchParams }: PageProps<"/career">) {
   return (
@@ -142,22 +142,22 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/career">, "searchPar
 function ProfileForm({ track = "fullstack", level = "mid", goal = "", exp = {} }: { track?: string; level?: string; goal?: string; exp?: Record<string, string> }) {
   return (
     <form action={saveCareerProfile} className="flex flex-col gap-3 text-left">
-      <div className="grid grid-cols-2 gap-2">
-        <label className="text-xs text-fg-subtle">Role
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="text-sm text-fg-muted">Role
           <select name="track" defaultValue={track} className={`${field} mt-1`}>
             {CAREER_TRACKS.map((t) => <option key={t} value={t}>{TRACK_LABEL[t]}</option>)}
           </select>
         </label>
-        <label className="text-xs text-fg-subtle">Level
+        <label className="text-sm text-fg-muted">Level
           <select name="target_level" defaultValue={level} className={`${field} mt-1`}>
             {CAREER_LEVELS.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
           </select>
         </label>
       </div>
-      <label className="text-xs text-fg-subtle">Goal
+      <label className="text-sm text-fg-muted">Goal
         <input name="goal" defaultValue={goal} maxLength={500} className={`${field} mt-1`} placeholder="e.g. Prepare for mid-level Python/React roles" />
       </label>
-      <details className="text-xs text-fg-subtle">
+      <details className="text-xs leading-relaxed text-fg-muted">
         <summary className="cursor-pointer">Self-reported experience (context only, never evidence)</summary>
         <div className="mt-2 flex flex-col gap-2">
           <input name="years" defaultValue={exp.years ?? ""} maxLength={20} className={field} placeholder="Years of experience" />

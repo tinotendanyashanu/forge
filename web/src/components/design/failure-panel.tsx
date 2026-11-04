@@ -7,8 +7,7 @@ import { answerFailureScenario, startFailureScenario } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import type { FailureAttempt, FailureScenario } from "@/lib/types";
 
-const field =
-  "w-full rounded-md border border-line bg-canvas px-2.5 py-2 text-[13px] text-fg placeholder:text-fg-subtle focus:border-neutral-500 focus:outline-none";
+const field = "forge-field min-h-9 px-3 py-2 text-[13px]";
 
 const DIMENSION_LABEL: Record<string, string> = {
   impact_analysis: "Impact analysis",

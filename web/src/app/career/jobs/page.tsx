@@ -14,7 +14,7 @@ import { getCareerJobs } from "@/lib/api";
 
 export const metadata: Metadata = { title: "Job description matcher" };
 
-const field = "w-full rounded-md border border-line bg-canvas px-3 py-2 text-[13px] text-fg placeholder:text-fg-subtle focus:border-neutral-500 focus:outline-none";
+const field = "forge-field";
 
 export default function JobsPage({ searchParams }: PageProps<"/career/jobs">) {
   return (

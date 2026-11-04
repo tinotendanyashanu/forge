@@ -12,7 +12,7 @@ import type { AttemptSection, AttemptView, CareerItem } from "@/lib/types";
 
 import { KIND_LABEL, LEVEL_LABEL, TRACK_LABEL, pct } from "./format";
 
-const field = "w-full rounded-md border border-line bg-canvas px-3 py-2 text-[13px] leading-relaxed text-fg placeholder:text-fg-subtle focus:border-neutral-500 focus:outline-none";
+const field = "forge-field";
 const STATUS_ICON = { pending: Circle, in_progress: CircleDashed, completed: CheckCircle2, unavailable: CircleSlash, skipped: CircleSlash } as const;
 const STATUS_TEXT = { pending: "Not started", in_progress: "In progress", completed: "Completed", unavailable: "Unavailable", skipped: "Skipped" } as const;
 

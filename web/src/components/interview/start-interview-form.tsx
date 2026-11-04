@@ -21,7 +21,7 @@ const initialState: StartState = { error: null };
 
 const cardClass = (checked: boolean) =>
   cn(
-    "relative flex cursor-pointer rounded-xl border transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-fg",
+    "relative flex cursor-pointer rounded-2xl border transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-fg",
     checked ? "border-fg bg-surface-raised" : "border-line bg-surface hover:border-neutral-600",
   );
 
@@ -50,7 +50,7 @@ export function StartInterviewForm({
             const meta = MODE_META[m];
             const Icon = meta.icon;
             return (
-              <label key={m} className={cn(cardClass(mode === m), "items-start gap-3 p-4")}>
+              <label key={m} className={cn(cardClass(mode === m), "items-start gap-3 p-5")}>
                 <input
                   type="radio"
                   name="mode"
@@ -59,10 +59,10 @@ export function StartInterviewForm({
                   onChange={() => setMode(m)}
                   className="sr-only"
                 />
-                <Icon className="mt-0.5 size-[18px] shrink-0 text-fg" aria-hidden="true" />
+                <Icon className="mt-0.5 size-5 shrink-0 text-fg" aria-hidden="true" />
                 <span>
                   <span className="block text-sm font-medium text-fg">{meta.label}</span>
-                  <span className="mt-1 block text-[13px] leading-snug text-fg-muted">
+                  <span className="mt-1.5 block text-sm leading-relaxed text-fg-muted">
                     {meta.description}
                   </span>
                 </span>
@@ -76,7 +76,10 @@ export function StartInterviewForm({
         <legend className="mb-3 text-sm font-medium text-fg">Skill</legend>
         <div className="flex flex-wrap gap-2">
           {skills.map((s) => (
-            <label key={s.slug} className={cn(cardClass(skill === s.slug), "px-3 py-2")}>
+            <label key={s.slug} className={cn(
+              "relative flex min-h-11 cursor-pointer items-center rounded-full border px-4 py-2 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-fg",
+              skill === s.slug ? "border-fg bg-fg text-canvas" : "border-line text-fg-muted hover:border-fg-subtle hover:text-fg",
+            )}>
               <input
                 type="radio"
                 name="skill"
@@ -85,7 +88,7 @@ export function StartInterviewForm({
                 onChange={() => setSkill(s.slug)}
                 className="sr-only"
               />
-              <span className="text-sm text-fg">{s.title}</span>
+              <span>{s.title}</span>
             </label>
           ))}
         </div>
@@ -93,12 +96,12 @@ export function StartInterviewForm({
 
       <fieldset>
         <legend className="mb-3 text-sm font-medium text-fg">Starting difficulty</legend>
-        <div className="inline-flex rounded-xl border border-line bg-surface p-1">
+        <div className="inline-flex max-w-full flex-wrap gap-1 rounded-2xl bg-canvas p-1 sm:rounded-full">
           {DIFFICULTIES.map((d) => (
             <label
               key={d}
               className={cn(
-                "cursor-pointer rounded-lg px-3 py-1.5 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-fg",
+                "flex min-h-10 cursor-pointer items-center rounded-full px-3 py-2 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-fg",
                 difficulty === d ? "bg-fg text-canvas" : "text-fg-muted hover:text-fg",
               )}
             >

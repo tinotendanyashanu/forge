@@ -14,15 +14,15 @@ export function Brand({
     <Link
       href="/"
       onClick={onNavigate}
-      className="flex h-9 min-w-0 items-center gap-2.5 rounded-lg px-1.5"
+      className="flex h-10 min-w-0 items-center gap-3 rounded-xl px-1.5"
       aria-label="FORGE home"
     >
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-fg text-canvas">
-        <Anvil className="size-4" aria-hidden="true" strokeWidth={2.25} />
+      <span className="flex size-8 shrink-0 items-center justify-center text-fg">
+        <Anvil className="size-7" aria-hidden="true" />
       </span>
       <span
         className={cn(
-          "text-[15px] font-semibold tracking-[0.12em] text-fg",
+          "text-base font-semibold tracking-[0.08em] text-fg",
           collapsed && "sr-only",
         )}
       >

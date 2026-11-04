@@ -11,20 +11,20 @@ import { TrackIcon } from "./track-icon";
 
 export function TrackCard({ skill }: { skill: SkillSummary }) {
   return (
-    <Link href={`/tracks/${skill.slug}`} className="group block h-full rounded-xl">
-      <Card className="flex h-full flex-col p-5 transition-colors duration-150 group-hover:border-neutral-600 group-hover:bg-surface-raised">
+    <Link href={`/tracks/${skill.slug}`} className="group block h-full rounded-2xl">
+      <Card className="flex h-full flex-col p-6 transition-colors duration-150 group-hover:border-fg-subtle group-hover:bg-surface-raised">
         <div className="flex items-start justify-between gap-3">
           <TrackIcon slug={skill.slug} />
           <ArrowRight
-            className="size-4 -translate-x-1 text-fg-subtle opacity-0 transition-all duration-150 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+            className="mt-1 size-4 text-fg-subtle transition-colors duration-150 group-hover:text-fg group-focus-visible:text-fg"
             aria-hidden="true"
           />
         </div>
-        <h3 className="mt-4 text-[15px] font-medium text-fg">{skill.title}</h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">
+        <h3 className="mt-5 text-base font-medium text-fg">{skill.title}</h3>
+        <p className="mt-2 text-sm leading-6 text-fg-muted">
           {skill.summary}
         </p>
-        <dl className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-5 text-xs text-fg-subtle tabular-nums">
+        <dl className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-6 text-xs text-fg-subtle tabular-nums">
           {DIFFICULTIES.map((d) => (
             <div key={d} className="flex gap-1">
               <dt>{difficultyLabel[d]}</dt>
@@ -53,7 +53,7 @@ export function TrackGrid({
   return (
     <ul
       className={cn(
-        "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4",
+        "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3",
         className,
       )}
     >
@@ -72,10 +72,10 @@ export function TrackGrid({
 
 export function TrackGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: count }, (_, i) => (
-        <Card key={i} className="p-5">
-          <Skeleton className="size-9 rounded-lg" />
+        <Card key={i} className="p-6">
+          <Skeleton className="size-11 rounded-xl" />
           <Skeleton className="mt-4 h-4 w-2/5" />
           <Skeleton className="mt-3 h-3.5 w-full" />
           <Skeleton className="mt-2 h-3.5 w-3/4" />

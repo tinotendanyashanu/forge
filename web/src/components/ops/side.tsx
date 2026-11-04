@@ -12,8 +12,7 @@ import { OPS_MODES } from "@/lib/types";
 
 import { MODE_INFO } from "./format";
 
-const field =
-  "w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-[13px] text-fg placeholder:text-fg-subtle focus:border-neutral-500 focus:outline-none";
+const field = "forge-field min-h-9 px-3 py-1.5 text-[13px]";
 
 // ---------------------------------------------------------------- actions
 
