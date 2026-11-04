@@ -10,9 +10,7 @@ Code execution uses runc container isolation with an explicit single-user acknow
 
 ## Report a vulnerability privately
 
-**Maintainer setup required before publication:** enable and test GitHub private vulnerability reporting on the eventual repository, or replace this paragraph with a monitored private contact. No reporting channel or response time has been confirmed for this draft. A `SECURITY.md` file alone does not enable GitHub's reporting feature. See [GitHub's setup guidance](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
-
-If private reporting is enabled, use the repository's **Report a vulnerability** action in its Security area. If it is unavailable and no private contact is listed, open a public issue asking only for a private contact, without vulnerability details, exploit steps or sensitive attachments. See [GitHub's reporting guidance](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately).
+Email **[leo@leothetechguy.com](mailto:leo@leothetechguy.com)** with "FORGE security" in the subject. Do not open a public issue for a vulnerability. If the repository's **Report a vulnerability** button (in its Security tab) is available, you can use that instead. See [GitHub's reporting guidance](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately). No response time is promised.
 
 A helpful private report includes:
 

@@ -13,7 +13,7 @@ Harassment, threats, discriminatory insults, sexual harassment, doxxing, deliber
 
 ## Reporting and enforcement
 
-**REVIEW REQUIRED: add a monitored private conduct-reporting address or contact URL here before publishing this policy.** Do not send conduct complaints through a security vulnerability form unless they also concern a software vulnerability.
+**Report conduct concerns privately to [leo@leothetechguy.com](mailto:leo@leothetechguy.com).** Do not send conduct complaints through a security vulnerability form unless they also concern a software vulnerability.
 
 Report concerns privately with links or other relevant context. Avoid posting personal details in public issues. Reports will be handled with care, with information shared only as needed to assess and address the situation; absolute confidentiality cannot be promised.
 

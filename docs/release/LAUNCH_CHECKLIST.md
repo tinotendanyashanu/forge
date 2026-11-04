@@ -6,8 +6,8 @@ This is a review checklist, not a statement that the checks have passed. It cove
 
 - [ ] Confirm the final repository owner/name and project description. Do not imply a hosted service or multi-user support.
 - [x] License chosen: MIT. Full text in `LICENSE`; README, CONTRIBUTING and package metadata updated.
-- [ ] Enable and verify GitHub private vulnerability reporting, or publish a monitored private security contact. Update `SECURITY.md` to describe the confirmed route.
-- [ ] Replace the conduct contact slot in `CODE_OF_CONDUCT.md` with a working private route.
+- [x] Private security contact published in `SECURITY.md` (leo@leothetechguy.com). Optional: also enable GitHub private vulnerability reporting.
+- [x] Conduct contact set in `CODE_OF_CONDUCT.md` (leo@leothetechguy.com).
 
 ## Documentation and evidence
 
