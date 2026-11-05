@@ -10,6 +10,7 @@ from app.db.enums import (
     MasteryState,
 )
 from app.schemas.content import SkillRef
+from app.schemas.lessons import LessonSuggestion
 
 
 class LevelSpecOut(BaseModel):
@@ -171,6 +172,8 @@ class RecommendationOut(BaseModel):
     activity: ActivityOut
     # Same target through the AI interviewer (unverified evidence).
     interview_alternative: ActivityOut | None = None
+    # A lesson to read first. Reading is never mastery evidence.
+    lesson: "LessonSuggestion | None" = None
     priority: float
     reasons: list[str]
 

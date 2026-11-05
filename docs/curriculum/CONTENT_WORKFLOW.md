@@ -9,6 +9,7 @@ How FORGE assessment content is authored, checked and published. The goal is to 
 | `api/app/seed/content/NN-<skill>.json` | Question content loaded into the database. Strict schema (`app/seed/schema.py`). Topics must equal the skill's curriculum subskills, in order. |
 | `api/app/seed/meta/NN-<skill>.meta.json` | QA metadata, not loaded into the database: version, status, provenance, learning objective, prerequisites, distractor rationale, follow-up questions. |
 | `api/app/seed/qa.py` | The automated quality gate. |
+| `api/app/seed/lessons/*.md` | Lessons: TOML front matter plus Markdown with nine required sections. Validated by `app/seed/lessons.py`. |
 | `docs/curriculum/AUDIT.md` | Coverage and quality baseline. |
 
 Question slugs are stable identifiers. The seed loader upserts by slug and **deactivates** questions removed from the files; it never deletes them, so learner history is preserved.
@@ -33,6 +34,7 @@ Question slugs are stable identifiers. The seed loader upserts by slug and **dea
 
 ## Rules that protect learners
 
+- Options are shuffled per session item. Never refer to an option by letter or position in any question text; the gate blocks it.
 - Never edit the options of a question learners have answered in a way that changes which option key is correct. Create a new question (new slug) and remove the old one from the seed instead; it becomes inactive and its history stays valid.
 - Single-choice questions are the only assessment content that produces verified mastery. Each skill needs **at least two scored questions per level** for that level to be verifiable.
 - Free-text answers are saved, not scored. Use them for reasoning practice and interviews.

@@ -24,6 +24,8 @@ import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from app.curriculum.graph import load_curriculum
+from app.seed.lessons import LessonSeed, load_lessons
 from app.seed.schema import CONTENT_DIR, SeedQuestion, load_seed_files
 
 META_DIR = CONTENT_DIR.parent / "meta"
@@ -140,6 +142,24 @@ def check_meta(report: Report, questions: list[tuple[str, SeedQuestion]]) -> Non
     report.stats["questions_without_metadata"] = len(slugs - covered)
 
 
+def check_lessons(report: Report, questions: list[tuple[str, SeedQuestion]]) -> list[LessonSeed]:
+    try:
+        curriculum, _ = load_curriculum()
+        lessons = load_lessons(curriculum, {q.slug for _, q in questions})
+    except Exception as exc:  # validation errors are fatal
+        report.errors.append(f"lessons: {exc}")
+        return []
+    report.stats["lessons"] = len(lessons)
+    report.stats["lessons_by_skill"] = dict(collections.Counter(x.skill for x in lessons))
+    for x in lessons:
+        words = len(x.body.split())
+        if words < 700:
+            report.warnings.append(f"lesson {x.slug}: only {words} words")
+        if "```" not in x.body:
+            report.warnings.append(f"lesson {x.slug}: no code example")
+    return lessons
+
+
 def _fetch(url: str) -> tuple[str, str]:
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FORGE content QA)"})
     try:
@@ -151,8 +171,10 @@ def _fetch(url: str) -> tuple[str, str]:
         return url, f"error:{type(exc).__name__}"
 
 
-def check_urls(report: Report, questions: list[tuple[str, SeedQuestion]]) -> None:
-    urls = sorted({r.url for _, q in questions for r in q.resources})
+def check_urls(
+    report: Report, questions: list[tuple[str, SeedQuestion]], lessons: list[LessonSeed] = ()
+) -> None:
+    urls = sorted({r.url for _, q in questions for r in q.resources} | {r.url for x in lessons for r in x.resources})
     with concurrent.futures.ThreadPoolExecutor(12) as pool:
         results = list(pool.map(_fetch, urls))
     report.stats["urls_checked"] = len(urls)
@@ -172,8 +194,9 @@ def main(argv: list[str] | None = None) -> int:
     questions = check_questions(report)
     if questions:
         check_meta(report, questions)
+        lessons = check_lessons(report, questions)
         if args.check_urls:
-            check_urls(report, questions)
+            check_urls(report, questions, lessons)
 
     if args.json:
         print(json.dumps({"errors": report.errors, "warnings": report.warnings, "stats": report.stats}, indent=2))

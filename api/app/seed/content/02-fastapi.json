@@ -274,6 +274,116 @@
       ],
       "estimated_minutes": 12,
       "acceptance_criteria": "Creates the engine once per process, one session per request via a yield dependency, with explicit commit/rollback and a test override."
+    },
+    {
+      "slug": "fa-background-task-durability",
+      "topic": "async-handlers",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Background tasks during a deploy",
+      "prompt": "A signup endpoint sends the welcome email with FastAPI's `BackgroundTasks`. During a rolling deploy, an instance is stopped seconds after returning the signup response. What happens to the email?",
+      "hint": "Where does the pending task live while it waits to run?",
+      "options": [
+        {
+          "key": "a",
+          "text": "It is sent: FastAPI stores pending background tasks and resumes them on restart"
+        },
+        {
+          "key": "b",
+          "text": "It is sent: the response is held until all background tasks have finished"
+        },
+        {
+          "key": "c",
+          "text": "It may never be sent: tasks run in-process after the response and are not durable",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "It is sent by another instance: background tasks are shared across workers"
+        }
+      ],
+      "explanation": "`BackgroundTasks` run in the same process after the response is sent. Nothing is persisted, retried or shared, so if the process stops first the work is lost silently. That is fine for best-effort work, but anything that must happen belongs in a durable queue (with retries and idempotency) processed by a worker, or in an outbox written in the request's transaction.",
+      "acceptance_criteria": "Selects “It may never be sent: tasks run in-process after the response and are not durable”. `BackgroundTasks` run in the same process after the response is sent.",
+      "rubric": [
+        "Explains that background tasks run in-process after the response.",
+        "Explains that they are lost if the process stops and are not retried.",
+        "Recommends a durable queue or outbox for must-happen work."
+      ],
+      "expected_concepts": [
+        "background tasks",
+        "durability",
+        "task queues",
+        "graceful shutdown"
+      ],
+      "misconceptions": [
+        "Background tasks survive restarts.",
+        "The client waits for background tasks."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI docs: Background tasks",
+          "url": "https://fastapi.tiangolo.com/tutorial/background-tasks/"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "fa-patch-exclude-unset",
+      "topic": "request-validation",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A PATCH that erases data",
+      "prompt": "Clients send partial updates such as `{\"name\": \"Ada\"}`. After this change, users who update only their name lose their email address. Why?",
+      "code": "class UserPatch(BaseModel):\n    name: str | None = None\n    email: str | None = None\n\n@app.patch(\"/users/{user_id}\")\nasync def patch_user(user_id: int, body: UserPatch, db: Db):\n    user = await db.get(User, user_id)\n    for field, value in body.model_dump().items():\n        setattr(user, field, value)\n    await db.commit()\n    return user",
+      "code_language": "python",
+      "hint": "What does `model_dump()` return for a field the client never sent?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`model_dump()` includes every field, so unset fields overwrite stored values with `None`",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Pydantic rejects partial bodies, so FastAPI fills missing fields from defaults"
+        },
+        {
+          "key": "c",
+          "text": "SQLAlchemy clears columns that are not passed to `setattr` in the same request"
+        },
+        {
+          "key": "d",
+          "text": "PATCH bodies are merged with the previous request's body by the HTTP client"
+        }
+      ],
+      "explanation": "Every field on `UserPatch` defaults to `None`, so a body with only `name` produces `email=None`, and `model_dump()` includes it. The loop then writes `None` over the stored email. Use `model_dump(exclude_unset=True)` so only fields the client actually sent are applied. Keep in mind that `exclude_unset` distinguishes 'not sent' from 'sent as null', which matters if clients may clear a field deliberately.",
+      "acceptance_criteria": "Selects “model_dump()` includes every field, so unset fields overwrite stored values with `None”. Every field on `UserPatch` defaults to `None`, so a body with only `name` produces `email=None`, and `model_dump()` includes it.",
+      "rubric": [
+        "Identifies that defaults make omitted fields `None` in the dump.",
+        "Proposes `model_dump(exclude_unset=True)`.",
+        "Distinguishes a field that was not sent from one sent as null."
+      ],
+      "expected_concepts": [
+        "partial updates",
+        "exclude_unset",
+        "PATCH semantics",
+        "default values"
+      ],
+      "misconceptions": [
+        "Missing fields in a request are ignored automatically.",
+        "`None` and 'not provided' mean the same thing."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI docs: Body — updates (partial updates with exclude_unset)",
+          "url": "https://fastapi.tiangolo.com/tutorial/body-updates/"
+        },
+        {
+          "title": "Pydantic docs: Serialization (model_dump options)",
+          "url": "https://docs.pydantic.dev/latest/concepts/serialization/"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

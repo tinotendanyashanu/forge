@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, CircleDashed, Lock, MessagesSquare } from "lucide-react";
+import { Check, ChevronLeft, CircleDashed, Clock, GraduationCap, Lock, MessagesSquare } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -12,10 +12,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageContainer } from "@/components/ui/page-container";
 import { SectionHeader } from "@/components/ui/page-header";
 import { LoadingRegion, Skeleton } from "@/components/ui/skeleton";
-import { getCurriculum, getSkill, getSkillMastery } from "@/lib/api";
+import { getCurriculum, getLessons, getSkill, getSkillMastery } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { difficultyLabel, formatDateTime, pluralize } from "@/lib/format";
-import type { CurriculumSkill, SkillMasteryDetail } from "@/lib/types";
+import type { CurriculumSkill, LessonSummary, SkillMasteryDetail } from "@/lib/types";
 
 export default function SkillPage({ params }: PageProps<"/tracks/[slug]">) {
   return (
@@ -36,7 +36,9 @@ export default function SkillPage({ params }: PageProps<"/tracks/[slug]">) {
 
 async function Skill({ params }: { params: PageProps<"/tracks/[slug]">["params"] }) {
   const { slug } = await params;
-  const [skill, curriculum, detail] = await Promise.all([getSkill(slug), getCurriculum(), getSkillMastery(slug)]);
+  const [skill, curriculum, detail, lessons] = await Promise.all([
+    getSkill(slug), getCurriculum(), getSkillMastery(slug), getLessons(slug),
+  ]);
   if (!skill) notFound();
   const spec = curriculum.skills.find((s) => s.slug === slug);
   const titles = new Map(curriculum.skills.map((s) => [s.slug, s.title]));
@@ -55,6 +57,8 @@ async function Skill({ params }: { params: PageProps<"/tracks/[slug]">["params"]
       </header>
 
       {spec ? <Prerequisites spec={spec} titles={titles} detail={detail} /> : null}
+
+      {lessons.length ? <Lessons lessons={lessons} /> : null}
 
       {assessable ? (
         <section aria-labelledby="start-heading" className="flex flex-col gap-3">
@@ -80,6 +84,32 @@ async function Skill({ params }: { params: PageProps<"/tracks/[slug]">["params"]
       {spec ? <Curriculum spec={spec} detail={detail} /> : null}
       {detail && detail.mastery.evidence_count > 0 ? <Evidence detail={detail} /> : null}
     </div>
+  );
+}
+
+function Lessons({ lessons }: { lessons: LessonSummary[] }) {
+  return (
+    <section aria-labelledby="lessons-heading" className="flex flex-col gap-3">
+      <h2 id="lessons-heading" className="flex items-center gap-2 text-[15px] font-medium text-fg">
+        <GraduationCap className="size-4" aria-hidden="true" />
+        Learn
+      </h2>
+      <ul className="flex flex-col gap-2">
+        {lessons.map((l) => (
+          <li key={l.slug}>
+            <Link
+              href={`/lessons/${l.slug}`}
+              className="flex items-center justify-between gap-3 rounded-lg border border-line px-4 py-3 text-sm transition-colors hover:border-neutral-600"
+            >
+              <span className="text-fg">{l.title}</span>
+              <span className="flex shrink-0 items-center gap-1 text-xs text-fg-subtle">
+                {difficultyLabel[l.difficulty]} · <Clock className="size-3.5" aria-hidden="true" /> {l.estimated_minutes} min
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

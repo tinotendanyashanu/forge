@@ -1,4 +1,5 @@
-import { CircleAlert, Compass, Network, Target, X } from "lucide-react";
+import { CircleAlert, Compass, GraduationCap, Network, Target, X } from "lucide-react";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -132,6 +133,16 @@ async function Recommendations() {
                     </li>
                   ))}
                 </ul>
+                {r.lesson ? (
+                  <Link
+                    href={`/lessons/${r.lesson.slug}`}
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg border border-line px-3 py-1.5 text-sm text-fg-muted transition-colors hover:border-neutral-600 hover:text-fg"
+                  >
+                    <GraduationCap className="size-4" aria-hidden="true" />
+                    Learn first: {r.lesson.title}
+                    <span className="text-xs text-fg-subtle">{r.lesson.estimated_minutes} min</span>
+                  </Link>
+                ) : null}
               </div>
             </div>
             <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">

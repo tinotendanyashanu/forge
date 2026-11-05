@@ -263,6 +263,178 @@
       ],
       "estimated_minutes": 10,
       "acceptance_criteria": "Explains out-of-order resolution and fixes it with effect cleanup (an ignore flag or AbortController)."
+    },
+    {
+      "slug": "re-strictmode-double-effect",
+      "topic": "effects",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Why does the effect run twice?",
+      "prompt": "In development with `<StrictMode>`, this effect logs `connect`, `disconnect`, `connect` when the component first appears. In the production build it logs `connect` once. Why?",
+      "code": "useEffect(() => {\n  const conn = createConnection(roomId);\n  conn.connect();\n  console.log(\"connect\");\n  return () => {\n    conn.disconnect();\n    console.log(\"disconnect\");\n  };\n}, [roomId]);",
+      "code_language": "tsx",
+      "hint": "What would happen if the cleanup function were missing?",
+      "options": [
+        {
+          "key": "a",
+          "text": "StrictMode runs every effect twice in production too, but logs are deduplicated"
+        },
+        {
+          "key": "b",
+          "text": "StrictMode mounts, unmounts and remounts once in development to expose missing cleanup",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The dependency array is missing, so React re-runs the effect after every render"
+        },
+        {
+          "key": "d",
+          "text": "React retries effects that throw, and the first `connect` call failed silently"
+        }
+      ],
+      "explanation": "In development, StrictMode deliberately runs an extra setup and cleanup cycle for each effect when a component first mounts. A correct effect, whose cleanup undoes its setup, behaves the same either way, so the double run surfaces effects that leak connections or subscriptions. It does not happen in production builds.",
+      "acceptance_criteria": "Selects “StrictMode mounts, unmounts and remounts once in development to expose missing cleanup”. In development, StrictMode deliberately runs an extra setup and cleanup cycle for each effect when a component first mounts.",
+      "rubric": [
+        "Explains StrictMode's extra mount, unmount and remount in development.",
+        "Explains that it checks cleanup is symmetric with setup.",
+        "States that production builds do not do this."
+      ],
+      "expected_concepts": [
+        "StrictMode",
+        "effect cleanup",
+        "development-only checks"
+      ],
+      "misconceptions": [
+        "The double run is a bug to suppress with a ref flag.",
+        "Effects run twice in production."
+      ],
+      "resources": [
+        {
+          "title": "React docs: StrictMode",
+          "url": "https://react.dev/reference/react/StrictMode"
+        },
+        {
+          "title": "React docs: useEffect",
+          "url": "https://react.dev/reference/react/useEffect"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "re-stale-interval-closure",
+      "topic": "state",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A timer that stops at one",
+      "prompt": "What does this component display after five seconds?",
+      "code": "function Timer() {\n  const [count, setCount] = useState(0);\n\n  useEffect(() => {\n    const id = setInterval(() => setCount(count + 1), 1000);\n    return () => clearInterval(id);\n  }, []);\n\n  return <p>{count}</p>;\n}",
+      "code_language": "tsx",
+      "hint": "Which render's `count` does the interval callback see?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`5`"
+        },
+        {
+          "key": "b",
+          "text": "`0`"
+        },
+        {
+          "key": "c",
+          "text": "`1`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "A number that grows but skips values"
+        }
+      ],
+      "explanation": "The effect runs once (empty dependency array), so the interval callback closes over the `count` from the first render, which is 0. Every tick calls `setCount(0 + 1)`, so the value becomes 1 and stays there. Use an updater function, `setCount(c => c + 1)`, which reads the latest state, or include `count` in the dependencies and accept that the interval is recreated each time.",
+      "acceptance_criteria": "Selects “1”. The effect runs once (empty dependency array), so the interval callback closes over the `count` from the first render, which is 0.",
+      "rubric": [
+        "Explains that the callback captures `count` from the first render.",
+        "Explains why the value stays at 1.",
+        "Fixes it with an updater function, or explains the dependency trade-off."
+      ],
+      "expected_concepts": [
+        "stale closures",
+        "updater functions",
+        "effect dependencies"
+      ],
+      "misconceptions": [
+        "State variables always hold the latest value inside callbacks.",
+        "An empty dependency array is always safe for intervals."
+      ],
+      "resources": [
+        {
+          "title": "React docs: Updating state based on the previous state",
+          "url": "https://react.dev/reference/react/useState#updating-state-based-on-the-previous-state"
+        },
+        {
+          "title": "React docs: useEffect",
+          "url": "https://react.dev/reference/react/useEffect"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "re-memo-object-prop",
+      "topic": "state",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "memo that never skips a render",
+      "prompt": "`Chart` is wrapped in `memo` and is expensive to render. Profiling shows it re-renders every time `Dashboard` re-renders, even when `data` is unchanged. What is the cause?",
+      "code": "const Chart = memo(function Chart({ data, options, onSelect }: ChartProps) {\n  /* expensive */\n});\n\nfunction Dashboard({ data }: { data: Point[] }) {\n  const [tab, setTab] = useState(\"day\");\n  return (\n    <Chart\n      data={data}\n      options={{ stacked: true }}\n      onSelect={(p) => console.log(p)}\n    />\n  );\n}",
+      "code_language": "tsx",
+      "hint": "Is `{ stacked: true }` the same object on two different renders?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`memo` only works for class components, so `Chart` is never memoised"
+        },
+        {
+          "key": "b",
+          "text": "`options` and `onSelect` are new values each render, so the shallow comparison fails",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`memo` compares props deeply, which is too slow, so React skips the check"
+        },
+        {
+          "key": "d",
+          "text": "`Dashboard`'s own state always forces every child to re-render"
+        }
+      ],
+      "explanation": "`memo` skips a render only when every prop is equal by `Object.is`. An object literal and an inline arrow function are recreated on every render of `Dashboard`, so those props always differ. Hoist constants out of the component, wrap the object in `useMemo` and the handler in `useCallback`, or pass primitives. Measure first: memoisation has its own cost.",
+      "acceptance_criteria": "Selects “options` and `onSelect` are new values each render, so the shallow comparison fails”. `memo` skips a render only when every prop is equal by `Object.is`.",
+      "rubric": [
+        "Identifies new object and function identities on each render.",
+        "Explains `memo`'s shallow (`Object.is`) comparison.",
+        "Proposes hoisting, `useMemo`, `useCallback` or primitive props."
+      ],
+      "expected_concepts": [
+        "memo",
+        "referential equality",
+        "useMemo",
+        "useCallback"
+      ],
+      "misconceptions": [
+        "`memo` compares props deeply.",
+        "Wrapping in `memo` always prevents re-renders."
+      ],
+      "resources": [
+        {
+          "title": "React docs: memo",
+          "url": "https://react.dev/reference/react/memo"
+        },
+        {
+          "title": "React docs: useCallback",
+          "url": "https://react.dev/reference/react/useCallback"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

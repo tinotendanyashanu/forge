@@ -1,0 +1,61 @@
+{
+  "skill": "react",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "re-strictmode-double-effect": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Diagnose effect dependencies and derived state.",
+      "prerequisites": [
+        "typescript",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "The double run is development-only.",
+        "c": "The dependency array is present.",
+        "d": "React does not retry effects."
+      },
+      "follow_up_questions": [
+        "How would you fix an effect that breaks when it runs twice?"
+      ]
+    },
+    "re-stale-interval-closure": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Prevent stale and out-of-order data.",
+      "prerequisites": [
+        "typescript",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "Would need the latest count on each tick.",
+        "b": "The first tick does update state to 1.",
+        "d": "Each tick computes the same value."
+      },
+      "follow_up_questions": [
+        "Why is the updater form also safer when several updates are queued in one event?"
+      ]
+    },
+    "re-memo-object-prop": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Prevent stale and out-of-order data.",
+      "prerequisites": [
+        "typescript",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "memo works on function components.",
+        "c": "memo uses a shallow comparison by default.",
+        "d": "memo exists precisely to skip renders when props are equal."
+      },
+      "follow_up_questions": [
+        "When would you pass a custom comparison function to `memo`, and what are the risks?"
+      ]
+    }
+  }
+}

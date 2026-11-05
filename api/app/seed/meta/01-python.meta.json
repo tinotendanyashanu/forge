@@ -1,0 +1,58 @@
+{
+  "skill": "python",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "py-gather-vs-sequential": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Explain closures, scope and copy semantics precisely.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Treats gather as sequential too.",
+        "b": "Treats the first two awaits as concurrent.",
+        "d": "Assumes every async call overlaps."
+      },
+      "follow_up_questions": [
+        "How would you run the first two calls concurrently as well?"
+      ]
+    },
+    "py-eq-without-hash": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Match concurrency models to workloads and justify the choice.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Would require a hash consistent with __eq__.",
+        "b": "Defining __eq__ removes the inherited identity hash; __hash__ becomes None.",
+        "d": "__hash__ exists (as None); the error is TypeError."
+      },
+      "follow_up_questions": [
+        "Why should a class used as a dict key also be immutable?"
+      ]
+    },
+    "py-thread-counter-race": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Match concurrency models to workloads and justify the choice.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The GIL serialises bytecode, not whole statements.",
+        "b": "Immutability of int objects does not make rebinding a shared name atomic.",
+        "c": "It can be exactly 400000 on some runs; it is just not guaranteed."
+      },
+      "follow_up_questions": [
+        "Would `asyncio` tasks updating the same counter have the same problem? Why or why not?"
+      ]
+    }
+  }
+}

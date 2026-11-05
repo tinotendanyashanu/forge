@@ -444,6 +444,8 @@ export interface Recommendation {
   skill: Ref;
   activity: Activity;
   interview_alternative: Activity | null;
+  /** A lesson to read first. Reading is never counted as mastery. */
+  lesson?: LessonSuggestion | null;
   priority: number;
   reasons: string[];
 }
@@ -1439,4 +1441,44 @@ export interface CareerFramework {
   tracks: { key: CareerTrack; title: string; description: string; levels: Record<CareerLevel, { gates: Record<string, CareerLevel>; required: Record<string, CareerLevel> }> }[];
   rules: { score_threshold: number; default_freshness_days: number; min_weight: Record<string, number>; min_sessions: Record<string, number>; reliability: Record<string, number> };
   seniority_note: string;
+}
+
+// ------------------------------------------------------------------ lessons
+
+export type LessonStatus = "draft" | "reviewed" | "verified";
+
+export interface LessonRef {
+  slug: string;
+  title: string;
+  difficulty: Difficulty;
+  estimated_minutes: number;
+}
+
+export interface LessonSummary extends LessonRef {
+  summary: string;
+  skill: Ref;
+  topic: Ref | null;
+  status: LessonStatus;
+}
+
+export interface LessonDetail extends LessonSummary {
+  body: string;
+  objectives: string[];
+  prerequisites: LessonRef[];
+  misconceptions: string[];
+  resources: { title: string; url: string }[];
+  checks: { slug: string; title: string; difficulty: Difficulty; format: QuestionFormat }[];
+  version: number;
+  provenance: string;
+  updated_at: string;
+}
+
+export interface LessonProgress {
+  slug: string;
+  first_opened_at: string;
+  completed_at: string | null;
+}
+
+export interface LessonSuggestion extends LessonRef {
+  completed: boolean;
 }

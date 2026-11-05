@@ -50,6 +50,7 @@ from app.schemas.mastery import (
     SyncOut,
 )
 from app.services.errors import NotFound
+from app.services import lessons as lesson_service
 
 public = APIRouter(tags=["curriculum"])
 router = APIRouter(tags=["mastery"])
@@ -366,6 +367,9 @@ async def recommendations(
     coding = await service.coding_progress(db, learner.id)
     recs = service.recommend(contexts, edges, snaps, cards, found, goals, now, limit, coding)
     by_slug = {c.skill.slug: c for c in contexts}
+    lesson_for = await lesson_service.suggestions(
+        db, learner.id, [(r.skill.slug, r.activity.difficulty) for r in recs]
+    )
     return [
         RecommendationOut(
             key=r.key, kind=r.kind, skill=_ref(r.skill),
@@ -376,6 +380,7 @@ async def recommendations(
             ),
             priority=round(r.priority, 2), reasons=r.reasons,
             interview_alternative=_interview_alternative(r, by_slug),
+            lesson=lesson_for.get((r.skill.slug, r.activity.difficulty)),
         )
         for r in recs
     ]

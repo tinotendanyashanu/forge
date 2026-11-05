@@ -774,3 +774,21 @@ export async function refreshRoadmap(): Promise<void> {
   await fetchCareerRoadmap({});
   redirect("/career/roadmap");
 }
+
+/** Marks a lesson as read. This is engagement only and never counts as mastery evidence. */
+export async function completeLesson(formData: FormData): Promise<void> {
+  const slug = String(formData.get("lesson") ?? "");
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) redirect("/lessons");
+  try {
+    await asLearner((learnerId) =>
+      apiRequest(`/api/v1/lessons/${encodeURIComponent(slug)}/complete`, { method: "POST", learnerId }),
+    );
+  } catch (error) {
+    console.error(error);
+    redirect(`/lessons/${slug}?error=read`);
+  }
+  revalidatePath("/lessons");
+  revalidatePath("/learn");
+  revalidatePath(`/lessons/${slug}`);
+  redirect(`/lessons/${slug}`);
+}

@@ -240,6 +240,165 @@
       ],
       "estimated_minutes": 12,
       "acceptance_criteria": "Describes the stale-repopulation race and proposes a mechanism that bounds or prevents it."
+    },
+    {
+      "slug": "sd-cache-stampede",
+      "topic": "caching",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A popular key expires",
+      "prompt": "A product page's cached data expires every five minutes. At each expiry, database CPU spikes as thousands of requests miss the cache at once. Which change addresses the cause?",
+      "hint": "How many requests need to recompute the value?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Increase the TTL to one hour so expiries happen less often"
+        },
+        {
+          "key": "b",
+          "text": "Let one request rebuild the value while others wait or get the stale copy",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Add a read replica so the database can absorb the spike"
+        },
+        {
+          "key": "d",
+          "text": "Disable caching for the product page, since it causes the spikes"
+        }
+      ],
+      "explanation": "This is a cache stampede: many concurrent misses on one hot key all recompute the same value. Coalescing (a lock or single-flight so only one request rebuilds), serving stale data while refreshing in the background, or refreshing early with jitter all remove the burst. A longer TTL only spaces the stampedes out, and a replica adds capacity without changing the pattern.",
+      "acceptance_criteria": "Selects “Let one request rebuild the value while others wait or get the stale copy”. This is a cache stampede: many concurrent misses on one hot key all recompute the same value.",
+      "rubric": [
+        "Names the cache stampede.",
+        "Proposes request coalescing or serve-stale-while-refreshing.",
+        "Mentions early or jittered refresh as an option.",
+        "Explains why TTL changes and more capacity do not fix the cause."
+      ],
+      "expected_concepts": [
+        "cache stampede",
+        "request coalescing",
+        "stale-while-revalidate",
+        "hot keys"
+      ],
+      "misconceptions": [
+        "Longer TTLs solve stampedes.",
+        "Stampedes are a database capacity problem."
+      ],
+      "resources": [
+        {
+          "title": "AWS: Caching best practices",
+          "url": "https://aws.amazon.com/caching/best-practices/"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sd-hot-tenant-shard",
+      "topic": "scaling",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Sharding a multi-tenant database",
+      "prompt": "A SaaS product shards its database by `tenant_id`, which keeps each tenant's queries on one shard. One tenant is 200 times larger than the median and keeps growing. What is the main risk, and a reasonable mitigation?",
+      "hint": "Can one tenant's data be spread across several shards with this key?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Cross-shard joins for every query; denormalise all tables"
+        },
+        {
+          "key": "b",
+          "text": "A hot shard that cannot scale with that tenant; isolate or sub-shard large tenants",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Uneven primary keys across shards; switch to UUIDs"
+        },
+        {
+          "key": "d",
+          "text": "Too many shards for small tenants; merge all small tenants into one database"
+        }
+      ],
+      "explanation": "Sharding by tenant keeps queries local, but a single large tenant can outgrow any one shard and slow the neighbours sharing it. Common mitigations are placing very large tenants on dedicated shards, sub-sharding them by another key such as account or region, and keeping a directory that maps tenants to shards so they can be moved. Cross-shard joins are mostly avoided by this key choice, not caused by it.",
+      "acceptance_criteria": "Selects “A hot shard that cannot scale with that tenant; isolate or sub-shard large tenants”. Sharding by tenant keeps queries local, but a single large tenant can outgrow any one shard and slow the neighbours sharing it.",
+      "rubric": [
+        "Identifies the hot-shard risk from a skewed tenant.",
+        "Proposes dedicated or sub-sharded placement for large tenants.",
+        "Mentions a tenant-to-shard directory to allow moves.",
+        "Explains why tenant-based sharding avoids cross-shard joins."
+      ],
+      "expected_concepts": [
+        "sharding keys",
+        "hotspots",
+        "multi-tenancy",
+        "tenant placement"
+      ],
+      "misconceptions": [
+        "Hash sharding always spreads load evenly.",
+        "Any shard key works if the number of shards is large."
+      ],
+      "resources": [
+        {
+          "title": "Azure Architecture Center: Sharding pattern",
+          "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "sd-availability-series-parallel",
+      "topic": "reliability",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Availability of a request path",
+      "prompt": "Each request must succeed in both service A and service B. A is 99.9% available. B runs as two independent replicas, each 99.9% available, with perfect failover between them. Failures are independent. What is the approximate availability of the request path?",
+      "hint": "Calculate B's availability first, then combine it with A.",
+      "options": [
+        {
+          "key": "a",
+          "text": "99.8%"
+        },
+        {
+          "key": "b",
+          "text": "99.99%"
+        },
+        {
+          "key": "c",
+          "text": "99.7%"
+        },
+        {
+          "key": "d",
+          "text": "99.9%",
+          "correct": true
+        }
+      ],
+      "explanation": "Redundant replicas combine in parallel: B fails only if both replicas fail, 0.001 × 0.001 = 0.000001, so B is about 99.9999% available. Components on the path combine in series: 0.999 × 0.999999 ≈ 0.999, about 99.9%. The single copy of A now dominates. Real systems rarely have perfect failover or independent failures, so these numbers are upper bounds.",
+      "acceptance_criteria": "Selects “99.9%”. Redundant replicas combine in parallel: B fails only if both replicas fail, 0.001 × 0.001 = 0.000001, so B is about 99.9999% available.",
+      "rubric": [
+        "Combines B's replicas in parallel (1 − 0.001²).",
+        "Combines A and B in series by multiplying.",
+        "Arrives at about 99.9% and notes A dominates.",
+        "States the assumptions (independence, perfect failover) are optimistic."
+      ],
+      "expected_concepts": [
+        "availability math",
+        "series and parallel components",
+        "redundancy",
+        "correlated failure"
+      ],
+      "misconceptions": [
+        "Adding a replica doubles availability.",
+        "Availability of a path equals its weakest component exactly."
+      ],
+      "resources": [
+        {
+          "title": "Google SRE book: Embracing risk",
+          "url": "https://sre.google/sre-book/embracing-risk/"
+        }
+      ],
+      "estimated_minutes": 6
     }
   ]
 }

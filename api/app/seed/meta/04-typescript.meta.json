@@ -1,0 +1,58 @@
+{
+  "skill": "typescript",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "ts-inferred-type-predicate": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Model states with unions and reason about generic inference.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The pre-5.5 result.",
+        "c": "Confuses the kept elements with the removed ones.",
+        "d": "No contradiction is involved."
+      },
+      "follow_up_questions": [
+        "Write an explicit type predicate that works in older TypeScript versions."
+      ]
+    },
+    "ts-excess-property-check": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design validation at trust boundaries.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "b": "Line B is structurally compatible.",
+        "c": "Line B is allowed.",
+        "d": "Line A fails the excess property check."
+      },
+      "follow_up_questions": [
+        "Why might a server still receive `isAdmin` from this client?"
+      ]
+    },
+    "ts-array-covariance": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design validation at trust boundaries.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Arrays are compared covariantly, so the call is allowed.",
+        "b": "Pushing a number into (string | number)[] is valid.",
+        "d": "TypeScript performs no runtime conversion."
+      },
+      "follow_up_questions": [
+        "How would `readonly` in the parameter type prevent this?"
+      ]
+    }
+  }
+}

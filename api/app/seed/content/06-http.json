@@ -256,6 +256,176 @@
       ],
       "estimated_minutes": 12,
       "acceptance_criteria": "Designs client-generated keys stored with a uniqueness guarantee and the stored response, and handles concurrent duplicates."
+    },
+    {
+      "slug": "http-samesite-lax-post",
+      "topic": "browser-security",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A cross-site form post",
+      "prompt": "Your session cookie is set with `SameSite=Lax; Secure; HttpOnly`. A malicious site auto-submits a hidden form that POSTs to your app. Is the session cookie sent with that request?",
+      "hint": "Which kinds of cross-site requests does `Lax` still allow?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Yes: `Lax` only blocks cookies on cross-site `GET` requests"
+        },
+        {
+          "key": "b",
+          "text": "Yes: `HttpOnly` cookies are always attached to form submissions"
+        },
+        {
+          "key": "c",
+          "text": "No: `Lax` cookies are sent cross-site only on top-level `GET` navigations",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "No: `Secure` cookies are never sent to forms on other sites"
+        }
+      ],
+      "explanation": "With `SameSite=Lax` the browser withholds the cookie from cross-site subrequests and from cross-site POSTs, and sends it only on top-level navigations with safe methods such as following a link. That blocks this classic CSRF attack, so state-changing actions must never use GET. `HttpOnly` stops scripts reading the cookie and `Secure` limits it to HTTPS; neither controls cross-site sending.",
+      "acceptance_criteria": "Selects “No: `Lax` cookies are sent cross-site only on top-level `GET` navigations”. With `SameSite=Lax` the browser withholds the cookie from cross-site subrequests and from cross-site POSTs, and sends it only on top-level navigations with safe methods such as following a link.",
+      "rubric": [
+        "States that the cookie is not sent with the cross-site POST.",
+        "Explains that Lax allows only top-level safe-method navigations.",
+        "Distinguishes SameSite from HttpOnly and Secure.",
+        "Notes that state changes must not use GET."
+      ],
+      "expected_concepts": [
+        "SameSite cookies",
+        "CSRF",
+        "cookie attributes"
+      ],
+      "misconceptions": [
+        "HttpOnly prevents CSRF.",
+        "SameSite=Lax blocks every cross-site request."
+      ],
+      "resources": [
+        {
+          "title": "MDN: Set-Cookie (SameSite)",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "http-if-match-412",
+      "topic": "semantics",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Two editors, one document",
+      "prompt": "Clients fetch a document with its `ETag` and send updates with `If-Match: <etag>`. Alice saves first; then Bob saves using the ETag he fetched before Alice's change. What should the server return to Bob?",
+      "hint": "Which status code is defined for a failed `If-Match` precondition?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`409 Conflict`, because the document has changed"
+        },
+        {
+          "key": "b",
+          "text": "`412 Precondition Failed`, because `If-Match` no longer matches",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`428 Precondition Required`, because the ETag is stale"
+        },
+        {
+          "key": "d",
+          "text": "`304 Not Modified`, because Bob's copy is outdated"
+        }
+      ],
+      "explanation": "`If-Match` makes the update conditional on the resource still having that ETag. After Alice's save the ETag changed, so the precondition fails and the server must not apply Bob's write: 412 Precondition Failed. 428 is for servers that require a conditional request when the client sent none, and 304 answers conditional GETs. This is optimistic concurrency control over HTTP; the client then refetches and merges or asks the user.",
+      "acceptance_criteria": "Selects “412 Precondition Failed`, because `If-Match` no longer matches”. `If-Match` makes the update conditional on the resource still having that ETag.",
+      "rubric": [
+        "Chooses 412 Precondition Failed.",
+        "Explains that the update is conditional on the ETag.",
+        "Distinguishes 428 (missing precondition) and 304 (conditional GET).",
+        "Describes what the client does next."
+      ],
+      "expected_concepts": [
+        "conditional requests",
+        "ETags",
+        "optimistic concurrency",
+        "status codes"
+      ],
+      "misconceptions": [
+        "409 is the standard response for a failed precondition.",
+        "ETags are only for caching."
+      ],
+      "resources": [
+        {
+          "title": "MDN: 412 Precondition Failed",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/412"
+        },
+        {
+          "title": "MDN: If-Match",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match"
+        },
+        {
+          "title": "RFC 9110: HTTP semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "http-vary-language",
+      "topic": "caching",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "French users see English pages",
+      "prompt": "`GET /products/42` returns English or French text depending on the `Accept-Language` header, with `Cache-Control: public, max-age=300`. Behind a CDN, French users sometimes receive English. What is the correct fix?",
+      "hint": "What does the CDN use as the cache key by default?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Send `Cache-Control: private` so only browsers cache the response"
+        },
+        {
+          "key": "b",
+          "text": "Add `Vary: Accept-Language` (or move the language into the URL)",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Lower `max-age` to 10 seconds so wrong versions expire quickly"
+        },
+        {
+          "key": "d",
+          "text": "Add an `ETag` so the CDN revalidates every request"
+        }
+      ],
+      "explanation": "The CDN keys its cache by URL, so whichever language is stored first is served to everyone. `Vary: Accept-Language` tells caches the response depends on that header, so they store variants separately. Because `Accept-Language` has many distinct values, putting the language in the URL (`/fr/products/42`) usually caches far better. `private` gives up shared caching, a short TTL only narrows the window, and an ETag does not separate variants.",
+      "acceptance_criteria": "Selects “Add `Vary: Accept-Language` (or move the language into the URL)”. The CDN keys its cache by URL, so whichever language is stored first is served to everyone.",
+      "rubric": [
+        "Explains that the cache key ignores the header.",
+        "Adds `Vary: Accept-Language` or a language-specific URL.",
+        "Notes the fragmentation cost of varying on a high-cardinality header.",
+        "Explains why the other options do not fix the mismatch."
+      ],
+      "expected_concepts": [
+        "Vary",
+        "cache keys",
+        "content negotiation",
+        "CDN caching"
+      ],
+      "misconceptions": [
+        "Caches automatically account for request headers.",
+        "Short TTLs fix incorrect cache sharing."
+      ],
+      "resources": [
+        {
+          "title": "MDN: Vary",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary"
+        },
+        {
+          "title": "RFC 9110: HTTP semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

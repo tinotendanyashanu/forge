@@ -262,6 +262,172 @@
       ],
       "estimated_minutes": 10,
       "acceptance_criteria": "Identifies the lower(email) mismatch, proposes an expression index, and names another legitimate reason for a sequential scan."
+    },
+    {
+      "slug": "sql-left-join-count-star",
+      "topic": "querying",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Counting orders per user",
+      "prompt": "Ada has three orders and Grace has none. What does this query return for Grace?",
+      "code": "SELECT u.name, count(*) AS orders\nFROM users u\nLEFT JOIN orders o ON o.user_id = u.id\nGROUP BY u.name;",
+      "code_language": "sql",
+      "hint": "How many rows does the join produce for Grace before grouping?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`0`"
+        },
+        {
+          "key": "b",
+          "text": "`NULL`"
+        },
+        {
+          "key": "c",
+          "text": "`1`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "No row at all for Grace"
+        }
+      ],
+      "explanation": "The LEFT JOIN keeps Grace with NULLs for every `o` column, producing one row. `count(*)` counts rows, not orders, so Grace gets 1. `count(o.id)` counts only non-NULL values and returns 0 for her.",
+      "acceptance_criteria": "Selects “1”. The LEFT JOIN keeps Grace with NULLs for every `o` column, producing one row.",
+      "rubric": [
+        "States that Grace gets 1.",
+        "Explains that the LEFT JOIN produces one row of NULLs.",
+        "Uses `count(o.id)` (a non-NULL column) to count matches."
+      ],
+      "expected_concepts": [
+        "LEFT JOIN",
+        "count(*) vs count(column)",
+        "NULL handling",
+        "aggregation"
+      ],
+      "misconceptions": [
+        "`count(*)` ignores NULL rows.",
+        "A LEFT JOIN drops users without matches."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Aggregate functions",
+          "url": "https://www.postgresql.org/docs/current/functions-aggregate.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sql-write-skew-repeatable-read",
+      "topic": "transactions",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Two doctors go off call",
+      "prompt": "At least one doctor must stay on call. Two on-call doctors run this transaction at the same moment under PostgreSQL's REPEATABLE READ. What can happen?",
+      "code": "BEGIN ISOLATION LEVEL REPEATABLE READ;\nSELECT count(*) FROM doctors WHERE on_call;   -- both see 2\n-- application: 2 > 1, so it is safe to go off call\nUPDATE doctors SET on_call = false WHERE id = $me;\nCOMMIT;",
+      "code_language": "sql",
+      "hint": "Do the two transactions update the same row?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Both commit, leaving nobody on call; SERIALIZABLE would abort one of them",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "The second transaction blocks until the first commits, then sees one doctor"
+        },
+        {
+          "key": "c",
+          "text": "One fails with a unique violation because both update the same table"
+        },
+        {
+          "key": "d",
+          "text": "Both commit, but PostgreSQL automatically re-runs the check afterwards"
+        }
+      ],
+      "explanation": "Each transaction reads a snapshot showing two doctors on call, passes the check, and updates a different row. The writes do not conflict, so REPEATABLE READ (snapshot isolation) lets both commit: a write skew. SERIALIZABLE detects the dangerous read/write dependency and aborts one transaction with a serialization failure, which the application must retry. Alternatives are locking the rows read (`SELECT ... FOR UPDATE`) or modelling the rule as a constraint.",
+      "acceptance_criteria": "Selects “Both commit, leaving nobody on call; SERIALIZABLE would abort one of them”. Each transaction reads a snapshot showing two doctors on call, passes the check, and updates a different row.",
+      "rubric": [
+        "Identifies write skew and the outcome (nobody on call).",
+        "Explains why snapshot isolation allows it (different rows updated).",
+        "States that SERIALIZABLE aborts one transaction and requires retries.",
+        "Mentions an alternative such as `FOR UPDATE` on the rows read."
+      ],
+      "expected_concepts": [
+        "write skew",
+        "snapshot isolation",
+        "serializable",
+        "retry on serialization failure"
+      ],
+      "misconceptions": [
+        "REPEATABLE READ prevents all concurrency anomalies.",
+        "Transactions updating different rows can never conflict."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Transaction isolation",
+          "url": "https://www.postgresql.org/docs/current/transaction-iso.html"
+        }
+      ],
+      "estimated_minutes": 6
+    },
+    {
+      "slug": "sql-offset-vs-keyset",
+      "topic": "indexing",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Deep pages are slow",
+      "prompt": "A feed uses `ORDER BY created_at DESC LIMIT 20 OFFSET $offset` with an index on `created_at`. The first page takes 2 ms, but page 5,000 takes over a second. What is the best fix?",
+      "hint": "How many rows must the database step over to return page 5,000?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Add a second index on `created_at` in descending order for the feed"
+        },
+        {
+          "key": "b",
+          "text": "Keyset pagination: seek past the last row with `(created_at, id) < ($1, $2)`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Raise `work_mem` so the sort for each deep page fits in memory"
+        },
+        {
+          "key": "d",
+          "text": "Run `VACUUM FULL` so rows are physically stored in `created_at` order"
+        }
+      ],
+      "explanation": "An index lets the database read rows in order, but OFFSET still has to walk past and discard every skipped row, so page 5,000 reads about 100,000 index entries. Keyset pagination remembers the last row seen and seeks straight to it, so every page costs the same. Including `id` as a tiebreaker keeps the order stable when timestamps repeat; an index on `(created_at, id)` supports it. The trade-off is no jumping to arbitrary page numbers.",
+      "acceptance_criteria": "Selects “Keyset pagination: seek past the last row with `(created_at, id) < ($1, $2)”. An index lets the database read rows in order, but OFFSET still has to walk past and discard every skipped row, so page 5,000 reads about 100,000 index entries.",
+      "rubric": [
+        "Explains that OFFSET reads and discards the skipped rows.",
+        "Proposes keyset (seek) pagination using the last row's values.",
+        "Adds a unique tiebreaker for a stable order.",
+        "Mentions the trade-off of losing random page access."
+      ],
+      "expected_concepts": [
+        "keyset pagination",
+        "OFFSET cost",
+        "row comparison",
+        "stable ordering"
+      ],
+      "misconceptions": [
+        "An index makes any OFFSET fast.",
+        "Sorting is the slow part of deep pagination."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: LIMIT and OFFSET",
+          "url": "https://www.postgresql.org/docs/current/queries-limit.html"
+        },
+        {
+          "title": "PostgreSQL docs: Row constructor comparison",
+          "url": "https://www.postgresql.org/docs/current/functions-comparisons.html#ROW-WISE-COMPARISON"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

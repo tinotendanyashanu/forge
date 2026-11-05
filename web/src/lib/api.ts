@@ -60,6 +60,9 @@ import type {
   LlmStatus,
   NextQuestion,
   Progress,
+  LessonDetail,
+  LessonProgress,
+  LessonSummary,
   SkillDetail,
   SkillSummary,
 } from "@/lib/types";
@@ -174,7 +177,26 @@ export async function getSkill(slug: string): Promise<SkillDetail | null> {
   }
 }
 
+export function getLessons(skill?: string) {
+  const query = skill ? `?skill=${encodeURIComponent(skill)}` : "";
+  return apiRequest<LessonSummary[]>(`/api/v1/lessons${query}`);
+}
+
+export async function getLesson(slug: string): Promise<LessonDetail | null> {
+  try {
+    return await apiRequest<LessonDetail>(`/api/v1/lessons/${encodeURIComponent(slug)}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
 // ------------------------------------------------------------------ learner data
+
+/** Which lessons this learner has opened or finished. Engagement only, never mastery. */
+export function getLessonProgress() {
+  return learnerRequest<LessonProgress[]>("/api/v1/lesson-progress");
+}
 
 export function getProgress() {
   return learnerRequest<Progress>("/api/v1/progress");

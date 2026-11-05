@@ -241,7 +241,7 @@ def test_full_session_flow_persists_and_updates_progress(
     client: TestClient, seed_questions: dict[str, SeedQuestion], settings
 ) -> None:
     h = new_learner(client)
-    session = start(client, h, "python", "intermediate")  # 1 choice + 1 free text
+    session = start(client, h, "python", "intermediate")  # scored choices + one free text
     sid = session["id"]
     outcomes = []
     while (step := next_q(client, h, sid))["status"] == "question":
@@ -253,10 +253,12 @@ def test_full_session_flow_persists_and_updates_progress(
         )
         fb = _submit(client, h, sid, item_id=step["item"]["id"], **body).json()
         outcomes.append(fb["evaluation"]["status"])
-    assert sorted(outcomes) == ["graded", "pending_ai_evaluation"]
+    n = len(outcomes)
+    graded = outcomes.count("graded")
+    assert set(outcomes) == {"graded", "pending_ai_evaluation"} and outcomes.count("pending_ai_evaluation") == 1
 
     assert step["session"]["status"] == "completed"
-    assert step["session"]["answered_count"] == 2
+    assert step["session"]["answered_count"] == n
 
     # A brand-new client (like a page refresh or server restart) sees saved state.
     from app.main import create_app
@@ -264,7 +266,7 @@ def test_full_session_flow_persists_and_updates_progress(
     with TestClient(create_app(settings)) as fresh:
         assert fresh.get(f"/api/v1/assessments/{sid}", headers=h).json()["status"] == "completed"
         history = fresh.get("/api/v1/answers", headers=h).json()
-        assert len(history) == 2
+        assert len(history) == n
         by_session = fresh.get("/api/v1/answers", params={"session": sid}, headers=h).json()
         assert {a["answer_id"] for a in by_session} == {a["answer_id"] for a in history}
         assert fresh.get(
@@ -282,9 +284,9 @@ def test_full_session_flow_persists_and_updates_progress(
     py = progress["python"]
     assert py["sessions_started"] == 1
     assert py["sessions_completed"] == 1
-    assert py["answers_submitted"] == 2
-    assert py["objective_graded"] == 1
-    assert py["objective_correct"] == 1
+    assert py["answers_submitted"] == n
+    assert py["objective_graded"] == graded
+    assert py["objective_correct"] == graded
     assert py["pending_ai_evaluation"] == 1
     assert progress["sql"]["answers_submitted"] == 0
 

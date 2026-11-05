@@ -71,9 +71,8 @@ def test_curriculum_endpoint_exposes_graph_and_versions(mc: TestClient) -> None:
     assert all(s["assessable"] is True for s in skills.values())
     for s in skills.values():
         assert len(s["levels"]) == 3 and s["learning_objectives"] and s["subskills"]
-    # Python's advanced level is verifiable through a coding challenge; React's isn't.
-    assert skills["python"]["levels"][2]["verifiable"] is True
-    assert skills["react"]["levels"][2]["verifiable"] is False
+    # Since content batch P2 every level has at least two scored questions.
+    assert all(lv["verifiable"] is True for s in skills.values() for lv in s["levels"])
 
 
 # ---------------------------------------------------------------- mastery from evidence

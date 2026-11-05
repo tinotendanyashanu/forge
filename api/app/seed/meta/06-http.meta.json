@@ -1,0 +1,58 @@
+{
+  "skill": "http",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "http-samesite-lax-post": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design caching and explain preflight behaviour.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "This reverses the rule.",
+        "b": "HttpOnly controls script access, not sending.",
+        "d": "Secure controls HTTPS-only sending, not cross-site sending."
+      },
+      "follow_up_questions": [
+        "Why would a GET endpoint that deletes data still be vulnerable?"
+      ]
+    },
+    "http-if-match-412": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design idempotent, retry-safe APIs.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "409 is for conflicts not expressed as a precondition.",
+        "c": "428 means the server requires a precondition the client did not send.",
+        "d": "304 answers conditional GET or HEAD requests."
+      },
+      "follow_up_questions": [
+        "How would you generate ETags for a resource stored in PostgreSQL?"
+      ]
+    },
+    "http-vary-language": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design idempotent, retry-safe APIs.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Fixes the leak but gives up shared caching entirely.",
+        "c": "Only shortens how long the wrong version is served.",
+        "d": "Revalidation does not distinguish language variants."
+      },
+      "follow_up_questions": [
+        "Why can varying on `Accept-Language` hurt cache hit rates?"
+      ]
+    }
+  }
+}

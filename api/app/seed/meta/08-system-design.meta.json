@@ -1,0 +1,61 @@
+{
+  "skill": "system-design",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "sd-cache-stampede": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Estimate capacity and design retries.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "Makes stampedes rarer, not smaller.",
+        "c": "Adds capacity but keeps the burst.",
+        "d": "Removes the cache's benefit entirely."
+      },
+      "follow_up_questions": [
+        "How would you implement single-flight across several API instances?"
+      ]
+    },
+    "sd-hot-tenant-shard": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Resolve consistency races in caches.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "Tenant sharding keeps a tenant's data together, avoiding cross-shard joins.",
+        "c": "Key format does not change where a tenant's rows live.",
+        "d": "Small tenants are not the bottleneck here."
+      },
+      "follow_up_questions": [
+        "How would you move a tenant between shards with minimal downtime?"
+      ]
+    },
+    "sd-availability-series-parallel": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Resolve consistency races in caches.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "Treats B as a single 99.9% component.",
+        "b": "Ignores that A is still a single 99.9% component in series.",
+        "c": "Adds failure probabilities incorrectly."
+      },
+      "follow_up_questions": [
+        "Why do correlated failures (shared zone, shared deploy) undermine this calculation?"
+      ]
+    }
+  }
+}

@@ -233,6 +233,223 @@
       ],
       "estimated_minutes": 12,
       "acceptance_criteria": "Separates unit and integration levels, uses real PostgreSQL, and isolates the payment provider behind an owned interface verified by contract or sandbox tests."
+    },
+    {
+      "slug": "test-now-in-assertion",
+      "topic": "reliability",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A timestamp test that fails sometimes",
+      "prompt": "This test passes most of the time but occasionally fails in CI. Why?",
+      "code": "def test_order_timestamp():\n    order = create_order(user_id=1)\n    assert order.created_at == datetime.now()",
+      "code_language": "python",
+      "hint": "How many times is the clock read, and when?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`datetime.now()` is called twice, at slightly different moments",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "pytest runs assertions before the function under test returns"
+        },
+        {
+          "key": "c",
+          "text": "`datetime` objects cannot be compared with `==`"
+        },
+        {
+          "key": "d",
+          "text": "CI machines do not have a system clock"
+        }
+      ],
+      "explanation": "The function reads the clock once and the test reads it again a little later. Usually both fall within the same microsecond or the comparison is lucky, but sometimes they differ and the test fails. Make time an input: pass a clock or `now` into the function, or freeze time in the test, and assert against that fixed value.",
+      "acceptance_criteria": "Selects “datetime.now()` is called twice, at slightly different moments”. The function reads the clock once and the test reads it again a little later.",
+      "rubric": [
+        "Identifies the two separate clock reads.",
+        "Explains why the failure is intermittent.",
+        "Proposes injecting a clock or freezing time."
+      ],
+      "expected_concepts": [
+        "non-determinism",
+        "time in tests",
+        "dependency injection"
+      ],
+      "misconceptions": [
+        "Fast code makes timing differences impossible.",
+        "Flaky tests are caused by the CI system, not the test."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Eradicating non-determinism in tests",
+          "url": "https://martinfowler.com/articles/nonDeterminism.html"
+        },
+        {
+          "title": "Python docs: datetime",
+          "url": "https://docs.python.org/3/library/datetime.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "test-overspecified-mock",
+      "topic": "test-doubles",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A refactor that breaks a test",
+      "prompt": "`fetch_rate()` was rewritten to use `httpx` instead of `requests`. It returns exactly the same values, but this test now fails. What is the underlying problem?",
+      "code": "@mock.patch(\"app.rates.requests.get\")\ndef test_fetch_rate(get):\n    get.return_value.json.return_value = {\"rate\": 1.1}\n    assert fetch_rate(\"EUR\") == 1.1\n    get.assert_called_once_with(\"https://api.example.com/rates/EUR\", timeout=5)",
+      "code_language": "python",
+      "hint": "Did the behaviour that users depend on change?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`httpx` is incompatible with `unittest.mock`"
+        },
+        {
+          "key": "b",
+          "text": "The test is coupled to implementation details instead of observable behaviour",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The mock should be configured with `side_effect` instead of `return_value`"
+        },
+        {
+          "key": "d",
+          "text": "Mocks must be reset between tests, and this one leaked state"
+        }
+      ],
+      "explanation": "The test asserts which library is called and how, so any internal change breaks it even when behaviour is correct. Tests should check outcomes at a boundary you own: put HTTP behind your own client interface and use a fake in unit tests, or stub responses at the transport level, and assert on what `fetch_rate` returns. Reserve interaction assertions for interactions that are part of the contract.",
+      "acceptance_criteria": "Selects “The test is coupled to implementation details instead of observable behaviour”. The test asserts which library is called and how, so any internal change breaks it even when behaviour is correct.",
+      "rubric": [
+        "Identifies over-specification / coupling to implementation.",
+        "Proposes asserting on observable results.",
+        "Proposes a boundary you own with a fake or stub."
+      ],
+      "expected_concepts": [
+        "test doubles",
+        "behaviour vs implementation",
+        "brittle tests"
+      ],
+      "misconceptions": [
+        "More interaction assertions make tests stronger.",
+        "Mocks should mirror every internal call."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Mocks aren't stubs",
+          "url": "https://martinfowler.com/articles/mocksArentStubs.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "test-mutation-testing",
+      "topic": "test-design",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "High coverage, missed bug",
+      "prompt": "A pricing module has 95% line coverage, yet a change from `>=` to `>` in a discount threshold shipped without any test failing. Which technique would most directly reveal that the tests are too weak?",
+      "hint": "Would any existing test fail if the operator changed?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Raising the coverage requirement to 100% of lines"
+        },
+        {
+          "key": "b",
+          "text": "Mutation testing, which checks whether small code changes make tests fail",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Snapshot tests that store the full output of each function"
+        },
+        {
+          "key": "d",
+          "text": "Running the existing suite in random order on every build"
+        }
+      ],
+      "explanation": "Coverage shows that lines ran, not that assertions would notice them being wrong. Mutation testing makes small changes such as `>=` to `>` and reports mutants that no test catches, which points straight at missing boundary assertions. Here, a test exactly at the threshold would kill that mutant. Mutation testing is slower, so it is usually run on critical modules or changed files.",
+      "acceptance_criteria": "Selects “Mutation testing, which checks whether small code changes make tests fail”. Coverage shows that lines ran, not that assertions would notice them being wrong.",
+      "rubric": [
+        "Explains that coverage measures execution, not assertion strength.",
+        "Chooses mutation testing and explains surviving mutants.",
+        "Identifies the missing boundary test.",
+        "Mentions the runtime cost and targeted use."
+      ],
+      "expected_concepts": [
+        "mutation testing",
+        "coverage limits",
+        "boundary values"
+      ],
+      "misconceptions": [
+        "High coverage means good tests.",
+        "Snapshot tests catch logic errors automatically."
+      ],
+      "resources": [
+        {
+          "title": "Stryker docs: What is mutation testing?",
+          "url": "https://stryker-mutator.io/docs/"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "test-contract-tests",
+      "topic": "test-design",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Both suites green, production broken",
+      "prompt": "The orders service renamed a JSON field from `total` to `amount`. Its own tests passed, and the billing service's tests (which mock the orders API) also passed. Billing then broke in production. What would most directly have caught this before release?",
+      "hint": "Where does billing's assumption about the field name live, and who checks it?",
+      "options": [
+        {
+          "key": "a",
+          "text": "More unit tests inside the orders service"
+        },
+        {
+          "key": "b",
+          "text": "Consumer-driven contract tests verified against the orders service in its pipeline",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Longer end-to-end tests in a shared staging environment run once a week"
+        },
+        {
+          "key": "d",
+          "text": "Raising code coverage in the billing service"
+        }
+      ],
+      "explanation": "Each suite tested against its own assumptions: billing's mocks still returned `total`. A consumer-driven contract records what billing actually relies on and is verified against the real orders service on every change, so the rename fails the orders pipeline immediately. End-to-end tests can catch it too, but they are slow, flaky and run late.",
+      "acceptance_criteria": "Selects “Consumer-driven contract tests verified against the orders service in its pipeline”. Each suite tested against its own assumptions: billing's mocks still returned `total`.",
+      "rubric": [
+        "Explains why mocks let each side drift.",
+        "Chooses consumer-driven contract tests run in the provider's pipeline.",
+        "Compares with end-to-end tests on speed and feedback time."
+      ],
+      "expected_concepts": [
+        "contract testing",
+        "consumer-driven contracts",
+        "test doubles drift"
+      ],
+      "misconceptions": [
+        "Mocks of other services stay accurate on their own.",
+        "End-to-end tests are the only way to test integrations."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Contract test",
+          "url": "https://martinfowler.com/bliki/ContractTest.html"
+        },
+        {
+          "title": "Pact docs: Consumer-driven contract testing",
+          "url": "https://docs.pact.io/"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

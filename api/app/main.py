@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.body_limit import BodySizeLimit
 from app.api.deps import require_local_access
-from app.api.routes import career, coding, design, health, interviews, learners, mastery, ops, skills, workspace
+from app.api.routes import career, coding, design, health, interviews, learners, lessons, mastery, ops, skills, workspace
 from app.core.config import Settings, get_settings
 from app.db.session import create_engine, create_sessionmaker
 from app.llm.factory import build_provider
@@ -57,6 +57,7 @@ def create_app(settings: Settings | None = None, llm=None, clock=None) -> FastAP
     app.include_router(ops.public, prefix="/api/v1")
     app.include_router(career.public, prefix="/api/v1")
     app.include_router(workspace.public, prefix="/api/v1")
+    app.include_router(lessons.public, prefix="/api/v1")
     local_only = [Depends(require_local_access)]
     app.include_router(learners.router, prefix="/api/v1", dependencies=local_only)
     app.include_router(interviews.router, prefix="/api/v1", dependencies=local_only)
@@ -66,6 +67,7 @@ def create_app(settings: Settings | None = None, llm=None, clock=None) -> FastAP
     app.include_router(ops.router, prefix="/api/v1", dependencies=local_only)
     app.include_router(career.router, prefix="/api/v1", dependencies=local_only)
     app.include_router(workspace.router, prefix="/api/v1", dependencies=local_only)
+    app.include_router(lessons.router, prefix="/api/v1", dependencies=local_only)
     return app
 
 

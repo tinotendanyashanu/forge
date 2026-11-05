@@ -76,6 +76,11 @@ function parse(source: string): Block[] {
   return blocks;
 }
 
+/** Stable id for heading anchors. */
+export function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export function Inline({ text }: { text: string }): ReactNode {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/g);
   return (
@@ -96,14 +101,37 @@ export function Inline({ text }: { text: string }): ReactNode {
   );
 }
 
-export function Markdown({ text, className }: { text: string; className?: string }) {
+/**
+ * ``prose`` renders long-form reading (lessons): real h2/h3 headings with
+ * anchors and larger body text. Content is still rendered as text only.
+ */
+export function Markdown({ text, className, prose = false }: { text: string; className?: string; prose?: boolean }) {
+  const base = prose
+    ? "flex flex-col gap-4 text-[15px] leading-7 text-fg-muted"
+    : "flex flex-col gap-3 text-sm leading-relaxed text-fg-muted";
   return (
-    <div className={className ?? "flex flex-col gap-3 text-sm leading-relaxed text-fg-muted"}>
+    <div className={className ?? base}>
       {parse(text).map((b, i) => {
         switch (b.kind) {
           case "code":
             return <CodeBlock key={i} code={b.code} language={b.lang} />;
           case "heading":
+            if (prose && b.level <= 3) {
+              const Tag = b.level <= 2 ? "h2" : "h3";
+              return (
+                <Tag
+                  key={i}
+                  id={slugify(b.text)}
+                  className={
+                    b.level <= 2
+                      ? "mt-8 scroll-mt-24 text-xl font-semibold tracking-tight text-fg first:mt-0"
+                      : "mt-4 text-base font-medium text-fg"
+                  }
+                >
+                  <Inline text={b.text} />
+                </Tag>
+              );
+            }
             return (
               <p key={i} className="mt-1 text-[13px] font-medium text-fg">
                 <Inline text={b.text} />

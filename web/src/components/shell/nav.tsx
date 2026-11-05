@@ -2,16 +2,17 @@
 
 import {
   BookOpen,
+  BriefcaseBusiness,
   CalendarCheck,
   ChartLine,
   FolderGit2,
+  GraduationCap,
   LayoutDashboard,
-  Network,
-  Siren,
-  BriefcaseBusiness,
   MessagesSquare,
+  Network,
   Route,
   SearchCheck,
+  Siren,
   SquareCode,
   type LucideIcon,
 } from "lucide-react";
@@ -22,7 +23,7 @@ import { Suspense } from "react";
 import { cn } from "@/lib/cn";
 
 interface NavItem {
-  href: "/" | "/learn" | "/tracks" | "/lab" | "/workspace" | "/design" | "/ops" | "/career" | "/interview" | "/review" | "/gaps" | "/progress";
+  href: "/" | "/learn" | "/lessons" | "/tracks" | "/lab" | "/workspace" | "/design" | "/ops" | "/career" | "/interview" | "/review" | "/gaps" | "/progress";
   label: string;
   icon: LucideIcon;
   /** Path prefixes that mark this item active. */
@@ -32,6 +33,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, matches: [] },
   { href: "/learn", label: "Learning path", icon: Route, matches: ["/learn"] },
+  { href: "/lessons", label: "Lessons", icon: GraduationCap, matches: ["/lessons"] },
   {
     href: "/tracks",
     label: "Skills",
@@ -50,7 +52,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const NAV_GROUPS = [
-  { label: "Learn", hrefs: ["/", "/learn", "/tracks"] },
+  { label: "Learn", hrefs: ["/", "/learn", "/lessons", "/tracks"] },
   { label: "Practise", hrefs: ["/lab", "/workspace", "/design", "/ops", "/interview"] },
   { label: "Reflect", hrefs: ["/career", "/review", "/gaps", "/progress"] },
 ];

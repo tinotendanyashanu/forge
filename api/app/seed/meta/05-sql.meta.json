@@ -1,0 +1,58 @@
+{
+  "skill": "sql",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "sql-left-join-count-star": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Reason about composite indexes and lost updates.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "That is what count(o.id) would return.",
+        "b": "count never returns NULL.",
+        "d": "LEFT JOIN keeps every user."
+      },
+      "follow_up_questions": [
+        "How would you also return each user's most recent order date?"
+      ]
+    },
+    "sql-write-skew-repeatable-read": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Diagnose planner decisions and fix them.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "b": "Different rows are updated, so neither waits for the other.",
+        "c": "No unique constraint is involved.",
+        "d": "PostgreSQL does not re-run application checks."
+      },
+      "follow_up_questions": [
+        "Which rows would you lock with FOR UPDATE to prevent this under READ COMMITTED?"
+      ]
+    },
+    "sql-offset-vs-keyset": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Diagnose planner decisions and fix them.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "B-tree indexes can already be scanned backwards.",
+        "c": "The rows are read from the index in order; there is no large sort.",
+        "d": "Physical order does not remove the cost of skipping rows."
+      },
+      "follow_up_questions": [
+        "How would you encode the cursor for clients?"
+      ]
+    }
+  }
+}

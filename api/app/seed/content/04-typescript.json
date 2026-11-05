@@ -254,6 +254,172 @@
       ],
       "estimated_minutes": 10,
       "acceptance_criteria": "States that `as` performs no runtime check and proposes runtime validation at the boundary."
+    },
+    {
+      "slug": "ts-inferred-type-predicate",
+      "topic": "narrowing",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "What does filter return?",
+      "prompt": "With TypeScript 5.5 or later, what type is inferred for `names`?",
+      "code": "const raw: (string | undefined)[] = [\"Ada\", undefined, \"Grace\"];\nconst names = raw.filter((x) => x !== undefined);",
+      "code_language": "typescript",
+      "hint": "What does TypeScript 5.5 infer about the return type of `x => x !== undefined`?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`(string | undefined)[]`"
+        },
+        {
+          "key": "b",
+          "text": "`string[]`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`undefined[]`"
+        },
+        {
+          "key": "d",
+          "text": "`never[]`"
+        }
+      ],
+      "explanation": "Since TypeScript 5.5 the compiler infers a type predicate (`x is string`) from simple arrow functions such as `x => x !== undefined`, and `filter` uses that predicate to narrow the result to `string[]`. Earlier versions returned `(string | undefined)[]` unless you wrote the predicate yourself.",
+      "acceptance_criteria": "Selects “string[]”. Since TypeScript 5.5 the compiler infers a type predicate (`x is string`) from simple arrow functions such as `x => x !== undefined`, and `filter` uses that predicate to narrow the result to `string[]`.",
+      "rubric": [
+        "Gives `string[]` for TypeScript 5.5+.",
+        "Explains that the callback is inferred as a type predicate.",
+        "Notes the older behaviour or writing an explicit predicate."
+      ],
+      "expected_concepts": [
+        "type predicates",
+        "narrowing",
+        "Array.filter",
+        "compiler versions"
+      ],
+      "misconceptions": [
+        "`filter` never narrows element types.",
+        "Narrowing only happens in `if` statements."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript 5.5 release notes: inferred type predicates",
+          "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-5.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "ts-excess-property-check",
+      "topic": "type-system",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Fresh literals versus variables",
+      "prompt": "Which of the two assignments produces a compile error?",
+      "code": "type User = { id: number; name: string };\n\nconst extra = { id: 1, name: \"Ada\", isAdmin: true };\n\nconst u1: User = { id: 1, name: \"Ada\", isAdmin: true }; // A\nconst u2: User = extra;                                   // B",
+      "code_language": "typescript",
+      "hint": "Is `extra` a fresh object literal at the point where it is assigned to `u2`?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Only the line marked A",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Only the line marked B"
+        },
+        {
+          "key": "c",
+          "text": "Both lines"
+        },
+        {
+          "key": "d",
+          "text": "Neither line"
+        }
+      ],
+      "explanation": "TypeScript is structural: an object with extra properties is still assignable to `User`, so line B compiles. Line A is different: excess property checking applies to fresh object literals assigned directly to a typed target, on the assumption that an unknown property there is a typo. This check is a convenience, not a guarantee, and it does not stop extra properties reaching runtime through variables.",
+      "acceptance_criteria": "Selects “Only the line marked A”. TypeScript is structural: an object with extra properties is still assignable to `User`, so line B compiles.",
+      "rubric": [
+        "Identifies line A as the error and line B as allowed.",
+        "Explains structural typing for line B.",
+        "Explains that excess property checks apply only to fresh object literals.",
+        "Notes that types do not strip extra properties at runtime."
+      ],
+      "expected_concepts": [
+        "structural typing",
+        "excess property checks",
+        "object literals"
+      ],
+      "misconceptions": [
+        "TypeScript always rejects extra properties.",
+        "Types remove unknown properties at runtime."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Object types (excess property checks)",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/objects.html"
+        },
+        {
+          "title": "TypeScript handbook: Type compatibility",
+          "url": "https://www.typescriptlang.org/docs/handbook/type-compatibility.html"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "ts-array-covariance",
+      "topic": "type-system",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "An unsound array assignment",
+      "prompt": "What happens when this code is compiled with `strict` and then run?",
+      "code": "function addNumber(xs: (string | number)[]) {\n  xs.push(42);\n}\n\nconst names: string[] = [\"Ada\"];\naddNumber(names);\nconst upper = names.map((n) => n.toUpperCase());",
+      "code_language": "typescript",
+      "hint": "Is a `string[]` accepted where a `(string | number)[]` is expected?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Compile error at `addNumber(names)`"
+        },
+        {
+          "key": "b",
+          "text": "Compile error at `xs.push(42)`"
+        },
+        {
+          "key": "c",
+          "text": "Compiles; at runtime `toUpperCase` throws a `TypeError`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Compiles and runs; `42` is converted to the string `\"42\"`"
+        }
+      ],
+      "explanation": "TypeScript treats arrays covariantly: a `string[]` is accepted where `(string | number)[]` is expected, even though the function can push a number into it. This is a known, deliberate unsoundness for convenience. The array then holds `42`, and calling `toUpperCase` on a number throws at runtime. Accept `readonly (string | number)[]` when you only read, or make the function generic so it cannot widen the element type.",
+      "acceptance_criteria": "Selects “Compiles; at runtime `toUpperCase` throws a `TypeError”. TypeScript treats arrays covariantly: a `string[]` is accepted where `(string | number)[]` is expected, even though the function can push a number into it.",
+      "rubric": [
+        "Explains that the code compiles because arrays are treated covariantly.",
+        "Identifies the runtime TypeError.",
+        "Proposes `readonly` parameters or a generic signature."
+      ],
+      "expected_concepts": [
+        "variance",
+        "soundness",
+        "readonly arrays",
+        "mutation through aliases"
+      ],
+      "misconceptions": [
+        "The type checker catches every type error.",
+        "Mutation through a wider type is always rejected."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Type compatibility",
+          "url": "https://www.typescriptlang.org/docs/handbook/type-compatibility.html"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

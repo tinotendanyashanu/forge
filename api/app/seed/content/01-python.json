@@ -259,6 +259,169 @@
       ],
       "estimated_minutes": 10,
       "acceptance_criteria": "Matches processes to the CPU-bound workload and asyncio or threads to the I/O-bound one, justified by the GIL."
+    },
+    {
+      "slug": "py-gather-vs-sequential",
+      "topic": "concurrency",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Sequential awaits versus gather",
+      "prompt": "Each call to `work` sleeps for one second. Roughly how many seconds does this program print?",
+      "code": "import asyncio, time\n\nasync def work(n):\n    await asyncio.sleep(1)\n    return n\n\nasync def main():\n    start = time.perf_counter()\n    a = await work(1)\n    b = await work(2)\n    c = await asyncio.gather(work(3), work(4))\n    print(round(time.perf_counter() - start))\n\nasyncio.run(main())",
+      "code_language": "python",
+      "hint": "Which awaits wait for the previous one to finish, and which overlap?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`4`"
+        },
+        {
+          "key": "b",
+          "text": "`2`"
+        },
+        {
+          "key": "c",
+          "text": "`3`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "`1`"
+        }
+      ],
+      "explanation": "Awaiting a coroutine runs it to completion before the next line starts, so the first two awaits take about one second each. `asyncio.gather` schedules both coroutines on the event loop at once, so their sleeps overlap and the pair takes about one second. The total is about three seconds.",
+      "acceptance_criteria": "Selects “3”. Awaiting a coroutine runs it to completion before the next line starts, so the first two awaits take about one second each.",
+      "rubric": [
+        "States that consecutive awaits run one after another.",
+        "States that `gather` runs the coroutines concurrently.",
+        "Adds the durations correctly (1 + 1 + 1)."
+      ],
+      "expected_concepts": [
+        "await",
+        "asyncio.gather",
+        "concurrency vs sequencing",
+        "event loop"
+      ],
+      "misconceptions": [
+        "`async def` functions automatically run in parallel.",
+        "`gather` runs coroutines in separate threads."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: Coroutines and tasks (asyncio.gather)",
+          "url": "https://docs.python.org/3/library/asyncio-task.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "py-eq-without-hash",
+      "topic": "data-model",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Defining __eq__ without __hash__",
+      "prompt": "What happens when this program runs?",
+      "code": "class Point:\n    def __init__(self, x, y):\n        self.x, self.y = x, y\n\n    def __eq__(self, other):\n        return (self.x, self.y) == (other.x, other.y)\n\nprint(len({Point(1, 2), Point(1, 2)}))",
+      "code_language": "python",
+      "hint": "What must be true of the hashes of two objects that compare equal?",
+      "options": [
+        {
+          "key": "a",
+          "text": "It prints `1`, because the two points compare equal"
+        },
+        {
+          "key": "b",
+          "text": "It prints `2`, because each instance keeps its default identity hash"
+        },
+        {
+          "key": "c",
+          "text": "It raises `TypeError`, because `Point` instances are unhashable",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "It raises `AttributeError`, because `__hash__` is not defined"
+        }
+      ],
+      "explanation": "A class that defines `__eq__` without defining `__hash__` has its `__hash__` set to `None`, because objects that compare equal must have equal hashes and the default identity hash would break that rule. Instances therefore cannot go into a set or be dict keys, and building the set raises `TypeError`. Define `__hash__` from the same fields as `__eq__`, ideally on an immutable class such as a frozen dataclass.",
+      "acceptance_criteria": "Selects “It raises `TypeError`, because `Point` instances are unhashable”. A class that defines `__eq__` without defining `__hash__` has its `__hash__` set to `None`, because objects that compare equal must have equal hashes and the default identity hash would break that rule.",
+      "rubric": [
+        "Explains that defining `__eq__` sets `__hash__` to None.",
+        "Connects it to the rule that equal objects must have equal hashes.",
+        "Proposes a consistent `__hash__` or a frozen dataclass."
+      ],
+      "expected_concepts": [
+        "hashability",
+        "__eq__ and __hash__ contract",
+        "sets and dict keys",
+        "immutability"
+      ],
+      "misconceptions": [
+        "Objects keep the default identity hash after overriding `__eq__`.",
+        "Any object can be put in a set."
+      ],
+      "resources": [
+        {
+          "title": "Python reference: object.__hash__",
+          "url": "https://docs.python.org/3/reference/datamodel.html#object.__hash__"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "py-thread-counter-race",
+      "topic": "concurrency",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Is the GIL a lock for your code?",
+      "prompt": "Four threads each run `increment()` once on standard (GIL) CPython. Is the final value of `counter` guaranteed to be 400000?",
+      "code": "import threading\n\ncounter = 0\n\ndef increment():\n    global counter\n    for _ in range(100_000):\n        counter += 1\n\nthreads = [threading.Thread(target=increment) for _ in range(4)]\nfor t in threads: t.start()\nfor t in threads: t.join()\nprint(counter)",
+      "code_language": "python",
+      "hint": "How many separate steps does `counter += 1` involve, and can a thread switch happen between them?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Yes: the GIL makes every Python statement atomic"
+        },
+        {
+          "key": "b",
+          "text": "Yes: integers are immutable, so updates cannot interfere"
+        },
+        {
+          "key": "c",
+          "text": "No: it is always lower, because threads overwrite each other"
+        },
+        {
+          "key": "d",
+          "text": "No: `+=` is a read-modify-write; protect it with a `Lock`",
+          "correct": true
+        }
+      ],
+      "explanation": "The GIL lets only one thread execute bytecode at a time, but a thread can be switched out between the load, add and store steps of `counter += 1`. An update can then be lost. Whether that happens on a given run depends on the interpreter version and timing, so the program may print 400000 many times and still be wrong. Use a `threading.Lock` around the update, or avoid shared mutable state. Free-threaded builds make races more likely, not less.",
+      "acceptance_criteria": "Selects “No: `+=` is a read-modify-write; protect it with a `Lock”. The GIL lets only one thread execute bytecode at a time, but a thread can be switched out between the load, add and store steps of `counter += 1`.",
+      "rubric": [
+        "States that the result is not guaranteed.",
+        "Explains that `+=` is several bytecode steps that can interleave.",
+        "Explains that the GIL does not make compound operations atomic.",
+        "Proposes a lock or a design without shared mutable state."
+      ],
+      "expected_concepts": [
+        "race conditions",
+        "GIL",
+        "atomicity",
+        "locks"
+      ],
+      "misconceptions": [
+        "The GIL makes Python code thread-safe.",
+        "A race always produces a wrong result on every run."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: threading — Lock objects",
+          "url": "https://docs.python.org/3/library/threading.html#lock-objects"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

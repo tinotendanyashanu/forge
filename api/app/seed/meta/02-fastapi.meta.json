@@ -1,0 +1,43 @@
+{
+  "skill": "fastapi",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "fa-background-task-durability": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design session and transaction lifecycles.",
+      "prerequisites": [
+        "python",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "FastAPI keeps no persistent store of tasks.",
+        "b": "The response is sent before background tasks run.",
+        "d": "Tasks are local to the process that created them."
+      },
+      "follow_up_questions": [
+        "How would you make the welcome email reliable without slowing the signup response?"
+      ]
+    },
+    "fa-patch-exclude-unset": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design session and transaction lifecycles.",
+      "prerequisites": [
+        "python",
+        "http"
+      ],
+      "distractor_rationale": {
+        "b": "Pydantic accepts the partial body; the issue is what the dump contains.",
+        "c": "SQLAlchemy only changes attributes that are set.",
+        "d": "HTTP clients do not merge request bodies."
+      },
+      "follow_up_questions": [
+        "How would you let a client deliberately clear the email field?"
+      ]
+    }
+  }
+}

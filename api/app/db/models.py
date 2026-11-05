@@ -2062,3 +2062,92 @@ class EngAuditEvent(Base):
     action: Mapped[str] = mapped_column(String(48))
     detail: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
     created_at: Mapped[datetime] = _created_at()
+
+
+# ---------------------------------------------------------------- lessons
+
+
+class Lesson(Base):
+    """Teaching content for one skill and level. Reading a lesson is never mastery evidence."""
+
+    __tablename__ = "lessons"
+    __table_args__ = (
+        CheckConstraint(SLUG_CHECK.format(col="slug"), name="slug_format"),
+        CheckConstraint("estimated_minutes BETWEEN 1 AND 120", name="minutes_range"),
+        CheckConstraint("status IN ('draft', 'reviewed', 'verified')", name="status_valid"),
+        CheckConstraint("version >= 1", name="version_positive"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    slug: Mapped[str] = mapped_column(String(96), unique=True)
+    skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id", ondelete="RESTRICT"), index=True)
+    topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id", ondelete="RESTRICT"))
+    difficulty: Mapped[Difficulty] = mapped_column(_enum(Difficulty, "difficulty"))
+    title: Mapped[str] = mapped_column(String(160))
+    summary: Mapped[str] = mapped_column(Text)
+    body: Mapped[str] = mapped_column(Text)
+    objectives: Mapped[list[str]] = mapped_column(ARRAY(Text))
+    # Slugs of lessons to read first (may cross skills).
+    prerequisites: Mapped[list[str]] = mapped_column(ARRAY(Text))
+    misconceptions: Mapped[list[str]] = mapped_column(ARRAY(Text))
+    estimated_minutes: Mapped[int] = mapped_column(SmallInteger)
+    position: Mapped[int] = mapped_column(SmallInteger)
+    version: Mapped[int] = mapped_column(SmallInteger)
+    status: Mapped[str] = mapped_column(String(16))
+    provenance: Mapped[str] = mapped_column(Text)
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    created_at: Mapped[datetime] = _created_at()
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    skill: Mapped[Skill] = relationship()
+    topic: Mapped[Topic | None] = relationship()
+    resources: Mapped[list["LessonResource"]] = relationship(
+        order_by="LessonResource.position", cascade="all, delete-orphan"
+    )
+    checks: Mapped[list["LessonQuestion"]] = relationship(
+        order_by="LessonQuestion.position", cascade="all, delete-orphan"
+    )
+
+
+class LessonResource(Base):
+    __tablename__ = "lesson_resources"
+    __table_args__ = (UniqueConstraint("lesson_id", "position"),)
+
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id", ondelete="CASCADE"))
+    position: Mapped[int] = mapped_column(SmallInteger)
+    title: Mapped[str] = mapped_column(String(200))
+    url: Mapped[str] = mapped_column(String(500))
+
+
+class LessonQuestion(Base):
+    """Assessment questions that check a lesson's objectives (scored through normal assessments)."""
+
+    __tablename__ = "lesson_questions"
+
+    lesson_id: Mapped[int] = mapped_column(
+        ForeignKey("lessons.id", ondelete="CASCADE"), primary_key=True
+    )
+    question_id: Mapped[int] = mapped_column(
+        ForeignKey("questions.id", ondelete="RESTRICT"), primary_key=True
+    )
+    position: Mapped[int] = mapped_column(SmallInteger)
+
+    question: Mapped[Question] = relationship()
+
+
+class LessonRead(Base):
+    """A learner opened or finished a lesson. Engagement only: never mastery evidence."""
+
+    __tablename__ = "lesson_reads"
+
+    learner_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("learners.id", ondelete="CASCADE"), primary_key=True
+    )
+    lesson_id: Mapped[int] = mapped_column(
+        ForeignKey("lessons.id", ondelete="CASCADE"), primary_key=True
+    )
+    first_opened_at: Mapped[datetime] = _created_at()
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

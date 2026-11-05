@@ -1,0 +1,75 @@
+{
+  "skill": "testing",
+  "batch": "P2",
+  "content_version": 1,
+  "questions": {
+    "test-now-in-assertion": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design basic test cases and use fixtures.",
+      "prerequisites": [
+        "python"
+      ],
+      "distractor_rationale": {
+        "b": "Assertions run after the call returns.",
+        "c": "datetime supports equality comparison.",
+        "d": "The clock exists; it simply moves between reads."
+      },
+      "follow_up_questions": [
+        "How would you design `create_order` so tests can control time?"
+      ]
+    },
+    "test-overspecified-mock": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Patch correctly and investigate flakiness.",
+      "prerequisites": [
+        "python"
+      ],
+      "distractor_rationale": {
+        "a": "unittest.mock can patch httpx too; the test is patching the wrong thing by design.",
+        "c": "Either configuration would still target requests.",
+        "d": "No state is shared here."
+      },
+      "follow_up_questions": [
+        "When is asserting an interaction (such as 'an email was sent') the right test?"
+      ]
+    },
+    "test-mutation-testing": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design a test strategy around real dependencies.",
+      "prerequisites": [
+        "python"
+      ],
+      "distractor_rationale": {
+        "a": "The line was already executed; more coverage would not add the assertion.",
+        "c": "Snapshots only help if they include the boundary case.",
+        "d": "Order randomisation finds hidden dependencies, not weak assertions."
+      },
+      "follow_up_questions": [
+        "Write the boundary tests that would kill this mutant."
+      ]
+    },
+    "test-contract-tests": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design a test strategy around real dependencies.",
+      "prerequisites": [
+        "python"
+      ],
+      "distractor_rationale": {
+        "a": "The orders service's own tests encode the new name.",
+        "c": "Would catch it late and slowly, if at all.",
+        "d": "Billing's coverage does not test the real provider."
+      },
+      "follow_up_questions": [
+        "How would you roll out the rename without breaking billing at all?"
+      ]
+    }
+  }
+}
