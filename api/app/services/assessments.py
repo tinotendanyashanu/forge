@@ -21,6 +21,7 @@ from app.db.models import (
     SkillProgress,
     Topic,
 )
+from app.services.option_order import key_for_option, option_for_key, presented_options
 from app.schemas.assessments import (
     AnswerHistoryItem,
     AnswerSubmit,
@@ -284,7 +285,7 @@ def _pending(session: AssessmentSession, answered: int, item: SessionItem) -> Ne
         item=SessionItemOut(
             id=item.id,
             position=item.position,
-            question=public_question(item.question, item.question.topic),
+            question=public_question(item.question, item.question.topic, item.id),
         ),
     )
 
@@ -311,7 +312,8 @@ async def submit_answer(
     if question.format is QuestionFormat.SINGLE_CHOICE:
         if payload.selected_option_key is None:
             raise InvalidAnswer("This question expects selected_option_key")
-        option = next((o for o in question.options if o.key == payload.selected_option_key), None)
+        # Keys are presentation keys for this item, never authored keys.
+        option = option_for_key(item.id, question.options, payload.selected_option_key)
         if option is None:
             raise InvalidAnswer(
                 f"Option '{payload.selected_option_key}' does not exist for this question"
@@ -390,7 +392,7 @@ async def get_feedback(
         raise NotFound("Feedback is available after you submit an answer")
 
     q, answer, ev = item.question, item.answer, item.answer.evaluation
-    correct_key = next((o.key for o in q.options if o.is_correct), None)
+    correct_key = key_for_option(item.id, q.options, next((o.id for o in q.options if o.is_correct), None))
     summary = summarise(
         Evaluation(
             status=ev.status,
@@ -405,9 +407,9 @@ async def get_feedback(
         item_id=item.id,
         position=item.position,
         session=_session_out(session, await _answered_count(db, session.id)),
-        question=public_question(q, q.topic),
+        question=public_question(q, q.topic, item.id),
         answer=SubmittedAnswerOut(
-            selected_option_key=answer.selected_option.key if answer.selected_option else None,
+            selected_option_key=key_for_option(item.id, q.options, answer.selected_option_id),
             response_text=answer.response_text,
             submitted_at=answer.submitted_at,
         ),
@@ -418,7 +420,10 @@ async def get_feedback(
             score=float(ev.score) if ev.score is not None else None,
             summary=summary,
         ),
-        options=[OptionReveal(key=o.key, text=o.text, is_correct=o.is_correct) for o in q.options],
+        options=[
+            OptionReveal(key=k, text=o.text, is_correct=o.is_correct)
+            for k, o in presented_options(item.id, q.options)
+        ],
         explanation=q.explanation,
         rubric=[r.criterion for r in q.rubric],
         expected_concepts=list(q.expected_concepts),

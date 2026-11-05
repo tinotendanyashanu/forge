@@ -1,3 +1,4 @@
+import uuid
 from collections import defaultdict
 
 from sqlalchemy import func, select
@@ -15,6 +16,7 @@ from app.schemas.content import (
     TopicRef,
 )
 from app.services.errors import NotFound
+from app.services.option_order import presented_options
 
 
 async def _question_counts(db: AsyncSession) -> dict[int, dict[int | None, dict[str, int]]]:
@@ -73,8 +75,20 @@ async def get_skill(db: AsyncSession, slug: str) -> SkillDetail:
     )
 
 
-def public_question(question: Question, topic: Topic) -> QuestionPublic:
-    """Learner-safe view. Never include correctness, explanations or rubrics here."""
+def public_question(
+    question: Question, topic: Topic, item_id: uuid.UUID | None = None
+) -> QuestionPublic:
+    """Learner-safe view. Never include correctness, explanations or rubrics here.
+
+    With ``item_id`` (a question served in an assessment), options are shown in
+    that item's presentation order and relabelled by position; see option_order.
+    """
+    if item_id is not None:
+        options = [
+            OptionPublic(key=k, text=o.text) for k, o in presented_options(item_id, question.options)
+        ]
+    else:
+        options = [OptionPublic(key=o.key, text=o.text) for o in question.options]
     return QuestionPublic(
         slug=question.slug,
         title=question.title,
@@ -86,5 +100,5 @@ def public_question(question: Question, topic: Topic) -> QuestionPublic:
         difficulty=question.difficulty,
         estimated_minutes=question.estimated_minutes,
         topic=TopicRef(slug=topic.slug, title=topic.title),
-        options=[OptionPublic(key=o.key, text=o.text) for o in question.options],
+        options=options,
     )

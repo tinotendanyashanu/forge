@@ -113,7 +113,7 @@ def test_correct_choice_is_graded_deterministically(
     item = next_q(client, h, session["id"])["item"]
     seed = seed_questions[item["question"]["slug"]]
 
-    res = _submit(client, h, session["id"], item_id=item["id"], selected_option_key=correct_key(seed))
+    res = _submit(client, h, session["id"], item_id=item["id"], selected_option_key=correct_key(seed, item))
     assert res.status_code == 201, res.text
     fb = res.json()
     assert fb["evaluation"] == {
@@ -123,8 +123,8 @@ def test_correct_choice_is_graded_deterministically(
         "score": 1.0,
         "summary": "Correct.",
     }
-    assert fb["answer"]["selected_option_key"] == correct_key(seed)
-    assert [o["key"] for o in fb["options"] if o["is_correct"]] == [correct_key(seed)]
+    assert fb["answer"]["selected_option_key"] == correct_key(seed, item)
+    assert [o["key"] for o in fb["options"] if o["is_correct"]] == [correct_key(seed, item)]
     assert fb["rubric"] == list(seed.rubric)
     assert fb["expected_concepts"] and fb["misconceptions"] and fb["resources"]
     assert fb["explanation"] == seed.explanation
@@ -139,11 +139,11 @@ def test_wrong_choice_is_marked_incorrect(
     seed = seed_questions[item["question"]["slug"]]
 
     fb = _submit(
-        client, h, session["id"], item_id=item["id"], selected_option_key=wrong_key(seed)
+        client, h, session["id"], item_id=item["id"], selected_option_key=wrong_key(seed, item)
     ).json()
     assert fb["evaluation"]["is_correct"] is False
     assert fb["evaluation"]["score"] == 0.0
-    assert correct_key(seed).upper() in fb["evaluation"]["summary"]
+    assert correct_key(seed, item).upper() in fb["evaluation"]["summary"]
 
 
 def test_free_text_is_saved_as_pending_ai_evaluation(client: TestClient) -> None:
@@ -170,7 +170,7 @@ def test_answer_cannot_be_submitted_twice(
     h = new_learner(client)
     session = start(client, h, "fastapi", "intermediate")
     item = next_q(client, h, session["id"])["item"]
-    key = correct_key(seed_questions[item["question"]["slug"]])
+    key = correct_key(seed_questions[item["question"]["slug"]], item)
     assert _submit(client, h, session["id"], item_id=item["id"], selected_option_key=key).status_code == 201
     second = _submit(client, h, session["id"], item_id=item["id"], selected_option_key=key)
     assert second.status_code == 409
@@ -247,7 +247,7 @@ def test_full_session_flow_persists_and_updates_progress(
     while (step := next_q(client, h, sid))["status"] == "question":
         q = step["item"]["question"]
         body = (
-            {"selected_option_key": correct_key(seed_questions[q["slug"]])}
+            {"selected_option_key": correct_key(seed_questions[q["slug"]], step["item"])}
             if q["format"] == "single_choice"
             else {"response_text": "Shallow copies share inner objects; deep copies do not."}
         )

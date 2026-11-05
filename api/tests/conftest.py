@@ -107,9 +107,22 @@ def next_q(client: TestClient, headers: dict[str, str], session_id: str) -> dict
     return res.json()
 
 
-def correct_key(q: SeedQuestion) -> str:
-    return next(o.key for o in q.options if o.correct)
+def _shown_key(item: dict | None, q: SeedQuestion, correct: bool) -> str:
+    """The key the learner sees for the (in)correct option.
+
+    Served assessment items relabel options by presentation order, so tests must
+    translate via the option text rather than reuse authored keys. Without an
+    item, the authored key is returned (only for content-level checks).
+    """
+    option = next(o for o in q.options if o.correct is correct)
+    if item is None:
+        return option.key
+    return next(o["key"] for o in item["question"]["options"] if o["text"] == option.text)
 
 
-def wrong_key(q: SeedQuestion) -> str:
-    return next(o.key for o in q.options if not o.correct)
+def correct_key(q: SeedQuestion, item: dict | None = None) -> str:
+    return _shown_key(item, q, True)
+
+
+def wrong_key(q: SeedQuestion, item: dict | None = None) -> str:
+    return _shown_key(item, q, False)
