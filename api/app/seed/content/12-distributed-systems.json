@@ -1,0 +1,403 @@
+{
+  "skill": {
+    "slug": "distributed-systems",
+    "title": "Distributed Systems",
+    "summary": "Consistency, consensus, messaging and partial failure across machines.",
+    "description": "Explain consistency models and their trade-offs. Design reliable messaging with idempotent consumers. Reason about partitions, clocks and ordering."
+  },
+  "topics": [
+    {
+      "slug": "consistency",
+      "title": "Consistency models"
+    },
+    {
+      "slug": "messaging",
+      "title": "Messaging & queues"
+    },
+    {
+      "slug": "partial-failure",
+      "title": "Partial failure"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "ds-timeout-unknown-outcome",
+      "topic": "partial-failure",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "What a timeout tells you",
+      "prompt": "Your service calls a payment provider to charge a card and gives up after a 5-second timeout. What do you know about the charge?",
+      "hint": "List every point at which the request or its response could have been lost.",
+      "options": [
+        {
+          "key": "a",
+          "text": "It failed, because the provider did not confirm it in time"
+        },
+        {
+          "key": "b",
+          "text": "It succeeded, because providers process charges they receive"
+        },
+        {
+          "key": "c",
+          "text": "Nothing for certain: it may or may not have been processed",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "It is still pending and will be cancelled automatically"
+        }
+      ],
+      "explanation": "A timeout only tells you that no response arrived in time. The request may never have reached the provider, may still be running, or may have succeeded with the response lost on the way back. That ambiguity is why retrying a charge needs an idempotency key and why systems reconcile uncertain outcomes by querying the provider.",
+      "acceptance_criteria": "Selects “Nothing for certain: it may or may not have been processed”. A timeout only tells you that no response arrived in time.",
+      "rubric": [
+        "States that the outcome is unknown.",
+        "Lists the possible cases: request lost, still processing, or response lost.",
+        "Connects the ambiguity to idempotency keys or reconciliation."
+      ],
+      "expected_concepts": [
+        "partial failure",
+        "timeouts",
+        "unknown outcomes",
+        "idempotency"
+      ],
+      "misconceptions": [
+        "A timeout means the operation failed.",
+        "A remote service cancels work when the caller stops waiting."
+      ],
+      "resources": [
+        {
+          "title": "Amazon Builders' Library: Timeouts, retries and backoff with jitter",
+          "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+        },
+        {
+          "title": "Amazon Builders' Library: Making retries safe with idempotent APIs",
+          "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "ds-at-least-once-meaning",
+      "topic": "messaging",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "At-least-once delivery",
+      "prompt": "A queue promises at-least-once delivery. What must the consumer that processes these messages be able to handle?",
+      "hint": "What happens if the consumer does the work and then crashes before acknowledging?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Messages that arrive out of the original send order"
+        },
+        {
+          "key": "b",
+          "text": "Messages that are silently lost and never delivered"
+        },
+        {
+          "key": "c",
+          "text": "Messages whose payload is altered in transit"
+        },
+        {
+          "key": "d",
+          "text": "The same message delivered more than once",
+          "correct": true
+        }
+      ],
+      "explanation": "At-least-once means the broker keeps redelivering until it gets an acknowledgement. If the consumer finishes the work but crashes or times out before acknowledging, the message comes back and is processed again. Consumers therefore need to be idempotent, for example by recording processed message ids in the same transaction as the work. Ordering is a separate guarantee that at-least-once does not by itself promise.",
+      "acceptance_criteria": "Selects “The same message delivered more than once”. At-least-once means the broker keeps redelivering until it gets an acknowledgement.",
+      "rubric": [
+        "Identifies duplicate delivery as the consequence.",
+        "Explains the crash-before-acknowledge case.",
+        "Proposes idempotent processing, such as deduplication by message id."
+      ],
+      "expected_concepts": [
+        "at-least-once delivery",
+        "acknowledgements",
+        "idempotent consumers"
+      ],
+      "misconceptions": [
+        "At-least-once means exactly once in practice.",
+        "Duplicates only happen when the broker is faulty."
+      ],
+      "resources": [
+        {
+          "title": "RabbitMQ docs: Reliability guide",
+          "url": "https://www.rabbitmq.com/docs/reliability"
+        },
+        {
+          "title": "Apache Kafka docs: Message delivery semantics",
+          "url": "https://kafka.apache.org/documentation/#semantics"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "ds-read-your-writes",
+      "topic": "consistency",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "The profile that reverts on refresh",
+      "prompt": "A user saves a new display name. The write goes to the PostgreSQL primary, then the redirected page reads from an asynchronous read replica and shows the old name. Which fix gives this user read-your-writes consistency with the least impact on everyone else?",
+      "hint": "Does every user need to see this write immediately, or only the user who made it?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Switch all replicas to synchronous replication so they never lag"
+        },
+        {
+          "key": "b",
+          "text": "Route this user's reads to the primary for a short window after they write",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Add a cache in front of the replica and refresh it every second"
+        },
+        {
+          "key": "d",
+          "text": "Retry the read on the replica until the new name appears"
+        }
+      ],
+      "explanation": "Asynchronous replicas apply changes slightly after the primary commits, so a read immediately after a write can miss it. Read-your-writes is a per-session guarantee, so it can be met by sending only the writing user's reads to the primary briefly, or by waiting until the replica has replayed past the write's log position. Synchronous replication on its own only waits for the standby to receive or flush the change, not to apply it (that needs `synchronous_commit = remote_apply`), and it slows every write for everyone. Caches add more staleness; polling can wait indefinitely.",
+      "acceptance_criteria": "Selects “Route this user's reads to the primary for a short window after they write”. Asynchronous replicas apply changes slightly after the primary commits, so a read immediately after a write can miss it.",
+      "rubric": [
+        "Explains replication lag as the cause.",
+        "Identifies read-your-writes as a session-level guarantee.",
+        "Chooses a targeted fix such as primary reads after a write or waiting for the log position.",
+        "Explains the system-wide cost of making all replication synchronous."
+      ],
+      "expected_concepts": [
+        "replication lag",
+        "read-your-writes",
+        "session consistency",
+        "asynchronous replication"
+      ],
+      "misconceptions": [
+        "Replicas are always up to date after a commit.",
+        "Strong consistency for one user requires synchronous replication for all."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: High availability, load balancing and replication",
+          "url": "https://www.postgresql.org/docs/current/high-availability.html"
+        },
+        {
+          "title": "Jepsen: Consistency models",
+          "url": "https://jepsen.io/consistency"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "ds-dual-write-outbox",
+      "topic": "messaging",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Saving an order and publishing an event",
+      "prompt": "An order service commits the order to PostgreSQL and then publishes an `OrderPlaced` event to Kafka. Occasionally an order exists but no event was ever published. Which design fixes this?",
+      "hint": "What happens if the process is killed between the two calls?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Publish the event first, then commit the order to the database"
+        },
+        {
+          "key": "b",
+          "text": "Wrap both calls in a try/except and retry the publish on failure"
+        },
+        {
+          "key": "c",
+          "text": "Write the event to an outbox table in the same transaction; relay it to Kafka",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Use a two-phase commit between PostgreSQL and every Kafka consumer"
+        }
+      ],
+      "explanation": "Two separate systems cannot be updated atomically by calling one after the other: a crash between the commit and the publish loses the event, and the reverse order publishes events for orders that never committed. An outbox table written in the same database transaction makes the order and its event commit together. A relay (polling or change data capture) then publishes outbox rows at least once, so consumers must be idempotent.",
+      "acceptance_criteria": "Selects “Write the event to an outbox table in the same transaction; relay it to Kafka”. Two separate systems cannot be updated atomically by calling one after the other: a crash between the commit and the publish loses the event, and the reverse order publishes events for orders that never committed.",
+      "rubric": [
+        "Explains the crash window between the two writes.",
+        "Explains why reversing the order does not help.",
+        "Proposes a transactional outbox with a relay.",
+        "Notes the relay delivers at least once, so consumers must deduplicate."
+      ],
+      "expected_concepts": [
+        "dual writes",
+        "transactional outbox",
+        "change data capture",
+        "at-least-once"
+      ],
+      "misconceptions": [
+        "Retrying the publish closes the gap.",
+        "Distributed transactions with message brokers are a practical default."
+      ],
+      "resources": [
+        {
+          "title": "microservices.io: Transactional outbox pattern",
+          "url": "https://microservices.io/patterns/data/transactional-outbox.html"
+        },
+        {
+          "title": "Apache Kafka docs: Message delivery semantics",
+          "url": "https://kafka.apache.org/documentation/#semantics"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "ds-retry-amplification",
+      "topic": "partial-failure",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Retries at every layer",
+      "prompt": "Requests flow gateway → orders → inventory → database. Each of the three services makes up to 3 attempts at the next hop when it fails. The database becomes slow and every query times out. How many database queries can one user request cause, and what is the standard mitigation?",
+      "hint": "Each gateway attempt causes how many orders attempts, and each of those causes how many inventory attempts?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Up to 9; retry only at the gateway and the database driver"
+        },
+        {
+          "key": "b",
+          "text": "Up to 27; retry at a single layer and use retry budgets",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Up to 3; retries do not multiply across services"
+        },
+        {
+          "key": "d",
+          "text": "Up to 27; add more database replicas to absorb the load"
+        }
+      ],
+      "explanation": "Attempts multiply across layers: 3 at the gateway × 3 at orders × 3 at inventory = 27 queries for one request, and that happens exactly when the database is already overloaded. Mitigations are to retry at one layer only (usually the closest to the failure or the client), cap retries with a budget such as 10% of requests, use backoff with jitter, and add circuit breakers so failing dependencies are not hammered.",
+      "acceptance_criteria": "Selects “Up to 27; retry at a single layer and use retry budgets”. Attempts multiply across layers: 3 at the gateway × 3 at orders × 3 at inventory = 27 queries for one request, and that happens exactly when the database is already overloaded.",
+      "rubric": [
+        "Computes the multiplicative effect (27).",
+        "Explains why amplification happens during overload.",
+        "Proposes retrying at one layer and/or retry budgets.",
+        "Mentions backoff with jitter or circuit breakers."
+      ],
+      "expected_concepts": [
+        "retry amplification",
+        "retry budgets",
+        "cascading failure",
+        "circuit breakers"
+      ],
+      "misconceptions": [
+        "Retries are always safe because each layer retries only a few times.",
+        "More capacity is the right answer to retry storms."
+      ],
+      "resources": [
+        {
+          "title": "Google SRE book: Addressing cascading failures",
+          "url": "https://sre.google/sre-book/addressing-cascading-failures/"
+        },
+        {
+          "title": "Amazon Builders' Library: Timeouts, retries and backoff with jitter",
+          "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+        }
+      ],
+      "estimated_minutes": 6
+    },
+    {
+      "slug": "ds-lww-clock-skew",
+      "topic": "consistency",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Last write wins with wall clocks",
+      "prompt": "Two application servers update the same user's settings document in a multi-leader store that resolves conflicts by keeping the write with the latest wall-clock timestamp. Server A's clock runs 300 ms fast. What can go wrong, and which approach avoids it?",
+      "hint": "Which write has the larger timestamp if A writes first but its clock is 300 ms ahead?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Nothing; NTP keeps clocks close enough that last-write-wins is safe"
+        },
+        {
+          "key": "b",
+          "text": "A later write from B can lose to an earlier write from A; use conditional writes on a version number",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Writes from A will be rejected, because timestamps from the future fail validation"
+        },
+        {
+          "key": "d",
+          "text": "Both writes are kept and merged automatically, so only performance suffers"
+        }
+      ],
+      "explanation": "With last-write-wins on wall-clock time, a write from A made 200 ms before B's can carry a later timestamp and silently overwrite B's newer change. NTP reduces skew but cannot make it zero, and the loss is silent. Conditional updates against a version number (compare-and-set), a single leader per key, or causality tracking such as version vectors avoid relying on clocks to order writes.",
+      "acceptance_criteria": "Selects “A later write from B can lose to an earlier write from A; use conditional writes on a version number”. With last-write-wins on wall-clock time, a write from A made 200 ms before B's can carry a later timestamp and silently overwrite B's newer change.",
+      "rubric": [
+        "Explains how clock skew lets an earlier write win.",
+        "Notes that the loss is silent.",
+        "Proposes version-based conditional writes, a single leader per key, or version vectors.",
+        "Explains why NTP alone is insufficient."
+      ],
+      "expected_concepts": [
+        "clock skew",
+        "last-write-wins",
+        "compare-and-set",
+        "version vectors"
+      ],
+      "misconceptions": [
+        "Synchronised clocks are accurate enough to order events.",
+        "Last-write-wins never loses data."
+      ],
+      "resources": [
+        {
+          "title": "Jepsen: Consistency models",
+          "url": "https://jepsen.io/consistency"
+        },
+        {
+          "title": "Martin Fowler: Patterns of distributed systems",
+          "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/"
+        }
+      ],
+      "estimated_minutes": 6
+    },
+    {
+      "slug": "ds-idempotent-ordered-consumer",
+      "topic": "messaging",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "An idempotent, ordered consumer",
+      "prompt": "An order-fulfilment service consumes `OrderPlaced`, `OrderPaid` and `OrderCancelled` events from a topic with at-least-once delivery. Events for one order can arrive duplicated or out of order across consumer restarts. Design the consumer so that every order ends in the correct state. Cover deduplication, ordering, failure handling and what you would monitor.",
+      "hint": "What would happen to your design if the consumer crashed right after updating the order but before committing its offset?",
+      "explanation": "Partition by order id so events for one order go to one partition and are consumed in order. Record each processed event id in a table updated in the same database transaction as the state change, so duplicates are detected atomically. Commit the consumer offset only after that transaction commits; if the consumer crashes in between, the redelivered event is recognised by the deduplication table. Carry a per-order sequence number or version and apply only the next expected version; buffer or park events that arrive early, and ignore older ones. Model order state as a state machine that rejects impossible transitions (cancelled to paid). Send repeatedly failing events to a dead-letter queue with alerting rather than blocking the partition forever. Monitor consumer lag, dead-letter volume, duplicate rate and stuck orders.",
+      "acceptance_criteria": "Uses partitioning by order id, transactional deduplication, version or sequence checks with a state machine, a dead-letter path for poison messages, and monitors lag and dead letters.",
+      "rubric": [
+        "Uses a partition key (order id) to preserve per-order ordering.",
+        "Deduplicates by event id within the same transaction as the state change.",
+        "Uses sequence numbers, versions or a state machine to handle out-of-order or impossible transitions.",
+        "Handles poison messages with retries and a dead-letter queue.",
+        "Specifies monitoring such as consumer lag and dead-letter volume."
+      ],
+      "expected_concepts": [
+        "idempotent consumers",
+        "partitioning",
+        "sequence numbers",
+        "dead-letter queues",
+        "state machines"
+      ],
+      "misconceptions": [
+        "Brokers guarantee global ordering.",
+        "Deduplicating in memory is enough."
+      ],
+      "resources": [
+        {
+          "title": "Apache Kafka docs: Message delivery semantics",
+          "url": "https://kafka.apache.org/documentation/#semantics"
+        },
+        {
+          "title": "Amazon Builders' Library: Making retries safe with idempotent APIs",
+          "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+        }
+      ],
+      "estimated_minutes": 15
+    }
+  ]
+}

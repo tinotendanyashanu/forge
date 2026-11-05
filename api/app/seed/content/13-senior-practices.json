@@ -1,0 +1,402 @@
+{
+  "skill": {
+    "slug": "senior-practices",
+    "title": "Senior Engineering Practices",
+    "summary": "Code review, technical decision-making, incident response and mentoring.",
+    "description": "Review changes for risk, not style. Write and defend technical decisions with trade-offs. Lead incident response and blameless follow-up."
+  },
+  "topics": [
+    {
+      "slug": "code-review",
+      "title": "Code review"
+    },
+    {
+      "slug": "decision-making",
+      "title": "Technical decisions"
+    },
+    {
+      "slug": "incidents",
+      "title": "Incident response"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "sp-review-missing-tenant-check",
+      "topic": "code-review",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "The comment that matters most",
+      "prompt": "You are reviewing this endpoint in a multi-tenant SaaS where every report belongs to an organisation. Which review comment matters most?",
+      "code": "@router.get(\"/reports/{report_id}\")\nasync def get_report(report_id: int, user: User = Depends(current_user), db: Db = Depends(get_db)):\n    r = await db.get(Report, report_id)\n    if r is None:\n        raise HTTPException(404)\n    return ReportOut.model_validate(r)",
+      "code_language": "python",
+      "hint": "Which comment, if ignored, could cause a data breach?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Rename `r` to `report` so the handler is easier to read"
+        },
+        {
+          "key": "b",
+          "text": "Use the `status.HTTP_404_NOT_FOUND` constant instead of 404"
+        },
+        {
+          "key": "c",
+          "text": "Add a docstring describing the endpoint's response format"
+        },
+        {
+          "key": "d",
+          "text": "Check `r.org_id == user.org_id` before returning the report",
+          "correct": true
+        }
+      ],
+      "explanation": "The handler returns any report to any signed-in user, so one organisation can read another's data by changing the id. That is a security and data-protection defect, and it outranks style, constants and documentation. Good reviews prioritise correctness and risk, and label minor points as optional so they do not bury the important one.",
+      "acceptance_criteria": "Selects “Check `r.org_id == user.org_id` before returning the report”. The handler returns any report to any signed-in user, so one organisation can read another's data by changing the id.",
+      "rubric": [
+        "Identifies the missing tenant or ownership check.",
+        "Explains the cross-tenant data exposure.",
+        "Prioritises risk over style in review feedback."
+      ],
+      "expected_concepts": [
+        "code review priorities",
+        "multi-tenancy",
+        "authorisation"
+      ],
+      "misconceptions": [
+        "Reviews are mainly about style and naming.",
+        "Authorisation is the frontend's responsibility."
+      ],
+      "resources": [
+        {
+          "title": "Google engineering practices: What to look for in a code review",
+          "url": "https://google.github.io/eng-practices/review/reviewer/looking-for.html"
+        },
+        {
+          "title": "OWASP API Security: Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sp-risky-migration-change",
+      "topic": "code-review",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Which change needs the closest look?",
+      "prompt": "A pull request for a PostgreSQL 16 database contains four changes. Which deserves the most scrutiny before it is deployed with a rolling release?",
+      "hint": "Which change breaks code that is already running, and which cannot be undone?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Adds `status text NOT NULL DEFAULT 'active'` to a 50-million-row table"
+        },
+        {
+          "key": "b",
+          "text": "Drops a column that the currently deployed version still reads",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Creates a new index on a large table using `CREATE INDEX CONCURRENTLY`"
+        },
+        {
+          "key": "d",
+          "text": "Upgrades a logging library from version 2.4.1 to 2.4.2"
+        }
+      ],
+      "explanation": "During a rolling release the old version keeps running while the migration applies, so dropping a column it still reads breaks it immediately, and the drop cannot be undone without restoring data. Since PostgreSQL 11, adding a column with a constant default is a fast metadata change. `CREATE INDEX CONCURRENTLY` avoids blocking writes. A patch-level logging upgrade is low risk.",
+      "acceptance_criteria": "Selects “Drops a column that the currently deployed version still reads”. During a rolling release the old version keeps running while the migration applies, so dropping a column it still reads breaks it immediately, and the drop cannot be undone without restoring data.",
+      "rubric": [
+        "Identifies dropping a column still used by running code as the riskiest change.",
+        "Explains that old and new versions run simultaneously during rolling deploys.",
+        "Notes that the drop is irreversible.",
+        "Recognises that a constant default no longer rewrites the table in modern PostgreSQL."
+      ],
+      "expected_concepts": [
+        "backward-compatible migrations",
+        "rolling deploys",
+        "irreversible changes",
+        "PostgreSQL DDL behaviour"
+      ],
+      "misconceptions": [
+        "Adding a NOT NULL column with a default always rewrites the table.",
+        "Database changes are safe if they pass in staging."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: ALTER TABLE (notes on adding columns)",
+          "url": "https://www.postgresql.org/docs/current/sql-altertable.html"
+        },
+        {
+          "title": "Martin Fowler: Parallel change (expand and contract)",
+          "url": "https://martinfowler.com/bliki/ParallelChange.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sp-queue-choice-reasoning",
+      "topic": "decision-making",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Justifying a technology choice",
+      "prompt": "A three-person team needs a job queue for about 50 messages per second. Nobody on the team has operated Kafka, and the company already uses a cloud provider with a managed queue service. Which justification is strongest?",
+      "hint": "Which option is justified by the requirements given, rather than by hypothetical ones?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The managed queue, because it meets the stated load with the least operational burden; record when to revisit",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Kafka, because it is the industry standard and will cope with any amount of future growth"
+        },
+        {
+          "key": "c",
+          "text": "A custom queue on Redis lists, because it avoids depending on another managed cloud service"
+        },
+        {
+          "key": "d",
+          "text": "Whichever option the most senior engineer prefers, because deciding quickly matters most"
+        }
+      ],
+      "explanation": "A strong decision is tied to the actual requirements and constraints: 50 messages per second is modest, the team has no Kafka experience, and a managed service removes operational work. Writing down the trade-off and the conditions that would trigger a revisit, such as needing replay or much higher throughput, keeps the decision honest without over-engineering for hypothetical scale.",
+      "acceptance_criteria": "Selects “The managed queue, because it meets the stated load with the least operational burden; record when to revisit”. A strong decision is tied to the actual requirements and constraints: 50 messages per second is modest, the team has no Kafka experience, and a managed service removes operational work.",
+      "rubric": [
+        "Grounds the choice in the stated load, team skills and operational cost.",
+        "Rejects speculative future scale as the main driver.",
+        "Records conditions for revisiting the decision.",
+        "Explains why authority or novelty is not a justification."
+      ],
+      "expected_concepts": [
+        "trade-off analysis",
+        "operational cost",
+        "decision records",
+        "avoiding over-engineering"
+      ],
+      "misconceptions": [
+        "The most scalable option is always the best choice.",
+        "Fewer vendors is always better, whatever the cost."
+      ],
+      "resources": [
+        {
+          "title": "Architectural Decision Records (adr.github.io)",
+          "url": "https://adr.github.io/"
+        },
+        {
+          "title": "Michael Nygard: Documenting architecture decisions",
+          "url": "https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "sp-incident-first-action",
+      "topic": "incidents",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Errors spike after a deploy",
+      "prompt": "Ten minutes after a deployment, the error rate for checkout jumps from 0.1% to 8%. The previous version was healthy and rollback is a tested, one-command operation. As incident lead, what do you do first?",
+      "hint": "Which action reduces customer impact fastest with the least new risk?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Ask the author to debug in production until they find the root cause"
+        },
+        {
+          "key": "b",
+          "text": "Wait 30 minutes to collect more data before deciding anything"
+        },
+        {
+          "key": "c",
+          "text": "Roll back now, confirm recovery, then investigate the cause",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Write and deploy a hotfix for the most likely cause"
+        }
+      ],
+      "explanation": "The first goal of incident response is to stop the impact. A strong correlation with a deployment, a healthy previous version and a tested rollback make rolling back the fastest, lowest-risk mitigation. Root-cause analysis can then happen without customers paying for it. A rushed hotfix risks a second bad deploy, and waiting prolongs the outage.",
+      "acceptance_criteria": "Selects “Roll back now, confirm recovery, then investigate the cause”. The first goal of incident response is to stop the impact.",
+      "rubric": [
+        "Prioritises mitigation over diagnosis.",
+        "Uses the deployment correlation and tested rollback as evidence.",
+        "Confirms recovery after rolling back.",
+        "Explains the risks of a rushed hotfix or waiting."
+      ],
+      "expected_concepts": [
+        "mitigation first",
+        "rollback",
+        "incident leadership",
+        "time to recovery"
+      ],
+      "misconceptions": [
+        "You must understand the root cause before acting.",
+        "Rolling back is an admission of failure to avoid."
+      ],
+      "resources": [
+        {
+          "title": "Google SRE book: Managing incidents",
+          "url": "https://sre.google/sre-book/managing-incidents/"
+        },
+        {
+          "title": "PagerDuty incident response documentation",
+          "url": "https://response.pagerduty.com/"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sp-postmortem-action-item",
+      "topic": "incidents",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "The best postmortem action item",
+      "prompt": "A migration dropped a column that the running version still read, causing a 40-minute outage. Which postmortem action item is strongest?",
+      "hint": "Which item still works on the day someone is tired or new to the team?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Send a reminder to all engineers asking them to take more care when they write database migrations"
+        },
+        {
+          "key": "b",
+          "text": "The engineer who wrote the migration commits to double-checking every migration they write in future"
+        },
+        {
+          "key": "c",
+          "text": "Add a CI check that blocks dropping columns still referenced by the deployed version, with an owner and due date",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Add alerts on every database metric so that any future problem of this kind is noticed much sooner"
+        }
+      ],
+      "explanation": "Strong action items change the system so the same failure is prevented or caught automatically, and they have an owner and a deadline. Reminders and individual promises depend on people never making the same mistake, and they assign blame, which discourages honest reporting. Alerting on everything creates noise rather than targeted detection.",
+      "acceptance_criteria": "Selects “Add a CI check that blocks dropping columns still referenced by the deployed version, with an owner and due date”. Strong action items change the system so the same failure is prevented or caught automatically, and they have an owner and a deadline.",
+      "rubric": [
+        "Chooses a systemic, automated prevention.",
+        "Requires an owner and a due date.",
+        "Explains why reminders and individual promises are weak and blame-oriented.",
+        "Explains why indiscriminate alerting is not targeted detection."
+      ],
+      "expected_concepts": [
+        "blameless postmortems",
+        "systemic fixes",
+        "action-item quality",
+        "prevention vs detection"
+      ],
+      "misconceptions": [
+        "Better care by individuals prevents repeats.",
+        "More alerts always improve detection."
+      ],
+      "resources": [
+        {
+          "title": "Google SRE book: Postmortem culture",
+          "url": "https://sre.google/sre-book/postmortem-culture/"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "sp-rewrite-vs-incremental",
+      "topic": "decision-making",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Rewriting a legacy monolith",
+      "prompt": "Leadership proposes freezing features for a year to rewrite a profitable but hard-to-change monolith from scratch. As the senior engineer, which approach do you advocate?",
+      "hint": "Which approach keeps delivering value and lets you change course halfway through?",
+      "options": [
+        {
+          "key": "a",
+          "text": "A full rewrite, because incremental change will never fix the system's fundamental design problems"
+        },
+        {
+          "key": "b",
+          "text": "Incremental replacement behind a routing layer, moving one capability at a time with measurable milestones",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "No change at all, because a legacy system that still makes money should not be put at any risk"
+        },
+        {
+          "key": "d",
+          "text": "A rewrite in a newer language first, then decide afterwards which capabilities should move over"
+        }
+      ],
+      "explanation": "Big-bang rewrites carry high risk: the old system keeps changing, hidden behaviour is rediscovered late, and no value ships until the end. Incremental replacement (the strangler fig approach) routes one capability at a time to new code, delivers value continuously, keeps rollback possible and lets the team stop or change direction. Doing nothing ignores the real cost of slow change.",
+      "acceptance_criteria": "Selects “Incremental replacement behind a routing layer, moving one capability at a time with measurable milestones”. Big-bang rewrites carry high risk: the old system keeps changing, hidden behaviour is rediscovered late, and no value ships until the end.",
+      "rubric": [
+        "Advocates incremental replacement such as the strangler fig approach.",
+        "Explains the risks of a big-bang rewrite.",
+        "Defines milestones and keeps rollback possible.",
+        "Acknowledges the real cost of leaving the system unchanged."
+      ],
+      "expected_concepts": [
+        "strangler fig",
+        "incremental migration",
+        "risk management",
+        "technical debt"
+      ],
+      "misconceptions": [
+        "A clean rewrite is faster than evolving existing code.",
+        "Working legacy code has no ongoing cost."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Strangler fig application",
+          "url": "https://martinfowler.com/bliki/StranglerFigApplication.html"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "sp-lead-incident",
+      "topic": "incidents",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Lead an incident from detection to follow-up",
+      "prompt": "At 14:05 alerts show that 30% of API requests are failing for all customers. You are the incident lead. Describe how you would run the incident from detection to follow-up: roles, communication, how you decide between mitigation options, how you know it is resolved, and what happens afterwards.",
+      "hint": "Who is doing what in the first ten minutes, and who is talking to customers?",
+      "explanation": "Declare an incident and take the lead role; assign an operations lead and a communications lead so the incident lead coordinates rather than debugs. Open a single channel and keep a timeline. Publish customer-facing status updates at a fixed cadence. Gather evidence on what changed (deploys, config, dependencies) and favour reversible mitigations such as rollback, failover, feature flags or shedding load before diagnosis. Declare resolution only when user-facing metrics have recovered and stayed stable. Afterwards, run a blameless postmortem with a timeline, contributing factors and owned action items with deadlines, and share what was learned.",
+      "acceptance_criteria": "Defines roles (lead, operations, communications), a single channel and timeline, regular status updates, mitigation-first decisions using recent changes as evidence, metric-based resolution criteria, and a blameless postmortem with owned actions.",
+      "rubric": [
+        "Assigns distinct roles so the lead coordinates rather than debugs.",
+        "Establishes communication: one channel, a timeline and regular status updates.",
+        "Prioritises reversible mitigation using evidence such as recent changes.",
+        "Defines resolution by recovered user-facing metrics, not by a fix being deployed.",
+        "Describes a blameless postmortem with owned, dated action items."
+      ],
+      "expected_concepts": [
+        "incident command",
+        "communication cadence",
+        "mitigation first",
+        "resolution criteria",
+        "blameless postmortem"
+      ],
+      "misconceptions": [
+        "The most senior engineer should debug and lead at the same time.",
+        "An incident is over when the fix is deployed."
+      ],
+      "resources": [
+        {
+          "title": "Google SRE book: Managing incidents",
+          "url": "https://sre.google/sre-book/managing-incidents/"
+        },
+        {
+          "title": "Google SRE book: Postmortem culture",
+          "url": "https://sre.google/sre-book/postmortem-culture/"
+        },
+        {
+          "title": "PagerDuty incident response documentation",
+          "url": "https://response.pagerduty.com/"
+        }
+      ],
+      "estimated_minutes": 15
+    }
+  ]
+}

@@ -1,0 +1,400 @@
+{
+  "skill": {
+    "slug": "security",
+    "title": "Security",
+    "summary": "Web and application security: authentication, authorisation, injection and secrets.",
+    "description": "Distinguish authentication from authorisation and enforce both. Prevent injection and cross-site attacks. Handle secrets and sensitive data safely."
+  },
+  "topics": [
+    {
+      "slug": "auth",
+      "title": "Authentication & authorisation"
+    },
+    {
+      "slug": "injection",
+      "title": "Injection & XSS"
+    },
+    {
+      "slug": "secrets",
+      "title": "Secrets & data protection"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "sec-idor-invoice",
+      "topic": "auth",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Valid token, someone else's invoice",
+      "prompt": "Any signed-in user can fetch any invoice by changing the number in the URL. Which vulnerability class is this?",
+      "code": "@app.get(\"/invoices/{invoice_id}\")\nasync def get_invoice(invoice_id: int, user: User = Depends(current_user)):\n    invoice = await db.get(Invoice, invoice_id)\n    if invoice is None:\n        raise HTTPException(404)\n    return invoice",
+      "code_language": "python",
+      "hint": "The server knows who the caller is. What does it fail to check?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Cross-site request forgery (CSRF)"
+        },
+        {
+          "key": "b",
+          "text": "SQL injection through the path parameter"
+        },
+        {
+          "key": "c",
+          "text": "Broken object-level authorisation (IDOR)",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Session fixation in the login flow"
+        }
+      ],
+      "explanation": "The handler authenticates the caller but never checks that the invoice belongs to them, so knowing or guessing an id is enough. This is broken object-level authorisation, also called an insecure direct object reference. The fix is an ownership check (or a query scoped to the user) on every object access.",
+      "acceptance_criteria": "Selects “Broken object-level authorisation (IDOR)”. The handler authenticates the caller but never checks that the invoice belongs to them, so knowing or guessing an id is enough.",
+      "rubric": [
+        "Names broken object-level authorisation or IDOR.",
+        "Explains that authentication succeeded but authorisation is missing.",
+        "Proposes scoping the lookup to the current user or checking ownership."
+      ],
+      "expected_concepts": [
+        "authentication vs authorisation",
+        "object-level authorisation",
+        "IDOR"
+      ],
+      "misconceptions": [
+        "A valid token means the request is authorised.",
+        "Using hard-to-guess ids removes the need for authorisation checks."
+      ],
+      "resources": [
+        {
+          "title": "OWASP API Security: Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        },
+        {
+          "title": "OWASP Cheat Sheet: Authorization",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sec-parameterised-query",
+      "topic": "injection",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Which query is injection-safe?",
+      "prompt": "`email` comes straight from a login form. Using psycopg with PostgreSQL, which call is safe against SQL injection?",
+      "hint": "In which option does Python itself insert `email` into the SQL text?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`cur.execute(f\"SELECT * FROM users WHERE email = '{email}'\")`"
+        },
+        {
+          "key": "b",
+          "text": "`cur.execute(\"SELECT * FROM users WHERE email = '%s'\" % email)`"
+        },
+        {
+          "key": "c",
+          "text": "`cur.execute(\"SELECT * FROM users WHERE email = '{}'\".format(email))`"
+        },
+        {
+          "key": "d",
+          "text": "`cur.execute(\"SELECT * FROM users WHERE email = %s\", (email,))`",
+          "correct": true
+        }
+      ],
+      "explanation": "Only the call that passes `(email,)` as a separate argument keeps the value out of the SQL text, so the driver sends it as data and it can never change the query's structure. The f-string, `%` and `.format` versions all build the SQL string in Python, so input such as `' OR '1'='1` becomes part of the query. They differ only in string-formatting syntax.",
+      "acceptance_criteria": "Selects “cur.execute(\"SELECT * FROM users WHERE email = %s\", (email,))”. Only the call that passes `(email,)` as a separate argument keeps the value out of the SQL text, so the driver sends it as data and it can never change the query's structure.",
+      "rubric": [
+        "Selects the call that passes parameters separately from the query.",
+        "Explains that f-strings, `%` formatting and `.format` all build SQL text in Python.",
+        "Explains why driver-side parameters prevent the input from altering the query."
+      ],
+      "expected_concepts": [
+        "parameterised queries",
+        "SQL injection",
+        "string formatting"
+      ],
+      "misconceptions": [
+        "Using `%s` in the string is safe whatever operator fills it in.",
+        "Quoting the placeholder in the SQL text protects the value."
+      ],
+      "resources": [
+        {
+          "title": "OWASP Cheat Sheet: SQL injection prevention",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+        },
+        {
+          "title": "psycopg docs: Passing parameters to SQL queries",
+          "url": "https://www.psycopg.org/psycopg3/docs/basic/params.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sec-password-storage",
+      "topic": "secrets",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Storing passwords",
+      "prompt": "You are designing password storage for a new service. Which approach follows current guidance?",
+      "hint": "What does an attacker who steals the database do next, and how fast can they do it with each option?",
+      "options": [
+        {
+          "key": "a",
+          "text": "SHA-256 of the password with a random per-user salt"
+        },
+        {
+          "key": "b",
+          "text": "AES-encrypt the password using a key kept in the environment"
+        },
+        {
+          "key": "c",
+          "text": "Argon2id (or bcrypt) with a per-user salt and a tuned work factor",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "MD5 applied twice, plus a global secret pepper in code"
+        }
+      ],
+      "explanation": "Passwords should be hashed with a deliberately slow, salted password-hashing function such as Argon2id, scrypt or bcrypt, tuned so each guess is expensive. A single fast SHA-256 lets attackers test billions of guesses per second on GPUs even with salts. Encryption is reversible, so whoever obtains the key obtains every password. MD5 is fast and broken.",
+      "acceptance_criteria": "Selects “Argon2id (or bcrypt) with a per-user salt and a tuned work factor”. Passwords should be hashed with a deliberately slow, salted password-hashing function such as Argon2id, scrypt or bcrypt, tuned so each guess is expensive.",
+      "rubric": [
+        "Chooses a slow, salted password-hashing function.",
+        "Explains why fast hashes such as SHA-256 are unsuitable even with salts.",
+        "Explains why reversible encryption is the wrong primitive.",
+        "Mentions tuning the work factor over time."
+      ],
+      "expected_concepts": [
+        "password hashing",
+        "salting",
+        "work factor",
+        "hashing vs encryption"
+      ],
+      "misconceptions": [
+        "Any cryptographic hash with a salt is good enough.",
+        "Encrypting passwords is safer than hashing them."
+      ],
+      "resources": [
+        {
+          "title": "OWASP Cheat Sheet: Password storage",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sec-react-xss-bio",
+      "topic": "injection",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Rendering a user's HTML bio",
+      "prompt": "A profile page renders each user's bio with `dangerouslySetInnerHTML={{ __html: user.bio }}`. Bios may contain basic formatting. What is the right fix for the stored XSS risk?",
+      "hint": "Can JavaScript run without a `<script>` tag?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Strip `<script>` tags from bios before saving them"
+        },
+        {
+          "key": "b",
+          "text": "Sanitise with an allow-list HTML sanitiser, or render as plain text",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Mark the session cookie `HttpOnly` so scripts cannot read it"
+        },
+        {
+          "key": "d",
+          "text": "Restrict the API's CORS policy to the frontend's own origin"
+        }
+      ],
+      "explanation": "Removing `<script>` tags is not enough: attributes such as `onerror` on an `<img>` and `javascript:` URLs still execute. An allow-list sanitiser such as DOMPurify keeps only known-safe tags and attributes, and rendering as text avoids HTML entirely. `HttpOnly` limits cookie theft but not what an injected script can do, and CORS does not govern scripts running in your own page.",
+      "acceptance_criteria": "Selects “Sanitise with an allow-list HTML sanitiser, or render as plain text”. Removing `<script>` tags is not enough: attributes such as `onerror` on an `<img>` and `javascript:` URLs still execute.",
+      "rubric": [
+        "Chooses allow-list sanitisation or plain-text rendering.",
+        "Explains why deny-listing `<script>` misses other vectors.",
+        "Explains that HttpOnly and CORS do not prevent script execution.",
+        "Mentions defence in depth such as a Content-Security-Policy."
+      ],
+      "expected_concepts": [
+        "stored XSS",
+        "allow-list sanitisation",
+        "output encoding",
+        "defence in depth"
+      ],
+      "misconceptions": [
+        "Blocking `<script>` tags prevents XSS.",
+        "HttpOnly cookies make XSS harmless."
+      ],
+      "resources": [
+        {
+          "title": "OWASP Cheat Sheet: Cross-site scripting prevention",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+        },
+        {
+          "title": "React docs: dangerouslySetInnerHTML",
+          "url": "https://react.dev/reference/react-dom/components/common#dangerously-setting-the-inner-html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sec-jwt-logout-all",
+      "topic": "auth",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Logging out a stolen laptop",
+      "prompt": "An API issues stateless JWT access tokens valid for 24 hours and checks only their signature and expiry. A user's laptop is stolen and they click 'Sign out everywhere'. What happens, and what is the most appropriate change?",
+      "hint": "Where would the server look to learn that a token has been revoked?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Existing tokens keep working until expiry; use short-lived access tokens with revocable refresh tokens or a token version check",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "All tokens stop working at once, because the signing key is user-specific and is rotated on sign-out"
+        },
+        {
+          "key": "c",
+          "text": "Existing tokens keep working until expiry; the fix is to lengthen expiry so users re-authenticate less often"
+        },
+        {
+          "key": "d",
+          "text": "All tokens stop working at once, because the browser deletes them; no server change is needed"
+        }
+      ],
+      "explanation": "A signature-and-expiry check has no server-side state to consult, so a stolen token stays valid until it expires. Common fixes keep access tokens short-lived (minutes) and put revocation where state already exists: refresh tokens stored server-side, a per-user token version or 'not before' timestamp checked on each request, or a denylist of token ids. Deleting the token in one browser does nothing to a copy on the stolen laptop.",
+      "acceptance_criteria": "Selects “Existing tokens keep working until expiry; use short-lived access tokens with revocable refresh tokens or a token version check”. A signature-and-expiry check has no server-side state to consult, so a stolen token stays valid until it expires.",
+      "rubric": [
+        "States that existing tokens remain valid until expiry.",
+        "Explains that stateless validation has nowhere to record revocation.",
+        "Proposes short-lived access tokens with revocable refresh tokens, or a server-side version/denylist check.",
+        "Explains why client-side deletion does not help."
+      ],
+      "expected_concepts": [
+        "JWT revocation",
+        "token lifetime",
+        "refresh tokens",
+        "stateless vs stateful sessions"
+      ],
+      "misconceptions": [
+        "Signing out on one device invalidates tokens everywhere.",
+        "JWTs can be revoked without any server-side state."
+      ],
+      "resources": [
+        {
+          "title": "RFC 8725: JSON Web Token best current practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "title": "OWASP Cheat Sheet: Session management",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+        }
+      ],
+      "estimated_minutes": 6
+    },
+    {
+      "slug": "sec-leaked-api-key",
+      "topic": "secrets",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A key pushed to a public repository",
+      "prompt": "Ten minutes ago a teammate pushed a production payment-provider API key to a public GitHub repository. They have since pushed a commit removing it. What should happen first?",
+      "hint": "Which action actually stops someone who already copied the key?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Rewrite history with a force-push so the key no longer appears in any commit"
+        },
+        {
+          "key": "b",
+          "text": "Make the repository private, then review who forked it while it was public"
+        },
+        {
+          "key": "c",
+          "text": "Revoke or rotate the key at the provider now, then check its recent usage",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Leave it; the removal commit means the key is no longer exposed"
+        }
+      ],
+      "explanation": "Treat the key as compromised the moment it was public: automated scanners harvest new GitHub commits within minutes, and clones or forks keep the history. Revoking or rotating at the provider is the only step that actually stops misuse. Then review the provider's logs for unexpected use, deploy the new key from a secret store, and only afterwards clean the history and add secret scanning to prevent a repeat.",
+      "acceptance_criteria": "Selects “Revoke or rotate the key at the provider now, then check its recent usage”. Treat the key as compromised the moment it was public: automated scanners harvest new GitHub commits within minutes, and clones or forks keep the history.",
+      "rubric": [
+        "Prioritises revoking or rotating the key over cleaning the repository.",
+        "Explains that removal or rewriting history does not undo exposure.",
+        "Includes reviewing provider logs for misuse.",
+        "Includes a preventive step such as secret scanning or a secret store."
+      ],
+      "expected_concepts": [
+        "secret rotation",
+        "incident containment",
+        "git history",
+        "secret scanning"
+      ],
+      "misconceptions": [
+        "Deleting a secret in a later commit removes it from the repository.",
+        "Making a repository private undoes past exposure."
+      ],
+      "resources": [
+        {
+          "title": "GitHub docs: Removing sensitive data from a repository",
+          "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository"
+        },
+        {
+          "title": "OWASP Cheat Sheet: Secrets management",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "sec-threat-model-reset",
+      "topic": "auth",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Threat-model a password reset flow",
+      "prompt": "Your service lets users reset their password by entering their email address and following a link. Threat-model this flow: identify the main threats, explain how an attacker would exploit each, and specify the controls you would implement.",
+      "hint": "Walk through the flow step by step and ask what an attacker controls at each step.",
+      "explanation": "Key threats include account enumeration (different responses for known and unknown emails), token guessing or reuse, token leakage (logs, Referer headers, email forwarding), flooding a victim with reset emails, host-header poisoning of the reset link, and session persistence after a reset. Controls: identical responses and timing for all emails; single-use tokens with at least 128 bits of entropy from a cryptographically secure generator, short expiry, stored only as hashes; rate limits per account and per IP; links built from a configured base URL; invalidating other sessions and notifying the user after a reset; and logging for abuse detection.",
+      "acceptance_criteria": "Identifies enumeration, token weakness or leakage, abuse and post-reset session risks, with concrete controls such as uniform responses, hashed single-use expiring tokens, rate limits and session invalidation.",
+      "rubric": [
+        "Identifies account enumeration and proposes uniform responses (and timing).",
+        "Specifies strong, single-use, short-lived reset tokens stored as hashes.",
+        "Addresses token leakage, for example via logs, Referer or a poisoned host header.",
+        "Adds rate limiting or abuse protection for reset requests.",
+        "Invalidates existing sessions and notifies the user after a successful reset."
+      ],
+      "expected_concepts": [
+        "threat modelling",
+        "account enumeration",
+        "token design",
+        "rate limiting",
+        "session invalidation"
+      ],
+      "misconceptions": [
+        "Hiding the reset form behind a CAPTCHA is a sufficient control on its own.",
+        "Reset tokens can be stored in plain text because they expire."
+      ],
+      "resources": [
+        {
+          "title": "OWASP Cheat Sheet: Forgot password",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html"
+        },
+        {
+          "title": "OWASP Cheat Sheet: Threat modeling",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html"
+        }
+      ],
+      "estimated_minutes": 15
+    }
+  ]
+}

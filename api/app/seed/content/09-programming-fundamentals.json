@@ -1,0 +1,405 @@
+{
+  "skill": {
+    "slug": "programming-fundamentals",
+    "title": "Programming Fundamentals",
+    "summary": "Control flow, functions, data structures and the mental model of a running program.",
+    "description": "Trace program state through control flow, function calls and mutation. Choose basic data structures by their access patterns. Reason about time complexity of simple algorithms."
+  },
+  "topics": [
+    {
+      "slug": "control-flow",
+      "title": "Control flow & functions"
+    },
+    {
+      "slug": "data-structures",
+      "title": "Core data structures"
+    },
+    {
+      "slug": "complexity",
+      "title": "Complexity"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "pf-loop-continue-break",
+      "topic": "control-flow",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "continue and break in one loop",
+      "prompt": "What does this program print?",
+      "code": "total = 0\nfor n in [3, 8, 2, 9, 4]:\n    if n % 2 == 0:\n        continue\n    if n > 8:\n        break\n    total += n\nprint(total)",
+      "code_language": "python",
+      "hint": "Write down `n` and `total` after every iteration. What happens to the elements after 9?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`12`"
+        },
+        {
+          "key": "b",
+          "text": "`26`"
+        },
+        {
+          "key": "c",
+          "text": "`3`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "`14`"
+        }
+      ],
+      "explanation": "`continue` skips the rest of the current iteration and `break` leaves the loop entirely. 3 is odd and not above 8, so it is added. 8 and 2 are even and skipped. 9 is odd and above 8, so the loop stops before 9 is added and before 4 is ever reached. The total is 3.",
+      "acceptance_criteria": "Selects “3”. `continue` skips the rest of the current iteration and `break` leaves the loop entirely.",
+      "rubric": [
+        "Traces each iteration in order and tracks `total`.",
+        "Distinguishes `continue` (skip this iteration) from `break` (stop the loop).",
+        "Notices that elements after the `break` are never examined."
+      ],
+      "expected_concepts": [
+        "iteration",
+        "continue",
+        "break",
+        "loop state"
+      ],
+      "misconceptions": [
+        "`break` only skips the current element, like `continue`.",
+        "`continue` skips odd numbers rather than the remaining statements."
+      ],
+      "resources": [
+        {
+          "title": "Python tutorial: More control flow tools",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "pf-function-local-scope",
+      "topic": "control-flow",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Rebinding a parameter",
+      "prompt": "What does this program print?",
+      "code": "def f(x):\n    x = x * 2\n    return x + 1\n\nx = 5\ny = f(x)\nprint(x, y)",
+      "code_language": "python",
+      "hint": "The `x` inside `f` and the `x` outside it are two different names. Which one does `x = x * 2` rebind?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`10 11`"
+        },
+        {
+          "key": "b",
+          "text": "`5 11`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`5 10`"
+        },
+        {
+          "key": "d",
+          "text": "`10 21`"
+        }
+      ],
+      "explanation": "Calling `f(x)` binds the function's own local name `x` to the value 5. `x = x * 2` rebinds only that local name to 10, then the function returns 11. The global `x` was never reassigned, so it still refers to 5.",
+      "acceptance_criteria": "Selects “5 11”. Calling `f(x)` binds the function's own local name `x` to the value 5.",
+      "rubric": [
+        "Explains that parameters are local names inside the function.",
+        "Explains that rebinding a local name does not change the caller's variable.",
+        "Computes the return value correctly."
+      ],
+      "expected_concepts": [
+        "local scope",
+        "parameters",
+        "return values",
+        "name binding"
+      ],
+      "misconceptions": [
+        "Assigning to a parameter changes the caller's variable.",
+        "A function's return value is the last value assigned, not what `return` gives."
+      ],
+      "resources": [
+        {
+          "title": "Python FAQ: rules for local and global variables",
+          "url": "https://docs.python.org/3/faq/programming.html#what-are-the-rules-for-local-and-global-variables-in-python"
+        },
+        {
+          "title": "Python tutorial: More control flow tools",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "pf-alias-vs-copy",
+      "topic": "data-structures",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Aliases and slice copies",
+      "prompt": "What does this program print?",
+      "code": "a = [1, 2, 3]\nb = a\nb.append(4)\nc = a[:]\nc.append(5)\nprint(len(a), len(b), len(c))",
+      "code_language": "python",
+      "hint": "Which names refer to the same list object, and when was the copy made?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`3 4 5`"
+        },
+        {
+          "key": "b",
+          "text": "`4 4 4`"
+        },
+        {
+          "key": "c",
+          "text": "`3 4 4`"
+        },
+        {
+          "key": "d",
+          "text": "`4 4 5`",
+          "correct": true
+        }
+      ],
+      "explanation": "`b = a` makes a second name for the same list, so appending through `b` changes `a` too. `c = a[:]` then creates a new list holding the four current elements. Appending to `c` changes only `c`. The lengths are 4, 4 and 5.",
+      "acceptance_criteria": "Selects “4 4 5”. `b = a` makes a second name for the same list, so appending through `b` changes `a` too.",
+      "rubric": [
+        "Explains that assignment creates an alias to the same list object.",
+        "Explains that slicing creates a new (shallow) copy.",
+        "Applies the order of operations: the copy is taken after the first append."
+      ],
+      "expected_concepts": [
+        "aliasing",
+        "mutability",
+        "shallow copy",
+        "object identity"
+      ],
+      "misconceptions": [
+        "Assignment copies a list.",
+        "A slice copy shares future appends with the original."
+      ],
+      "resources": [
+        {
+          "title": "Python tutorial: Data structures",
+          "url": "https://docs.python.org/3/tutorial/datastructures.html"
+        },
+        {
+          "title": "Python docs: copy — shallow and deep copy",
+          "url": "https://docs.python.org/3/library/copy.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "pf-membership-in-loop",
+      "topic": "complexity",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Membership tests inside a loop",
+      "prompt": "`a` and `b` each contain `n` integers. What is the time complexity of `common`, and what is the usual fix?",
+      "code": "def common(a: list[int], b: list[int]) -> list[int]:\n    return [x for x in a if x in b]",
+      "code_language": "python",
+      "hint": "How much work does a single `x in b` do when `b` is a list?",
+      "options": [
+        {
+          "key": "a",
+          "text": "O(n): each `in` check is constant time; nothing to fix"
+        },
+        {
+          "key": "b",
+          "text": "O(n log n): Python sorts `b` before each `in` check"
+        },
+        {
+          "key": "c",
+          "text": "O(n²): `in` scans the list `b`; build `set(b)` once first",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "O(log n): the comprehension stops at the first match"
+        }
+      ],
+      "explanation": "For a list, `x in b` compares against elements one by one, so it is O(n) in the worst case. Doing that once for each of the `n` elements of `a` gives O(n²). Building `set(b)` once costs O(n) and makes each membership check O(1) on average, so the function becomes O(n) overall.",
+      "acceptance_criteria": "Selects “O(n²): `in` scans the list `b`; build `set(b)` once first”. For a list, `x in b` compares against elements one by one, so it is O(n) in the worst case.",
+      "rubric": [
+        "Identifies `in` on a list as a linear scan.",
+        "Multiplies by the number of iterations to get O(n²).",
+        "Proposes building a set once, not inside the loop.",
+        "Notes that set lookups are O(1) on average, not guaranteed."
+      ],
+      "expected_concepts": [
+        "time complexity",
+        "membership tests",
+        "hash sets",
+        "nested work"
+      ],
+      "misconceptions": [
+        "`in` is always O(1) in Python.",
+        "A comprehension is faster in big-O terms than an explicit loop."
+      ],
+      "resources": [
+        {
+          "title": "Python wiki: Time complexity of built-in types",
+          "url": "https://wiki.python.org/moin/TimeComplexity"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "pf-priority-structure",
+      "topic": "data-structures",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Choosing a structure for repeated minimums",
+      "prompt": "A scheduler holds up to one million pending tasks. It constantly adds tasks and removes the one with the smallest deadline. Which choice gives the best worst-case cost per operation?",
+      "hint": "For each option, what does removing the smallest item cost, and what does inserting cost?",
+      "options": [
+        {
+          "key": "a",
+          "text": "A list kept sorted with `bisect.insort`, popping from the front"
+        },
+        {
+          "key": "b",
+          "text": "A binary heap via `heapq`: `heappush` and `heappop`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "A `dict` keyed by deadline, reading `min(d)` each time"
+        },
+        {
+          "key": "d",
+          "text": "An unsorted list, appending and removing `min()` each time"
+        }
+      ],
+      "explanation": "A binary heap keeps the smallest item at index 0 and restores order in O(log n) on both push and pop. `bisect.insort` finds the position in O(log n) but then shifts elements, so inserts cost O(n), and popping index 0 shifts again. `min()` over a dict or list scans every item, which is O(n) per removal.",
+      "acceptance_criteria": "Selects “A binary heap via `heapq`: `heappush` and `heappop”. A binary heap keeps the smallest item at index 0 and restores order in O(log n) on both push and pop.",
+      "rubric": [
+        "Chooses the heap and gives O(log n) push and pop.",
+        "Explains why `insort` is O(n) despite binary search.",
+        "Explains that `min()` is a linear scan.",
+        "Considers the operation mix (frequent inserts and removals)."
+      ],
+      "expected_concepts": [
+        "binary heap",
+        "priority queue",
+        "amortised vs worst case",
+        "list shifting cost"
+      ],
+      "misconceptions": [
+        "Binary search makes sorted-list inserts O(log n).",
+        "Dicts make finding the minimum key fast."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: heapq — heap queue algorithm",
+          "url": "https://docs.python.org/3/library/heapq.html"
+        },
+        {
+          "title": "Python wiki: Time complexity of built-in types",
+          "url": "https://wiki.python.org/moin/TimeComplexity"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "pf-bfs-pop-front",
+      "topic": "complexity",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A breadth-first search that slows down",
+      "prompt": "This breadth-first search takes minutes on a graph with a million nodes, and the time grows much faster than the node count. What is the cause?",
+      "code": "def bfs(graph, start):\n    visited = {start}\n    queue = [start]\n    while queue:\n        node = queue.pop(0)\n        for nxt in graph[node]:\n            if nxt not in visited:\n                visited.add(nxt)\n                queue.append(nxt)\n    return visited",
+      "code_language": "python",
+      "hint": "Which list operation has to move other elements?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`visited` is a set, so each membership check is O(n)"
+        },
+        {
+          "key": "b",
+          "text": "`queue.append` reallocates the list on every call"
+        },
+        {
+          "key": "c",
+          "text": "Python's recursion limit forces slow fallback iteration"
+        },
+        {
+          "key": "d",
+          "text": "`queue.pop(0)` shifts every remaining element each time",
+          "correct": true
+        }
+      ],
+      "explanation": "Removing the first element of a list moves all the others down one slot, so each `pop(0)` is O(n), and the search does it once per node, which is O(n²) overall. `collections.deque` supports `popleft()` in O(1). Set membership is O(1) on average, appends are amortised O(1), and this code is not recursive.",
+      "acceptance_criteria": "Selects “queue.pop(0)` shifts every remaining element each time”. Removing the first element of a list moves all the others down one slot, so each `pop(0)` is O(n), and the search does it once per node, which is O(n²) overall.",
+      "rubric": [
+        "Identifies `pop(0)` as an O(n) operation on lists.",
+        "Explains why doing it once per node makes the search quadratic.",
+        "Recommends `collections.deque.popleft()`.",
+        "Rules out the other options with correct complexity facts."
+      ],
+      "expected_concepts": [
+        "queues",
+        "deque",
+        "amortised complexity",
+        "breadth-first search"
+      ],
+      "misconceptions": [
+        "Python lists are efficient queues.",
+        "List appends are O(n) because of reallocation."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: collections.deque",
+          "url": "https://docs.python.org/3/library/collections.html#collections.deque"
+        },
+        {
+          "title": "Python wiki: Time complexity of built-in types",
+          "url": "https://wiki.python.org/moin/TimeComplexity"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "pf-leaderboard-design",
+      "topic": "data-structures",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Data structures for a live leaderboard",
+      "prompt": "A game has one million players whose scores change constantly. You need three operations: update a player's score, list the top 10, and return any player's rank. Compare at least two data-structure designs, give the time complexity of each operation, and justify your choice.",
+      "hint": "Which operation does each candidate structure handle badly?",
+      "explanation": "A hash map from player to score is needed for O(1) lookup of the current score, but it cannot answer top-10 or rank. A plain heap such as `heapq` gives the maximum quickly but cannot find and update an arbitrary player efficiently; an indexed heap can update in O(log n), yet neither answers rank without O(n) work. A sorted structure with order statistics (a balanced search tree or skip list augmented with subtree sizes, such as a Redis sorted set) supports update as remove-and-insert in O(log n), top-k in O(log n + k) and rank in O(log n). Combining it with the hash map gives fast lookup of a player's old score. A sorted Python list fails because updates shift elements in O(n).",
+      "acceptance_criteria": "Proposes a hash map plus an ordered structure with rank support (balanced tree, skip list or sorted set) with O(log n) updates and rank queries, and explains why heaps or sorted lists alone fall short.",
+      "rubric": [
+        "Gives complexities for update, top-10 and rank for each design compared.",
+        "Explains why a heap alone cannot answer rank or update arbitrary entries efficiently.",
+        "Proposes an ordered structure with order statistics, such as a skip list or augmented balanced tree.",
+        "Uses a hash map to find a player's current score for updates.",
+        "Discusses a practical trade-off such as memory, ties or using Redis sorted sets."
+      ],
+      "expected_concepts": [
+        "hash map",
+        "balanced search tree",
+        "skip list",
+        "order statistics",
+        "heap limitations"
+      ],
+      "misconceptions": [
+        "A heap can return any player's rank cheaply.",
+        "Sorting the whole list on every update is acceptable at this scale."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: heapq — heap queue algorithm",
+          "url": "https://docs.python.org/3/library/heapq.html"
+        },
+        {
+          "title": "Python wiki: Time complexity of built-in types",
+          "url": "https://wiki.python.org/moin/TimeComplexity"
+        }
+      ],
+      "estimated_minutes": 15
+    }
+  ]
+}

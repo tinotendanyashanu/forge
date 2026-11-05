@@ -43,7 +43,7 @@ def _answer_session(c, h, seeds, skill, level, correct=True, count=1):
     s = start(c, h, skill, level, question_count=count)
     while (step := next_q(c, h, s["id"]))["status"] == "question":
         seed = seeds[step["item"]["question"]["slug"]]
-        key = correct_key(seed) if correct else wrong_key(seed)
+        key = correct_key(seed, step["item"]) if correct else wrong_key(seed, step["item"])
         res = c.post(
             f"/api/v1/assessments/{s['id']}/answers",
             json={"item_id": step["item"]["id"], "selected_option_key": key}, headers=h,
@@ -67,9 +67,8 @@ def test_curriculum_endpoint_exposes_graph_and_versions(mc: TestClient) -> None:
     assert skills["programming-fundamentals"]["depth"] == 0
     assert skills["react"]["prerequisites"] == ["typescript", "http"]
     assert "react" in skills["typescript"]["dependants"]
-    # Security is assessable through coding challenges; DevOps has no content yet.
-    assert skills["security"]["assessable"] is True
-    assert skills["devops"]["assessable"] is False
+    # Every curriculum skill has assessment content since content batch P1.
+    assert all(s["assessable"] is True for s in skills.values())
     for s in skills.values():
         assert len(s["levels"]) == 3 and s["learning_objectives"] and s["subskills"]
     # Python's advanced level is verifiable through a coding challenge; React's isn't.
@@ -199,7 +198,7 @@ def test_repeated_failures_create_gaps_and_remediation(mc: TestClient, seed_ques
         while (step := next_q(mc, h, s["id"]))["status"] == "question":
             seed = seed_questions[step["item"]["question"]["slug"]]
             mc.post(f"/api/v1/assessments/{s['id']}/answers",
-                    json={"item_id": step["item"]["id"], "selected_option_key": wrong_key(seed)}, headers=h)
+                    json={"item_id": step["item"]["id"], "selected_option_key": wrong_key(seed, step["item"])}, headers=h)
     gaps = mc.get("/api/v1/gaps", headers=h).json()
     kinds = {g["kind"] for g in gaps}
     assert "repeated_failure" in kinds
@@ -212,9 +211,11 @@ def test_repeated_failures_create_gaps_and_remediation(mc: TestClient, seed_ques
 def test_recommendations_update_after_a_session(mc: TestClient, seed_questions) -> None:
     h = new_learner(mc)
     before = mc.get("/api/v1/recommendations", headers=h).json()
-    # Fundamentals come first: the graph's root is now assessable via coding challenges.
+    # Fundamentals come first. The graph's root now has objective questions, which
+    # are preferred over coding challenges because they produce verified evidence.
     assert before[0]["kind"] == "start" and before[0]["skill"]["slug"] == "programming-fundamentals"
-    assert before[0]["activity"]["type"] == "coding" and before[0]["activity"]["challenge_slug"]
+    assert before[0]["activity"]["type"] == "assessment"
+    assert before[0]["activity"]["difficulty"] == "beginner"
     assert all(r["skill"]["slug"] not in ("react", "fastapi", "python") for r in before)  # locked
 
     _answer_session(mc, h, seed_questions, "python", "beginner")

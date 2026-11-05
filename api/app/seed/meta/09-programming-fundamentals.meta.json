@@ -1,0 +1,109 @@
+{
+  "skill": "programming-fundamentals",
+  "batch": "P1-pilot",
+  "content_version": 1,
+  "questions": {
+    "pf-loop-continue-break": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Predict the output of short programs with loops and functions.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Adds 9 before stopping (3 + 9).",
+        "b": "Ignores both continue and break and sums the list.",
+        "d": "Treats continue as skipping odd numbers (8 + 2 + 4)."
+      },
+      "follow_up_questions": [
+        "What would change if the `break` check came before the `continue` check?"
+      ]
+    },
+    "pf-function-local-scope": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Predict the output of short programs with loops and functions.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Assumes the assignment inside f changed the global x.",
+        "c": "Forgets the + 1 in the return.",
+        "d": "Applies the doubling to the global and then calls f again."
+      },
+      "follow_up_questions": [
+        "How would the answer change if `f` appended to a list argument instead of rebinding it?"
+      ]
+    },
+    "pf-alias-vs-copy": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Explain aliasing, recursion and complexity trade-offs.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Treats b = a as a copy.",
+        "b": "Treats the slice as an alias.",
+        "c": "Treats b = a as a copy and the slice as an alias."
+      },
+      "follow_up_questions": [
+        "If the list contained other lists, which mutations would a slice copy still share?"
+      ]
+    },
+    "pf-membership-in-loop": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Explain aliasing, recursion and complexity trade-offs.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Confuses list membership with set or dict membership.",
+        "b": "Invents a sort step that Python does not perform.",
+        "d": "Confuses this with binary search."
+      },
+      "follow_up_questions": [
+        "Would `set(b)` inside the comprehension condition still fix it? Why not?"
+      ]
+    },
+    "pf-priority-structure": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Select and justify structures for non-trivial problems.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "insort is O(n) because elements shift; pop(0) also shifts.",
+        "c": "min() over dict keys scans every key.",
+        "d": "Removing min() is an O(n) scan plus an O(n) removal."
+      },
+      "follow_up_questions": [
+        "What changes if tasks can also be cancelled by id?"
+      ]
+    },
+    "pf-bfs-pop-front": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Select and justify structures for non-trivial problems.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Set membership is O(1) on average.",
+        "b": "List appends are amortised O(1).",
+        "c": "The function is iterative; recursion is not involved."
+      },
+      "follow_up_questions": [
+        "Why is a list fine as a stack for depth-first search?"
+      ]
+    },
+    "pf-leaderboard-design": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Select and justify structures for non-trivial problems.",
+      "prerequisites": [],
+      "distractor_rationale": {},
+      "follow_up_questions": [
+        "How would you handle ties in score?",
+        "How would the design change if ranks may be up to one minute stale?"
+      ]
+    }
+  }
+}

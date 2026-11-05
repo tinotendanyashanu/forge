@@ -1,0 +1,129 @@
+{
+  "skill": "security",
+  "batch": "P1-pilot",
+  "content_version": 1,
+  "questions": {
+    "sec-idor-invoice": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Identify common vulnerability classes.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "CSRF tricks a victim's browser into making requests; here the attacker uses their own session.",
+        "b": "The id is typed as int and used through the ORM; nothing is concatenated into SQL.",
+        "d": "Session fixation concerns how session ids are issued at login."
+      },
+      "follow_up_questions": [
+        "Should the API return 403 or 404 for an invoice the user does not own? Why?"
+      ]
+    },
+    "sec-parameterised-query": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Identify common vulnerability classes.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "f-string interpolation builds the SQL text.",
+        "b": "The % operator formats the string in Python before the driver sees it.",
+        "c": ".format builds the SQL text the same way."
+      },
+      "follow_up_questions": [
+        "How would you safely make the column name in ORDER BY configurable?"
+      ]
+    },
+    "sec-password-storage": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Apply mitigations in application code.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "Salts stop precomputed tables but SHA-256 is far too fast to resist guessing.",
+        "b": "Encryption is reversible; a leaked key exposes all passwords.",
+        "d": "MD5 is fast and broken; repetition and a pepper do not fix that."
+      },
+      "follow_up_questions": [
+        "How would you migrate existing SHA-256 hashes to Argon2id without forcing every user to reset?"
+      ]
+    },
+    "sec-react-xss-bio": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Apply mitigations in application code.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "Deny-lists miss event-handler attributes and javascript: URLs.",
+        "c": "HttpOnly protects one cookie; injected scripts can still act as the user.",
+        "d": "CORS controls cross-origin reads, not scripts executing in your page."
+      },
+      "follow_up_questions": [
+        "What would a Content-Security-Policy add here, and what would it not fix?"
+      ]
+    },
+    "sec-jwt-logout-all": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Threat-model a service.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "b": "The scenario says signing keys are not per user or rotated; that is also not how most systems work.",
+        "c": "Longer expiry widens the window of misuse.",
+        "d": "The stolen laptop still has its own copy of the token."
+      },
+      "follow_up_questions": [
+        "What does adding a per-user token version cost on every request, and how would you limit that cost?"
+      ]
+    },
+    "sec-leaked-api-key": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Threat-model a service.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "History rewrites do not affect copies that were already cloned or scraped.",
+        "b": "Past exposure cannot be undone by changing visibility.",
+        "d": "The key remains in history and may already be harvested."
+      },
+      "follow_up_questions": [
+        "How would you deploy a rotated key with no downtime?"
+      ]
+    },
+    "sec-threat-model-reset": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Threat-model a service.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {},
+      "follow_up_questions": [
+        "How would you adapt the flow for accounts protected by multi-factor authentication?"
+      ]
+    }
+  }
+}

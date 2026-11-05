@@ -1,0 +1,403 @@
+{
+  "skill": {
+    "slug": "devops",
+    "title": "DevOps",
+    "summary": "DevOps and cloud: CI/CD, containers, observability and safe rollouts.",
+    "description": "Build reproducible pipelines and container images. Instrument services with logs, metrics and traces. Roll out and roll back changes safely."
+  },
+  "topics": [
+    {
+      "slug": "ci-cd",
+      "title": "CI/CD"
+    },
+    {
+      "slug": "containers",
+      "title": "Containers"
+    },
+    {
+      "slug": "observability",
+      "title": "Observability"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "devops-docker-layer-order",
+      "topic": "containers",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Why every build reinstalls dependencies",
+      "prompt": "Every small code change makes the image build reinstall all Python dependencies, which takes four minutes. Which change fixes this?",
+      "code": "FROM python:3.12-slim\nWORKDIR /app\nCOPY . .\nRUN pip install -r requirements.txt\nCMD [\"uvicorn\", \"app.main:app\", \"--host\", \"0.0.0.0\"]",
+      "code_language": "dockerfile",
+      "hint": "Which instruction's inputs change whenever you edit a source file?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Add `--no-cache-dir` to the `pip install` command"
+        },
+        {
+          "key": "b",
+          "text": "Copy `requirements.txt`, run `pip install`, then copy the rest",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Switch the base image to `python:3.12-alpine` to build faster"
+        },
+        {
+          "key": "d",
+          "text": "Combine `COPY` and `RUN` into a single multi-line instruction"
+        }
+      ],
+      "explanation": "Docker reuses a cached layer only if that instruction and everything before it is unchanged. `COPY . .` copies the source code, so any code change invalidates it and every later layer, including `pip install`. Copying only the requirements file first lets the dependency layer stay cached until the dependencies themselves change.",
+      "acceptance_criteria": "Selects “Copy `requirements.txt`, run `pip install`, then copy the rest”. Docker reuses a cached layer only if that instruction and everything before it is unchanged.",
+      "rubric": [
+        "Explains that a changed layer invalidates all later layers.",
+        "Reorders the Dockerfile so dependencies install before the source is copied.",
+        "Recognises that the other options do not address cache invalidation."
+      ],
+      "expected_concepts": [
+        "layer caching",
+        "Dockerfile ordering",
+        "build reproducibility"
+      ],
+      "misconceptions": [
+        "Docker caches each instruction independently of earlier ones.",
+        "Smaller base images fix slow rebuilds."
+      ],
+      "resources": [
+        {
+          "title": "Docker docs: Build cache",
+          "url": "https://docs.docker.com/build/cache/"
+        },
+        {
+          "title": "Docker docs: Building best practices",
+          "url": "https://docs.docker.com/build/building/best-practices/"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "devops-container-ephemeral-fs",
+      "topic": "containers",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Uploads disappear after a deploy",
+      "prompt": "An API saves user uploads to `/app/uploads` inside its container. After each deployment, all previous uploads are gone. Why?",
+      "hint": "Is the new container built from the old container or from the image?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Docker deletes files older than the image's creation date"
+        },
+        {
+          "key": "b",
+          "text": "The upload directory is not listed in `.dockerignore`"
+        },
+        {
+          "key": "c",
+          "text": "A new container starts from the image, without the old container's writes",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Deployments run `docker system prune`, which clears all volumes"
+        }
+      ],
+      "explanation": "Each container gets a fresh writable layer on top of the image. Files written there belong to that container and vanish when it is replaced. Persistent data must live outside the container's writable layer: a mounted volume for single-host setups, or object storage such as S3 or Azure Blob when instances scale or move between hosts.",
+      "acceptance_criteria": "Selects “A new container starts from the image, without the old container's writes”. Each container gets a fresh writable layer on top of the image.",
+      "rubric": [
+        "Explains the container's writable layer is discarded when the container is replaced.",
+        "Proposes a volume or object storage for persistent files.",
+        "Notes that object storage suits multiple or replaceable instances."
+      ],
+      "expected_concepts": [
+        "ephemeral containers",
+        "volumes",
+        "object storage",
+        "stateless services"
+      ],
+      "misconceptions": [
+        "Files written in a container persist across deployments.",
+        "`.dockerignore` affects runtime storage."
+      ],
+      "resources": [
+        {
+          "title": "Docker docs: Volumes",
+          "url": "https://docs.docker.com/engine/storage/volumes/"
+        },
+        {
+          "title": "The Twelve-Factor App: Build, release, run",
+          "url": "https://12factor.net/build-release-run"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "devops-build-once-promote",
+      "topic": "ci-cd",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Build once, promote everywhere",
+      "prompt": "Your pipeline rebuilds the image separately for staging and for production from the same commit. Why do delivery practices recommend building one artifact and promoting it through environments?",
+      "hint": "What could differ between two builds of the same commit made hours apart?",
+      "options": [
+        {
+          "key": "a",
+          "text": "It guarantees the code you tested is byte-for-byte the code you release",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Registries charge per image, so one build halves the storage cost"
+        },
+        {
+          "key": "c",
+          "text": "Docker refuses to deploy an image tag that has been built twice"
+        },
+        {
+          "key": "d",
+          "text": "Production needs a different base image that staging cannot use"
+        }
+      ],
+      "explanation": "Rebuilding can pull different dependency versions, base-image patches or build-time inputs, so the production image may differ from the one that passed staging. Building once, tagging the image immutably (a digest or commit-based tag rather than `latest`) and promoting that same artifact means what you tested is what ships, with only configuration varying per environment.",
+      "acceptance_criteria": "Selects “It guarantees the code you tested is byte-for-byte the code you release”. Rebuilding can pull different dependency versions, base-image patches or build-time inputs, so the production image may differ from the one that passed staging.",
+      "rubric": [
+        "Explains that rebuilds can introduce untested differences.",
+        "Recommends an immutable tag or digest for promotion.",
+        "Separates per-environment configuration from the artifact."
+      ],
+      "expected_concepts": [
+        "artifact promotion",
+        "immutable tags",
+        "reproducibility",
+        "configuration vs build"
+      ],
+      "misconceptions": [
+        "Rebuilding the same commit always produces the same image.",
+        "Environment differences belong in the image."
+      ],
+      "resources": [
+        {
+          "title": "The Twelve-Factor App: Build, release, run",
+          "url": "https://12factor.net/build-release-run"
+        },
+        {
+          "title": "Martin Fowler: Continuous delivery",
+          "url": "https://martinfowler.com/bliki/ContinuousDelivery.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "devops-p99-vs-average",
+      "topic": "observability",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Averages that look healthy",
+      "prompt": "Users report the checkout page is often slow, but the dashboard shows an average latency of 120 ms. Which metric is most likely to reveal the problem?",
+      "hint": "If 98 requests take 50 ms and 2 take 3.5 s, what is the average?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Mean latency per minute, computed over a shorter window"
+        },
+        {
+          "key": "b",
+          "text": "The 99th-percentile latency from a latency histogram",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Total request count per minute for the checkout endpoint"
+        },
+        {
+          "key": "d",
+          "text": "CPU usage averaged across all instances of the service"
+        }
+      ],
+      "explanation": "An average blends many fast requests with a few very slow ones, so a long tail barely moves it. Percentiles describe the distribution: p99 shows how slow the slowest 1% of requests are, which is what frustrated users experience. Collect latencies as histograms so percentiles can be aggregated across instances, and alert on high percentiles against a target.",
+      "acceptance_criteria": "Selects “The 99th-percentile latency from a latency histogram”. An average blends many fast requests with a few very slow ones, so a long tail barely moves it.",
+      "rubric": [
+        "Explains that averages hide tail latency.",
+        "Chooses a high percentile such as p95 or p99.",
+        "Mentions histograms so percentiles can be aggregated across instances."
+      ],
+      "expected_concepts": [
+        "tail latency",
+        "percentiles",
+        "histograms",
+        "SLIs"
+      ],
+      "misconceptions": [
+        "A healthy average means most users are fine.",
+        "Percentiles from each instance can be averaged together."
+      ],
+      "resources": [
+        {
+          "title": "Google SRE book: Monitoring distributed systems",
+          "url": "https://sre.google/sre-book/monitoring-distributed-systems/"
+        },
+        {
+          "title": "Prometheus docs: Histograms and summaries",
+          "url": "https://prometheus.io/docs/practices/histograms/"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "devops-canary-criteria",
+      "topic": "ci-cd",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Rollback criteria for a canary",
+      "prompt": "You are rolling out a new API version to 5% of traffic first. Which rollback rule is most likely to catch a real regression quickly without triggering false rollbacks?",
+      "hint": "What would the rule need in order to separate a real regression from noise?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Roll back if any error at all appears in the canary's logs during its first hour of traffic"
+        },
+        {
+          "key": "b",
+          "text": "Roll back if the canary's CPU usage rises more than 10% above the old version's CPU usage"
+        },
+        {
+          "key": "c",
+          "text": "Compare canary error rate and p99 latency with the baseline over a fixed window; roll back automatically on breach",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Leave the canary running for a full day and roll back only if users start to report problems"
+        }
+      ],
+      "explanation": "A useful rule compares the canary with the current version under the same conditions, uses metrics users feel (error rate and tail latency), waits for enough traffic to be statistically meaningful, and acts automatically. Any single error is noise at most traffic volumes, CPU is a weak proxy for user impact, and waiting for user reports exposes customers to the problem for longer than necessary.",
+      "acceptance_criteria": "Selects “Compare canary error rate and p99 latency with the baseline over a fixed window; roll back automatically on breach”. A useful rule compares the canary with the current version under the same conditions, uses metrics users feel (error rate and tail latency), waits for enough traffic to be statistically meaningful, and acts automatically.",
+      "rubric": [
+        "Compares the canary against a baseline rather than an absolute number.",
+        "Uses user-facing signals such as error rate and tail latency.",
+        "Requires a defined window or minimum traffic before deciding.",
+        "Automates the rollback decision."
+      ],
+      "expected_concepts": [
+        "canary analysis",
+        "rollback criteria",
+        "SLO-based gating",
+        "baseline comparison"
+      ],
+      "misconceptions": [
+        "Any error during a canary means it failed.",
+        "Resource usage is a good proxy for user impact."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Canary release",
+          "url": "https://martinfowler.com/bliki/CanaryRelease.html"
+        },
+        {
+          "title": "Google SRE book: Monitoring distributed systems",
+          "url": "https://sre.google/sre-book/monitoring-distributed-systems/"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "devops-label-cardinality",
+      "topic": "observability",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A metric label that breaks monitoring",
+      "prompt": "A developer adds `user_id` as a label on the Prometheus request-latency histogram so they can see slow users. Within a day, the monitoring server's memory use explodes. What is the best response?",
+      "hint": "How many series does one histogram with 10 buckets create for 100,000 distinct users?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Remove the label; keep per-user detail in traces or logs and keep metric labels low-cardinality",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Keep the label but lower the scrape interval so fewer samples are stored"
+        },
+        {
+          "key": "c",
+          "text": "Keep the label and give the Prometheus server more memory, since it scales linearly"
+        },
+        {
+          "key": "d",
+          "text": "Replace the histogram with a summary, which does not create series per label"
+        }
+      ],
+      "explanation": "Every distinct combination of label values creates a new time series, and a histogram multiplies that by its bucket count, so a label with a million users can create tens of millions of series. Metrics are for aggregates over bounded dimensions such as route, method and status. Per-user investigation belongs in traces or logs, where high-cardinality fields are expected.",
+      "acceptance_criteria": "Selects “Remove the label; keep per-user detail in traces or logs and keep metric labels low-cardinality”. Every distinct combination of label values creates a new time series, and a histogram multiplies that by its bucket count, so a label with a million users can create tens of millions of series.",
+      "rubric": [
+        "Explains that each label value creates a separate series, multiplied by histogram buckets.",
+        "Removes or bounds the high-cardinality label.",
+        "Moves per-user detail to traces or logs.",
+        "Explains why the other options do not reduce series count."
+      ],
+      "expected_concepts": [
+        "label cardinality",
+        "time series",
+        "metrics vs traces",
+        "histograms"
+      ],
+      "misconceptions": [
+        "Labels are free.",
+        "Scraping less often reduces the number of series."
+      ],
+      "resources": [
+        {
+          "title": "Prometheus docs: Metric and label naming",
+          "url": "https://prometheus.io/docs/practices/naming/"
+        },
+        {
+          "title": "OpenTelemetry: Observability primer",
+          "url": "https://opentelemetry.io/docs/concepts/observability-primer/"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "devops-schema-rollout-plan",
+      "topic": "ci-cd",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Plan a safe rollout of a breaking schema change",
+      "prompt": "A release renames the column `users.fullname` to `display_name` and changes the code that reads and writes it. The service runs several instances with rolling deploys, and the table has 20 million rows. Plan the rollout so that it has no downtime and every step can be rolled back. Include rollback criteria and what you would monitor.",
+      "hint": "During a rolling deploy, which two code versions run at the same time, and what must both of them find in the database?",
+      "explanation": "Use expand and contract. 1) Add `display_name` as nullable (fast). 2) Deploy code that writes both columns and still reads `fullname`. 3) Backfill `display_name` in small batches, monitoring replication lag and lock waits. 4) Deploy code that reads `display_name` (optionally behind a flag) while still writing both. 5) After a soak period, stop writing `fullname`. 6) Drop `fullname` in a later release. Each step is compatible with the versions before and after it, so a rolling deploy can mix them and any step can be rolled back by redeploying the previous version. Monitor error rate, p99 latency, backfill progress, lag and lock waits, with explicit thresholds that trigger rollback.",
+      "acceptance_criteria": "Describes expand/contract with dual writes, batched backfill, switched reads and a delayed drop, keeps each step backward compatible for mixed versions, and states monitoring and rollback criteria.",
+      "rubric": [
+        "Uses an expand-and-contract (parallel change) sequence rather than a single rename.",
+        "Keeps each step compatible with old and new code running side by side.",
+        "Backfills in batches and considers locks, replication lag or load.",
+        "Defines monitoring signals and explicit rollback criteria.",
+        "Delays the destructive drop until the new path has been proven."
+      ],
+      "expected_concepts": [
+        "expand and contract",
+        "backward compatibility",
+        "rolling deploys",
+        "batched backfill",
+        "rollback criteria"
+      ],
+      "misconceptions": [
+        "`ALTER TABLE ... RENAME COLUMN` is safe because it is instant.",
+        "Rollback is always possible by redeploying the previous version."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Parallel change (expand and contract)",
+          "url": "https://martinfowler.com/bliki/ParallelChange.html"
+        },
+        {
+          "title": "Martin Fowler: Blue-green deployment",
+          "url": "https://martinfowler.com/bliki/BlueGreenDeployment.html"
+        }
+      ],
+      "estimated_minutes": 15
+    }
+  ]
+}

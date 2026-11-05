@@ -1,0 +1,136 @@
+{
+  "skill": "senior-practices",
+  "batch": "P1-pilot",
+  "content_version": 1,
+  "questions": {
+    "sp-review-missing-tenant-check": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Identify risky changes in review.",
+      "prerequisites": [
+        "testing",
+        "system-design",
+        "security"
+      ],
+      "distractor_rationale": {
+        "a": "A legitimate but minor readability point.",
+        "b": "A style preference with no behavioural impact.",
+        "c": "Documentation is useful but not urgent compared with a data leak."
+      },
+      "follow_up_questions": [
+        "How would you prevent this class of bug across every endpoint, not just this one?"
+      ]
+    },
+    "sp-risky-migration-change": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Identify risky changes in review.",
+      "prerequisites": [
+        "testing",
+        "system-design",
+        "security"
+      ],
+      "distractor_rationale": {
+        "a": "Since PostgreSQL 11, a constant default is stored as metadata and does not rewrite the table.",
+        "c": "CONCURRENTLY builds the index without blocking writes.",
+        "d": "A patch-level upgrade of a logging library is low risk."
+      },
+      "follow_up_questions": [
+        "How would you split this pull request so each deploy is safe?"
+      ]
+    },
+    "sp-queue-choice-reasoning": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Structure decisions with explicit trade-offs.",
+      "prerequisites": [
+        "testing",
+        "system-design",
+        "security"
+      ],
+      "distractor_rationale": {
+        "b": "Optimises for hypothetical scale and ignores the team's lack of experience.",
+        "c": "Building and operating a reliable queue is real work; plain lists also lack acknowledgements.",
+        "d": "Authority is not a technical justification."
+      },
+      "follow_up_questions": [
+        "What would you write in the decision record's 'consequences' section?"
+      ]
+    },
+    "sp-incident-first-action": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Structure decisions with explicit trade-offs.",
+      "prerequisites": [
+        "testing",
+        "system-design",
+        "security"
+      ],
+      "distractor_rationale": {
+        "a": "Debugging in production while customers fail prolongs the impact.",
+        "b": "Waiting extends an outage that already has a likely cause and a safe fix.",
+        "d": "An untested hotfix risks a second bad deploy."
+      },
+      "follow_up_questions": [
+        "When would rolling back be the wrong first move?"
+      ]
+    },
+    "sp-postmortem-action-item": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Lead an incident from detection to follow-up.",
+      "prerequisites": [
+        "testing",
+        "system-design",
+        "security"
+      ],
+      "distractor_rationale": {
+        "a": "Relies on attention, which fails under pressure.",
+        "b": "Blames an individual and does not protect anyone else's migrations.",
+        "d": "Alert noise reduces detection quality."
+      },
+      "follow_up_questions": [
+        "What would you add so a column drop that slips through is detected within minutes?"
+      ]
+    },
+    "sp-rewrite-vs-incremental": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Lead an incident from detection to follow-up.",
+      "prerequisites": [
+        "testing",
+        "system-design",
+        "security"
+      ],
+      "distractor_rationale": {
+        "a": "Delays all value and risks rediscovering hidden behaviour late.",
+        "c": "Ignores the ongoing cost of a hard-to-change system.",
+        "d": "Chooses technology before understanding the capabilities to move."
+      },
+      "follow_up_questions": [
+        "Which capability would you move first, and how would you choose it?"
+      ]
+    },
+    "sp-lead-incident": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Lead an incident from detection to follow-up.",
+      "prerequisites": [
+        "testing",
+        "system-design",
+        "security"
+      ],
+      "distractor_rationale": {},
+      "follow_up_questions": [
+        "How would you hand over the incident lead role if the incident lasted eight hours?"
+      ]
+    }
+  }
+}

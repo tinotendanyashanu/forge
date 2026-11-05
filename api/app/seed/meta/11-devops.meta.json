@@ -1,0 +1,129 @@
+{
+  "skill": "devops",
+  "batch": "P1-pilot",
+  "content_version": 1,
+  "questions": {
+    "devops-docker-layer-order": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Explain pipelines and container basics.",
+      "prerequisites": [
+        "testing",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "That only affects pip's own download cache, not Docker's layer cache.",
+        "c": "Alpine can make Python builds slower (no manylinux wheels) and does not fix caching.",
+        "d": "COPY and RUN cannot be combined into one instruction this way."
+      },
+      "follow_up_questions": [
+        "How would a multi-stage build further shrink the final image?"
+      ]
+    },
+    "devops-container-ephemeral-fs": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Explain pipelines and container basics.",
+      "prerequisites": [
+        "testing",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "Docker does not delete files by age.",
+        "b": ".dockerignore only affects what is sent to the build.",
+        "d": "Nothing in the scenario mentions pruning, and `docker system prune` does not remove volumes unless `--volumes` is passed."
+      },
+      "follow_up_questions": [
+        "Why can a mounted volume still be the wrong choice when the API runs on three hosts?"
+      ]
+    },
+    "devops-build-once-promote": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design observable deployments.",
+      "prerequisites": [
+        "testing",
+        "http"
+      ],
+      "distractor_rationale": {
+        "b": "Storage cost is minor and not the reason.",
+        "c": "Docker has no such rule.",
+        "d": "Using the same base image in both environments is the goal."
+      },
+      "follow_up_questions": [
+        "Why is deploying the tag `latest` risky even with a single build?"
+      ]
+    },
+    "devops-p99-vs-average": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Design observable deployments.",
+      "prerequisites": [
+        "testing",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "A shorter window still averages away the tail.",
+        "c": "Volume does not describe how slow requests are.",
+        "d": "CPU may be normal while latency is dominated by waiting on I/O."
+      },
+      "follow_up_questions": [
+        "Why can't you average p99 values from several instances to get the overall p99?"
+      ]
+    },
+    "devops-canary-criteria": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Plan progressive delivery with rollback criteria.",
+      "prerequisites": [
+        "testing",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "A single error is common noise and causes false rollbacks.",
+        "b": "CPU changes do not necessarily mean users are affected.",
+        "d": "Relying on user reports maximises customer impact."
+      },
+      "follow_up_questions": [
+        "How would you size the canary window so the comparison is meaningful at low traffic?"
+      ]
+    },
+    "devops-label-cardinality": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Plan progressive delivery with rollback criteria.",
+      "prerequisites": [
+        "testing",
+        "http"
+      ],
+      "distractor_rationale": {
+        "b": "Scrape interval changes sample count, not the number of series.",
+        "c": "Series growth is unbounded; adding memory only postpones the failure.",
+        "d": "Summaries also create series per label combination."
+      },
+      "follow_up_questions": [
+        "Which labels would you keep on that histogram, and why?"
+      ]
+    },
+    "devops-schema-rollout-plan": {
+      "version": 1,
+      "status": "reviewed",
+      "provenance": "ai-assisted draft (Claude), self-reviewed; pending independent review",
+      "learning_objective": "Plan progressive delivery with rollback criteria.",
+      "prerequisites": [
+        "testing",
+        "http"
+      ],
+      "distractor_rationale": {},
+      "follow_up_questions": [
+        "How would you handle a bug discovered after step 5?"
+      ]
+    }
+  }
+}
