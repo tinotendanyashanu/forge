@@ -1,6 +1,6 @@
 # Content batch P2 and lesson pilot (P3): report
 
-**Date:** 2026-11-05 · **Status:** validated locally, **not deployed**. Production is at `e8b9b72` (P0 shuffling and P1 questions).
+**Date:** 2026-11-05 · **Status:** **deployed** to production at `5b03bc1` on 2026-11-05 (backup `forge-20261105T185417Z.dump.age` confirmed first; migration 0008 → 0009; 75 → 99 active questions, 10 lessons; learner history fingerprint unchanged).
 
 ## P2: scored questions for the eight original skills
 
