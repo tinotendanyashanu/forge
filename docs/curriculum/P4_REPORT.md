@@ -1,6 +1,6 @@
 # Content batch P4: Git and Linux skills, deeper question bank, lessons for every skill
 
-**Date:** 2026-11-07 · **Status:** validated locally; deployment recorded below.
+**Date:** 2026-11-07 · **Status:** deployed to production (commit `8062fa9`).
 
 ## Summary
 
@@ -54,6 +54,20 @@ The two existing lessons moved to these skills (`git-version-control` → git/br
 ### Issue found during authoring
 
 A new question initially reused the slug `sql-lost-update`, which belongs to an existing free-text question; the batch writer upserts by slug, so it would have replaced it. This was caught before commit by diffing against the previous commit. The original was restored and the new question was replaced by a different topic (`sql-expression-index`). `CONTENT_WORKFLOW.md` now requires checking new slugs against the existing bank.
+
+## Production deployment
+
+Deployed 2026-11-07 to the private Azure VM (`vm-forge-api`, tailnet-only; no network or cost changes) using the same procedure as P2/P3.
+
+| Step | Result |
+| --- | --- |
+| Backup | Fresh encrypted backup confirmed uploaded before any change (`forge-20261107T192143Z.dump.age`, 506,864 bytes) |
+| Code | `8062fa9` checked out; Alembic already at `0009 (head)`, no migration needed |
+| Seed | 15 skills, 45 topics, 158 questions (0 deactivated), 15 lessons |
+| Learner history | Fingerprint `3/3/3/3/2/673e84b2…` identical before and after |
+| Counts | 158 active questions, 0 inactive; 15 lessons, 44 lesson checks, 49 resources; every skill has 10 to 12 active questions |
+| Pages | API health, `/`, `/lessons`, `/tracks/git`, `/tracks/linux`, `/lessons/python-concurrency-models`, `/lessons/caching-and-scaling-reads` and `/lessons/code-review-that-finds-risk` all return 200 |
+| Services | forge-api, forge-web and postgresql active |
 
 ## Known limitations
 
