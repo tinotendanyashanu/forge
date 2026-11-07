@@ -296,7 +296,7 @@ def test_shipped_curriculum_is_valid_and_ordered() -> None:
     curriculum, checksum = load_curriculum()
     edges = {s.slug: s.prerequisites for s in curriculum.skills}
     order = topological_order(edges)
-    assert len(order) == 13 and len(checksum) == 64
+    assert len(order) == 15 and len(checksum) == 64
     for skill, prereqs in edges.items():
         assert all(order.index(p) < order.index(skill) for p in prereqs)
     assert {"programming-fundamentals", "http", "sql", "system-design"} <= ancestors(edges, "distributed-systems") | ancestors(edges, "senior-practices")

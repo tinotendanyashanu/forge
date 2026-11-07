@@ -397,6 +397,169 @@
         }
       ],
       "estimated_minutes": 15
+    },
+    {
+      "slug": "sp-adr-contents",
+      "topic": "decision-making",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "What an architecture decision record contains",
+      "prompt": "Your team decides to use PostgreSQL rather than MongoDB for a new service and wants to record it in an architecture decision record (ADR). What belongs in it?",
+      "hint": "What will someone two years from now need to know?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The full database schema and every migration script"
+        },
+        {
+          "key": "b",
+          "text": "Context, the decision, the alternatives considered and the consequences",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Only the final decision, so the record stays short and uncontroversial"
+        },
+        {
+          "key": "d",
+          "text": "Meeting minutes listing who argued for which option"
+        }
+      ],
+      "explanation": "An ADR captures why a decision was made, so future engineers can judge whether it still holds: the context and forces, the decision itself, the options considered and why they were rejected, and the consequences, both good and bad. It is short and immutable; if the decision changes, a new ADR supersedes it. Schemas belong in code, and attributing positions to people is not the point.",
+      "acceptance_criteria": "Selects “Context, the decision, the alternatives considered and the consequences”. An ADR captures why a decision was made, so future engineers can judge whether it still holds: the context and forces, the decision itself, the options considered and why they were rejected, and the consequences, both good and bad.",
+      "rubric": [
+        "Lists context, decision, alternatives and consequences.",
+        "Explains the record's purpose for future readers.",
+        "Notes that superseding ADRs replace rather than edit."
+      ],
+      "expected_concepts": [
+        "architecture decision records",
+        "trade-offs",
+        "documentation"
+      ],
+      "misconceptions": [
+        "An ADR is a design specification.",
+        "Only the outcome matters, not the reasoning."
+      ],
+      "resources": [
+        {
+          "title": "Michael Nygard: Documenting architecture decisions",
+          "url": "https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions"
+        },
+        {
+          "title": "adr.github.io: Architectural decision records",
+          "url": "https://adr.github.io/"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sp-large-pr",
+      "topic": "code-review",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A 3,000-line pull request",
+      "prompt": "A colleague opens a 3,000-line pull request that adds a feature, reformats 40 files and upgrades two libraries. What is the most useful first review response?",
+      "hint": "Where could a risky line hide in this pull request?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Approve it, because blocking large changes slows the team down"
+        },
+        {
+          "key": "b",
+          "text": "Ask to split it into separate changes: formatting, upgrades, then the feature",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Review only the files you know well and approve the rest"
+        },
+        {
+          "key": "d",
+          "text": "Leave a comment on every formatting change so nothing is missed"
+        }
+      ],
+      "explanation": "Large mixed changes hide risk: real logic changes are buried among formatting, and the library upgrades may change behaviour on their own. Smaller, single-purpose changes get faster, better reviews and are easier to revert. Ask for the formatting and upgrades to land separately (ideally the formatting automated), then review the feature on its own. Explain the reason so it is a request, not a gate.",
+      "acceptance_criteria": "Selects “Ask to split it into separate changes: formatting, upgrades, then the feature”. Large mixed changes hide risk: real logic changes are buried among formatting, and the library upgrades may change behaviour on their own.",
+      "rubric": [
+        "Asks for the change to be split by purpose.",
+        "Explains why mixed changes hide risk and are hard to revert.",
+        "Keeps the tone collaborative."
+      ],
+      "expected_concepts": [
+        "small changes",
+        "code review",
+        "reviewability",
+        "rollback"
+      ],
+      "misconceptions": [
+        "A thorough reviewer can review any size of change equally well.",
+        "Partial review with approval is acceptable."
+      ],
+      "resources": [
+        {
+          "title": "Google engineering practices: Small CLs",
+          "url": "https://google.github.io/eng-practices/review/developer/small-cls.html"
+        },
+        {
+          "title": "Google engineering practices: The standard of code review",
+          "url": "https://google.github.io/eng-practices/review/reviewer/standard.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sp-one-way-door",
+      "topic": "decision-making",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "How much rigour does a decision need?",
+      "prompt": "You face two decisions this week: choosing the public API format partners will integrate against, and choosing the internal logging library for one service. How should the decision effort differ?",
+      "hint": "What would it cost to change each decision in a year?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Treat both the same, with a full written review and sign-off"
+        },
+        {
+          "key": "b",
+          "text": "Invest heavily in the hard-to-reverse API format; decide the reversible library quickly",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Decide both quickly; any decision can be changed later"
+        },
+        {
+          "key": "d",
+          "text": "Spend more time on the logging library, because it affects daily work"
+        }
+      ],
+      "explanation": "Effort should match the cost of being wrong and of reversing. A public API that partners integrate against is close to a one-way door: changing it later needs versioning, migrations and coordination with outside parties, so it deserves explicit alternatives, review and an ADR. An internal library behind a small interface can be swapped cheaply, so a quick, good-enough decision keeps the team moving.",
+      "acceptance_criteria": "Selects “Invest heavily in the hard-to-reverse API format; decide the reversible library quickly”. Effort should match the cost of being wrong and of reversing.",
+      "rubric": [
+        "Distinguishes reversible from hard-to-reverse decisions.",
+        "Matches rigour to the cost of reversal.",
+        "Notes ways to make decisions more reversible, such as interfaces."
+      ],
+      "expected_concepts": [
+        "reversibility",
+        "decision-making",
+        "proportional rigour",
+        "API stability"
+      ],
+      "misconceptions": [
+        "Every technical decision deserves the same process.",
+        "All decisions can be cheaply reversed."
+      ],
+      "resources": [
+        {
+          "title": "Michael Nygard: Documenting architecture decisions",
+          "url": "https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

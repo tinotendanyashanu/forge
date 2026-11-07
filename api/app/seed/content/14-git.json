@@ -1,0 +1,554 @@
+{
+  "skill": {
+    "slug": "git",
+    "title": "Git",
+    "summary": "Version control with Git: commits, branches, merging and safe history changes.",
+    "description": "Explain Git's model of commits, trees and references. Branch, merge and rebase without losing work. Recover from mistakes and keep shared history safe."
+  },
+  "topics": [
+    {
+      "slug": "commits",
+      "title": "Commits & the object model"
+    },
+    {
+      "slug": "branching",
+      "title": "Branching & merging"
+    },
+    {
+      "slug": "history",
+      "title": "History & recovery"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "git-staged-snapshot",
+      "topic": "commits",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Editing a file after git add",
+      "prompt": "You change `app.py`, run `git add app.py`, then edit `app.py` again and run `git commit -m \"fix\"` (without `-a`). What does the new commit contain?",
+      "hint": "What exactly does `git add` copy, and when?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Both edits, because commit always takes the current file"
+        },
+        {
+          "key": "b",
+          "text": "Only the first edit; the second stays as an unstaged change",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Neither edit, because the file changed after it was staged"
+        },
+        {
+          "key": "d",
+          "text": "Only the second edit, because it overwrites the staged copy"
+        }
+      ],
+      "explanation": "`git add` copies the file's content at that moment into the staging area (the index). `git commit` records the index, not the working tree, so the commit holds the version you staged. The later edit remains in the working tree as an unstaged change, visible in `git status` and `git diff`.",
+      "acceptance_criteria": "Selects “Only the first edit; the second stays as an unstaged change”. `git add` copies the file's content at that moment into the staging area (the index).",
+      "rubric": [
+        "Explains that `git add` stages a snapshot of the file at that moment.",
+        "Explains that commit records the index, not the working tree.",
+        "Notes that the second edit remains unstaged."
+      ],
+      "expected_concepts": [
+        "staging area",
+        "index",
+        "working tree",
+        "snapshots"
+      ],
+      "misconceptions": [
+        "Commit always records the files as they are on disk.",
+        "Staging a file means Git watches it for future changes."
+      ],
+      "resources": [
+        {
+          "title": "Pro Git: Recording changes to the repository",
+          "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "git-branch-is-pointer",
+      "topic": "branching",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "What creating a branch does",
+      "prompt": "In a repository with 10,000 files, you run `git switch -c feature`. What does Git create?",
+      "hint": "How large is a branch in `.git`?",
+      "options": [
+        {
+          "key": "a",
+          "text": "A full copy of every tracked file for the new branch"
+        },
+        {
+          "key": "b",
+          "text": "A compressed archive of the current commit's files"
+        },
+        {
+          "key": "c",
+          "text": "A new commit that marks where the branch starts"
+        },
+        {
+          "key": "d",
+          "text": "A new reference that points at the current commit",
+          "correct": true
+        }
+      ],
+      "explanation": "A branch is a small reference (a name pointing at one commit). Creating it writes that pointer and moves `HEAD` to it; no files are copied and no commit is made. That is why branches are cheap in Git. New commits on `feature` move only that pointer forward.",
+      "acceptance_criteria": "Selects “A new reference that points at the current commit”. A branch is a small reference (a name pointing at one commit).",
+      "rubric": [
+        "States that a branch is a pointer to a commit.",
+        "States that no files are copied and no commit is created.",
+        "Explains that new commits move the branch pointer."
+      ],
+      "expected_concepts": [
+        "branches as references",
+        "HEAD",
+        "commits",
+        "cheap branching"
+      ],
+      "misconceptions": [
+        "A branch is a copy of the code.",
+        "Creating a branch records a commit."
+      ],
+      "resources": [
+        {
+          "title": "Pro Git: Branches in a nutshell",
+          "url": "https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "git-amend-unpushed",
+      "topic": "history",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A typo in the last commit message",
+      "prompt": "Your last commit has a typo in its message and you have not pushed it yet. What is the simplest correct fix?",
+      "hint": "Has anyone else got this commit yet?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`git revert HEAD`, then commit again with the corrected message"
+        },
+        {
+          "key": "b",
+          "text": "`git commit --amend`, then fix the message in the editor",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Delete the `.git` folder and commit everything again"
+        },
+        {
+          "key": "d",
+          "text": "`git reset --hard HEAD~1`, then retype the commit message"
+        }
+      ],
+      "explanation": "`git commit --amend` replaces the last commit with a new one that has the same parent, the current index and the edited message. Because the commit has not been pushed, nobody else has it, so rewriting it is safe. A revert adds a second commit and keeps the typo; `reset --hard` would also throw away the commit's changes.",
+      "acceptance_criteria": "Selects “git commit --amend`, then fix the message in the editor”. `git commit --amend` replaces the last commit with a new one that has the same parent, the current index and the edited message.",
+      "rubric": [
+        "Chooses `git commit --amend`.",
+        "Notes that amend creates a replacement commit.",
+        "Notes that it is safe because the commit is not shared yet."
+      ],
+      "expected_concepts": [
+        "commit --amend",
+        "rewriting local history",
+        "revert",
+        "reset"
+      ],
+      "misconceptions": [
+        "Amending edits the existing commit in place.",
+        "It is always safe to amend, even after pushing."
+      ],
+      "resources": [
+        {
+          "title": "Pro Git: Undoing things",
+          "url": "https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "git-fast-forward",
+      "topic": "branching",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A merge without a merge commit",
+      "prompt": "You branched `feature` from `main`, made three commits, and nobody has committed to `main` since. You run `git switch main && git merge feature` with default settings. What happens?",
+      "hint": "Is there anything on `main` that `feature` does not already contain?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`main` moves forward to `feature`'s latest commit; no merge commit is made",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Git creates a merge commit with two parents that joins the branches"
+        },
+        {
+          "key": "c",
+          "text": "Git replays the three commits onto `main` with new commit hashes"
+        },
+        {
+          "key": "d",
+          "text": "Git squashes the three commits into one new commit on `main`"
+        }
+      ],
+      "explanation": "Because `main` is an ancestor of `feature`, there is nothing to combine: Git performs a fast-forward and simply moves the `main` pointer to the tip of `feature`. A merge commit is created only when both branches have new commits, or when you pass `--no-ff`. Replaying with new hashes is what rebase does; squashing needs `--squash`.",
+      "acceptance_criteria": "Selects “main` moves forward to `feature`'s latest commit; no merge commit is made”. Because `main` is an ancestor of `feature`, there is nothing to combine: Git performs a fast-forward and simply moves the `main` pointer to the tip of `feature`.",
+      "rubric": [
+        "Identifies a fast-forward.",
+        "Explains that `main` is an ancestor of `feature`.",
+        "Names `--no-ff` as the way to force a merge commit."
+      ],
+      "expected_concepts": [
+        "fast-forward merge",
+        "merge commit",
+        "ancestry",
+        "--no-ff"
+      ],
+      "misconceptions": [
+        "Every merge creates a merge commit.",
+        "Merging copies commits and gives them new hashes."
+      ],
+      "resources": [
+        {
+          "title": "Pro Git: Basic branching and merging",
+          "url": "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "git-ignore-tracked-file",
+      "topic": "commits",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A .gitignore entry that does nothing",
+      "prompt": "`config/local.env` was committed months ago. You add `config/local.env` to `.gitignore`, edit the file, and `git status` still lists it as modified. Why?",
+      "hint": "Does Git still consider this file part of the repository?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`.gitignore` only applies after the repository is cloned again"
+        },
+        {
+          "key": "b",
+          "text": "`.gitignore` rules need a leading slash to match a file path"
+        },
+        {
+          "key": "c",
+          "text": "`.gitignore` only affects untracked files; this file is already tracked",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "`.gitignore` changes need to be committed before Git reads them"
+        }
+      ],
+      "explanation": "Ignore rules stop *untracked* files from being added. A file that is already tracked stays tracked whatever `.gitignore` says. Run `git rm --cached config/local.env` and commit, which stops tracking it while keeping your local copy. If the file held secrets, they are still in history and must be rotated.",
+      "acceptance_criteria": "Selects “.gitignore` only affects untracked files; this file is already tracked”. Ignore rules stop *untracked* files from being added.",
+      "rubric": [
+        "Explains that ignore rules only affect untracked files.",
+        "Proposes `git rm --cached` and a commit.",
+        "Notes that the file remains in past history."
+      ],
+      "expected_concepts": [
+        "gitignore",
+        "tracked vs untracked",
+        "git rm --cached",
+        "history"
+      ],
+      "misconceptions": [
+        "Adding a path to .gitignore removes it from the repository.",
+        "Ignored files are deleted from history."
+      ],
+      "resources": [
+        {
+          "title": "Git reference: gitignore",
+          "url": "https://git-scm.com/docs/gitignore"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "git-revert-shared",
+      "topic": "history",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Undoing a commit that is already on main",
+      "prompt": "A bad commit was pushed to the shared `main` branch an hour ago, and teammates have pulled since. How should you undo its changes?",
+      "hint": "Who else already has the bad commit?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`git reset --hard HEAD~1` and force-push `main`"
+        },
+        {
+          "key": "b",
+          "text": "`git revert <commit>` and push the new commit",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`git commit --amend` and force-push `main`"
+        },
+        {
+          "key": "d",
+          "text": "Delete `main` on the remote and push it again"
+        }
+      ],
+      "explanation": "`git revert` creates a new commit that applies the inverse of the bad one. History only moves forward, so teammates simply pull it. Resetting, amending or recreating `main` rewrites commits that others already have, which breaks their next pull or push and can resurrect or lose work.",
+      "acceptance_criteria": "Selects “git revert <commit>` and push the new commit”. `git revert` creates a new commit that applies the inverse of the bad one.",
+      "rubric": [
+        "Chooses `git revert`.",
+        "Explains that revert adds a new commit instead of rewriting history.",
+        "Explains why force-pushing shared history harms teammates."
+      ],
+      "expected_concepts": [
+        "revert",
+        "shared history",
+        "force push",
+        "reset"
+      ],
+      "misconceptions": [
+        "Reset and force-push is the clean way to undo on any branch.",
+        "Revert deletes the original commit."
+      ],
+      "resources": [
+        {
+          "title": "Git reference: git-revert",
+          "url": "https://git-scm.com/docs/git-revert"
+        },
+        {
+          "title": "Pro Git: Undoing things",
+          "url": "https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "git-reflog-recover",
+      "topic": "history",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Commits lost to reset --hard",
+      "prompt": "On your local branch you ran `git reset --hard HEAD~3` by mistake. The three commits were never pushed and `git log` no longer shows them. What is the best way to get them back?",
+      "hint": "Where does Git record previous positions of HEAD?",
+      "options": [
+        {
+          "key": "a",
+          "text": "They are gone; a hard reset deletes the commit objects immediately"
+        },
+        {
+          "key": "b",
+          "text": "Find the old tip in `git reflog`, then `git reset --hard` to that entry",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Run `git revert HEAD~3` to restore the three discarded commits"
+        },
+        {
+          "key": "d",
+          "text": "Run `git fsck --full` to rebuild the branch pointer automatically"
+        }
+      ],
+      "explanation": "A reset only moves the branch pointer; the commit objects remain in the object database. The reflog records where `HEAD` and each branch pointed over time, so `git reflog` shows an entry such as `HEAD@{1}` at the old tip, and `git reset --hard HEAD@{1}` (or a new branch at that hash) restores it. Unreachable commits are kept until garbage collection prunes them, by default no sooner than the reflog expiry (90 days for reachable entries, 30 for unreachable ones).",
+      "acceptance_criteria": "Selects “Find the old tip in `git reflog`, then `git reset --hard` to that entry”. A reset only moves the branch pointer; the commit objects remain in the object database.",
+      "rubric": [
+        "Explains that reset moves a pointer and does not delete commits.",
+        "Uses the reflog to find the previous tip.",
+        "Restores with reset or a new branch at that commit.",
+        "Mentions that recovery is time-limited by garbage collection."
+      ],
+      "expected_concepts": [
+        "reflog",
+        "reset",
+        "unreachable commits",
+        "garbage collection"
+      ],
+      "misconceptions": [
+        "A hard reset permanently deletes commits.",
+        "Only pushed commits can be recovered."
+      ],
+      "resources": [
+        {
+          "title": "Git reference: git-reflog",
+          "url": "https://git-scm.com/docs/git-reflog"
+        },
+        {
+          "title": "Pro Git: Undoing things",
+          "url": "https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "git-force-with-lease",
+      "topic": "branching",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Pushing a rebased pull-request branch",
+      "prompt": "You rebased your pull-request branch onto the latest `main`, and a reviewer may have pushed a fix-up commit to the same branch. Which push is safest?",
+      "hint": "What would `--force` do to a commit you have never fetched?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`git push --force`, because your local branch is the newest version"
+        },
+        {
+          "key": "b",
+          "text": "`git push`, because Git merges the remote changes in automatically"
+        },
+        {
+          "key": "c",
+          "text": "`git push --force-with-lease`, which refuses if the remote branch moved",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "Delete the remote branch first, then push the rebased branch to it"
+        }
+      ],
+      "explanation": "After a rebase the branch has new commits, so a normal push is rejected as non-fast-forward. `--force` overwrites whatever is on the remote, including a reviewer's commit you never fetched. `--force-with-lease` only overwrites if the remote branch still points where your remote-tracking ref says it did, so it refuses when someone pushed in the meantime. A background `git fetch` updates that ref and can defeat the check, which is why `--force-if-includes` exists.",
+      "acceptance_criteria": "Selects “git push --force-with-lease`, which refuses if the remote branch moved”. After a rebase the branch has new commits, so a normal push is rejected as non-fast-forward.",
+      "rubric": [
+        "Explains why a normal push is rejected after rebase.",
+        "Explains that `--force` can discard others' commits.",
+        "Explains the compare-and-swap behaviour of `--force-with-lease`.",
+        "Notes the background-fetch caveat or `--force-if-includes`."
+      ],
+      "expected_concepts": [
+        "force-with-lease",
+        "rebase",
+        "non-fast-forward",
+        "remote-tracking branches"
+      ],
+      "misconceptions": [
+        "Force-push is safe on any branch you created.",
+        "Git merges remote commits during a push."
+      ],
+      "resources": [
+        {
+          "title": "Git reference: git-push (--force-with-lease)",
+          "url": "https://git-scm.com/docs/git-push"
+        },
+        {
+          "title": "Pro Git: Rebasing",
+          "url": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "git-hash-chain",
+      "topic": "commits",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Why rebasing changes every hash",
+      "prompt": "You rebase a branch of five commits onto a newer `main`. The only thing you asked Git to change is where the branch starts, and none of the commits conflict. Why do all five commits get new hashes?",
+      "hint": "Which fields are inside a commit object?",
+      "options": [
+        {
+          "key": "a",
+          "text": "A commit's hash covers its parent hash, so each new parent changes every descendant",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Git adds the rebase time to every commit message, changing their hashes"
+        },
+        {
+          "key": "c",
+          "text": "Rebase always rewrites file contents, so each tree object changes"
+        },
+        {
+          "key": "d",
+          "text": "Hashes are random identifiers that Git regenerates during a rebase"
+        }
+      ],
+      "explanation": "A commit object records its tree, its parent hash(es), author, committer and message, and its id is the hash of that content. Giving the first commit a new parent changes its hash; the second commit's parent field now holds that new hash, so its hash changes too, and so on down the chain. This is also why tampering with old history is detectable.",
+      "acceptance_criteria": "Selects “A commit's hash covers its parent hash, so each new parent changes every descendant”. A commit object records its tree, its parent hash(es), author, committer and message, and its id is the hash of that content.",
+      "rubric": [
+        "Explains that a commit's id hashes its content, including the parent.",
+        "Explains the cascade to descendants.",
+        "Notes the consequence for anyone who already has the old commits."
+      ],
+      "expected_concepts": [
+        "content addressing",
+        "commit objects",
+        "parent links",
+        "rebase"
+      ],
+      "misconceptions": [
+        "Commit hashes are random ids.",
+        "A rebase keeps commit identity if the diff is the same."
+      ],
+      "resources": [
+        {
+          "title": "Pro Git: Git objects",
+          "url": "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"
+        },
+        {
+          "title": "Pro Git: Rebasing",
+          "url": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "git-force-pushed-main",
+      "topic": "history",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "Recovering main after a bad force-push",
+      "prompt": "A teammate force-pushed an old local copy to the shared `main`, and five commits that other people had pushed disappeared from the remote. Explain how you would recover the lost commits and what you would change so it cannot happen again.",
+      "hint": "Who else has a copy of the old `main`?",
+      "explanation": "Stop further pushes to `main` and communicate first. The commits still exist in other clones: anyone who fetched before the force-push has them in `origin/main` (and the reflog), so `git log origin/main@{1}` or the reflog shows the old tip. Verify it contains all five commits, then restore with a push of that commit to `main` (a force-with-lease against the bad tip), or have the host restore it (GitHub's activity view and events API record the previous SHA). Ask the person who force-pushed to check whether they had unpushed work that should be merged rather than lost. Prevent recurrence with branch protection that blocks force-pushes and deletions on `main`, required pull requests, and by encouraging `--force-with-lease` on personal branches.",
+      "acceptance_criteria": "Finds the old tip from another clone's remote-tracking ref or reflog, or from the host's activity log; restores it without losing the teammate's work; and enables branch protection that blocks force-pushes to main.",
+      "rubric": [
+        "Explains that the commits survive in other clones' remote-tracking refs or reflogs, or in the host's activity log.",
+        "Verifies the recovered tip before restoring it.",
+        "Restores `main` safely and accounts for any legitimate new work.",
+        "Enables branch protection that forbids force-pushes and deletion.",
+        "Communicates with the team during recovery."
+      ],
+      "expected_concepts": [
+        "reflog",
+        "remote-tracking branches",
+        "branch protection",
+        "force push",
+        "incident communication"
+      ],
+      "misconceptions": [
+        "Commits removed from the remote are lost for good.",
+        "Recovery requires restoring a server backup."
+      ],
+      "resources": [
+        {
+          "title": "Git reference: git-reflog",
+          "url": "https://git-scm.com/docs/git-reflog"
+        },
+        {
+          "title": "Git reference: git-push (--force-with-lease)",
+          "url": "https://git-scm.com/docs/git-push"
+        },
+        {
+          "title": "GitHub docs: About protected branches",
+          "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches"
+        }
+      ],
+      "estimated_minutes": 12
+    }
+  ]
+}

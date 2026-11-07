@@ -70,6 +70,60 @@
       "follow_up_questions": [
         "How would you roll out the rename without breaking billing at all?"
       ]
+    },
+    "test-discovery-name": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Design basic test cases and use fixtures.",
+      "prerequisites": [
+        "python"
+      ],
+      "distractor_rationale": {
+        "a": "No marker is needed.",
+        "c": "`-O` would disable plain asserts in normal Python; pytest rewrites them.",
+        "d": "Fixtures are optional."
+      },
+      "follow_up_questions": [
+        "How would you make CI fail if no tests were collected?"
+      ]
+    },
+    "test-shared-state-order": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Patch correctly and investigate flakiness.",
+      "prerequisites": [
+        "python"
+      ],
+      "distractor_rationale": {
+        "a": "pytest runs tests sequentially unless a plugin such as xdist is used.",
+        "c": "Ordering hides the dependency instead of removing it.",
+        "d": "Tests are independent functions."
+      },
+      "follow_up_questions": [
+        "Which pytest fixture scope would make this worse?"
+      ]
+    },
+    "test-mock-without-autospec": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Design a test strategy around real dependencies.",
+      "prerequisites": [
+        "python"
+      ],
+      "distractor_rationale": {
+        "a": "The cache does not store function signatures.",
+        "c": "It checks the arguments, but against whatever the code passed, not the real signature.",
+        "d": "patch replaces the name regardless of the real function's parameters."
+      },
+      "follow_up_questions": [
+        "When would a hand-written fake be better than an autospecced mock?"
+      ]
     }
   }
 }

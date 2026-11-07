@@ -1,0 +1,183 @@
+{
+  "skill": "git",
+  "batch": "P4a",
+  "content_version": 1,
+  "questions": {
+    "git-staged-snapshot": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Explain the working tree, index and commits, and use branches.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "That is `git commit -a`, which stages tracked changes first.",
+        "c": "Git does not refuse; it commits the staged version.",
+        "d": "The working-tree edit does not replace the index until it is added again."
+      },
+      "follow_up_questions": [
+        "Which command shows the difference between the staged version and the working tree?"
+      ]
+    },
+    "git-branch-is-pointer": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Explain the working tree, index and commits, and use branches.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Git stores snapshots once as objects; branches only point at commits.",
+        "b": "No archive is made; existing objects are reused.",
+        "c": "Creating a branch makes no commit."
+      },
+      "follow_up_questions": [
+        "What happens to the `feature` pointer when you commit on it?"
+      ]
+    },
+    "git-amend-unpushed": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Explain the working tree, index and commits, and use branches.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Revert adds an undo commit; the typo stays in history.",
+        "c": "Destroys the whole history.",
+        "d": "`--hard` discards the commit's changes from the working tree."
+      },
+      "follow_up_questions": [
+        "Why would amending be a problem if the commit were already on a shared branch?"
+      ]
+    },
+    "git-fast-forward": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Choose between merge and rebase and resolve conflicts safely.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "b": "Happens only when both sides diverged, or with --no-ff.",
+        "c": "Describes rebase, not merge.",
+        "d": "Requires `git merge --squash`."
+      },
+      "follow_up_questions": [
+        "Why do some teams require `--no-ff` merges?"
+      ]
+    },
+    "git-ignore-tracked-file": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Choose between merge and rebase and resolve conflicts safely.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Ignore rules take effect immediately in the working tree.",
+        "b": "A pattern with a slash in the middle already matches relative to the .gitignore location.",
+        "d": "Git reads the working-tree .gitignore even before it is committed."
+      },
+      "follow_up_questions": [
+        "The file contained a database password. What else must you do?"
+      ]
+    },
+    "git-revert-shared": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Choose between merge and rebase and resolve conflicts safely.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Rewrites shared history that others have pulled.",
+        "c": "Amend rewrites the last commit and needs a force push too.",
+        "d": "Also rewrites shared history, and may lose others' commits."
+      },
+      "follow_up_questions": [
+        "How do you revert a merge commit, and what does `-m 1` mean?"
+      ]
+    },
+    "git-reflog-recover": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Recover lost work and rewrite history without harming collaborators.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The objects stay until garbage collection prunes unreachable ones.",
+        "c": "Revert creates inverse commits; it cannot restore discarded commits.",
+        "d": "fsck can list dangling commits but does not move branches; the reflog is the direct route."
+      },
+      "follow_up_questions": [
+        "Uncommitted changes were also discarded by the reset. Can the reflog recover them? Why not?"
+      ]
+    },
+    "git-force-with-lease": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Recover lost work and rewrite history without harming collaborators.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Silently discards any commit pushed since your last fetch.",
+        "b": "Pushes never merge; the push is rejected as non-fast-forward.",
+        "d": "Same effect as --force, and closes the pull request on some hosts."
+      },
+      "follow_up_questions": [
+        "Why can an IDE that fetches in the background make `--force-with-lease` unsafe?"
+      ]
+    },
+    "git-hash-chain": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Recover lost work and rewrite history without harming collaborators.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "b": "Messages are unchanged; the committer date does change, but the parent chain alone forces new hashes.",
+        "c": "Tree objects can be identical; the parent field still differs.",
+        "d": "Hashes are deterministic content hashes."
+      },
+      "follow_up_questions": [
+        "Why does this property make signed tags meaningful?"
+      ]
+    },
+    "git-force-pushed-main": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Recover lost work and rewrite history without harming collaborators.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {},
+      "follow_up_questions": [
+        "How would you find the old tip if nobody had fetched recently?"
+      ]
+    }
+  }
+}

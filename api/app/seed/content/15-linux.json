@@ -1,0 +1,550 @@
+{
+  "skill": {
+    "slug": "linux",
+    "title": "Linux",
+    "summary": "Working on Linux servers: processes, signals, files, permissions and the shell.",
+    "description": "Inspect and control processes and services. Reason about files, permissions and ownership. Compose shell commands and scripts that fail safely."
+  },
+  "topics": [
+    {
+      "slug": "processes",
+      "title": "Processes & signals"
+    },
+    {
+      "slug": "filesystem",
+      "title": "Files & permissions"
+    },
+    {
+      "slug": "shell",
+      "title": "Shell & scripting"
+    }
+  ],
+  "questions": [
+    {
+      "slug": "linux-octal-mode",
+      "topic": "filesystem",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Reading a permission string",
+      "prompt": "`ls -l` shows `-rwxr-x---` for `deploy.sh`. Which `chmod` mode produces exactly these permissions?",
+      "hint": "Read, write and execute are worth 4, 2 and 1.",
+      "options": [
+        {
+          "key": "a",
+          "text": "`chmod 755 deploy.sh`"
+        },
+        {
+          "key": "b",
+          "text": "`chmod 750 deploy.sh`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`chmod 640 deploy.sh`"
+        },
+        {
+          "key": "d",
+          "text": "`chmod 570 deploy.sh`"
+        }
+      ],
+      "explanation": "Each group of three bits is read (4), write (2) and execute (1). The owner has `rwx` = 7, the group has `r-x` = 5, and others have `---` = 0, giving 750. 755 would also let everyone else read and execute the script.",
+      "acceptance_criteria": "Selects “chmod 750 deploy.sh”. Each group of three bits is read (4), write (2) and execute (1).",
+      "rubric": [
+        "Converts each triplet to a digit.",
+        "Assigns owner, group and others in that order.",
+        "Arrives at 750."
+      ],
+      "expected_concepts": [
+        "permission bits",
+        "octal modes",
+        "owner/group/others"
+      ],
+      "misconceptions": [
+        "The digits are ordered others, group, owner.",
+        "Execute is worth 4."
+      ],
+      "resources": [
+        {
+          "title": "chmod(1) manual page",
+          "url": "https://man7.org/linux/man-pages/man1/chmod.1.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "linux-kill-default-signal",
+      "topic": "processes",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "What plain kill sends",
+      "prompt": "You run `kill 4321` with no options. What happens?",
+      "hint": "Which signal number does `kill` use by default?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The kernel immediately terminates the process; it cannot react"
+        },
+        {
+          "key": "b",
+          "text": "The process receives `SIGTERM` and may clean up before exiting",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The process is paused until you resume it with `SIGCONT`"
+        },
+        {
+          "key": "d",
+          "text": "The process is restarted by the kernel with the same PID"
+        }
+      ],
+      "explanation": "Without an option, `kill` sends `SIGTERM` (signal 15). A process can catch it to finish requests, flush files and exit cleanly, or ignore it. `SIGKILL` (9) is the signal that cannot be caught or ignored; use it only when a process will not stop otherwise, because it gets no chance to clean up.",
+      "acceptance_criteria": "Selects “The process receives `SIGTERM` and may clean up before exiting”. Without an option, `kill` sends `SIGTERM` (signal 15).",
+      "rubric": [
+        "Identifies SIGTERM as the default.",
+        "Explains that SIGTERM can be handled.",
+        "Contrasts it with SIGKILL, which cannot be caught."
+      ],
+      "expected_concepts": [
+        "signals",
+        "SIGTERM",
+        "SIGKILL",
+        "graceful shutdown"
+      ],
+      "misconceptions": [
+        "`kill` always forcibly kills.",
+        "Any signal can be caught."
+      ],
+      "resources": [
+        {
+          "title": "kill(1) manual page",
+          "url": "https://man7.org/linux/man-pages/man1/kill.1.html"
+        },
+        {
+          "title": "signal(7) manual page",
+          "url": "https://man7.org/linux/man-pages/man7/signal.7.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "linux-redirect-truncate",
+      "topic": "shell",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "One character that erased a log",
+      "prompt": "`app.log` holds a week of logs. You meant to add one line to it but ran `echo \"restarted\" > app.log`. What is in the file now?",
+      "hint": "What does the shell do to the file before `echo` runs?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The week of logs followed by `restarted`"
+        },
+        {
+          "key": "b",
+          "text": "Only the line `restarted`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Nothing; the shell refuses to overwrite a file"
+        },
+        {
+          "key": "d",
+          "text": "The week of logs; `echo` cannot write to files"
+        }
+      ],
+      "explanation": "`>` opens the file for writing and truncates it to zero length before the command runs, so the old content is gone and only `restarted` remains. `>>` appends instead. Bash's `set -o noclobber` makes `>` refuse to overwrite an existing file, but it is off by default.",
+      "acceptance_criteria": "Selects “Only the line `restarted”. `>` opens the file for writing and truncates it to zero length before the command runs, so the old content is gone and only `restarted` remains.",
+      "rubric": [
+        "Explains that `>` truncates the file.",
+        "Names `>>` for appending.",
+        "Mentions noclobber as an optional safeguard."
+      ],
+      "expected_concepts": [
+        "redirection",
+        "truncate vs append",
+        "noclobber"
+      ],
+      "misconceptions": [
+        "`>` appends to existing files.",
+        "The shell warns before overwriting by default."
+      ],
+      "resources": [
+        {
+          "title": "Bash manual: Redirections",
+          "url": "https://www.gnu.org/software/bash/manual/html_node/Redirections.html"
+        }
+      ],
+      "estimated_minutes": 2
+    },
+    {
+      "slug": "linux-directory-execute",
+      "topic": "filesystem",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Readable file, permission denied",
+      "prompt": "`/srv/app/config.yml` has mode `644`, but its directory `/srv/app` has mode `700` and is owned by `appuser`. A different user runs `cat /srv/app/config.yml`. What happens and why?",
+      "hint": "What permission does a process need on `/srv/app` to look up a name inside it?",
+      "options": [
+        {
+          "key": "a",
+          "text": "It works, because the file itself is world-readable"
+        },
+        {
+          "key": "b",
+          "text": "Permission denied, because the directory lacks execute (search) permission for others",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Permission denied, because the file lacks execute permission for others"
+        },
+        {
+          "key": "d",
+          "text": "It works, but only if the user already knows the exact path"
+        }
+      ],
+      "explanation": "To reach a file, a process needs execute (search) permission on every directory in its path. With `700`, users other than the owner (and root) cannot traverse `/srv/app`, so opening the file fails before its own mode is checked. Directory read permission is for listing names; execute is for using them. A file's execute bit is irrelevant to reading it.",
+      "acceptance_criteria": "Selects “Permission denied, because the directory lacks execute (search) permission for others”. To reach a file, a process needs execute (search) permission on every directory in its path.",
+      "rubric": [
+        "Explains path traversal needs execute on each directory.",
+        "Distinguishes directory read (list) from execute (traverse).",
+        "Notes the file's own mode is never reached."
+      ],
+      "expected_concepts": [
+        "directory permissions",
+        "path resolution",
+        "search permission"
+      ],
+      "misconceptions": [
+        "A world-readable file is readable whatever its directory.",
+        "Reading a file needs its execute bit."
+      ],
+      "resources": [
+        {
+          "title": "path_resolution(7) manual page",
+          "url": "https://man7.org/linux/man-pages/man7/path_resolution.7.html"
+        },
+        {
+          "title": "chmod(1) manual page",
+          "url": "https://man7.org/linux/man-pages/man1/chmod.1.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "linux-zombie-process",
+      "topic": "processes",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A process that kill -9 cannot remove",
+      "prompt": "`ps` shows dozens of processes in state `Z` (`<defunct>`) under one parent service. `kill -9` on them has no effect. What is going on?",
+      "hint": "Is a zombie process still running code?",
+      "options": [
+        {
+          "key": "a",
+          "text": "They are hung in disk I/O and will exit when the disk responds"
+        },
+        {
+          "key": "b",
+          "text": "They have exited, but the parent has not called `wait` to collect their status",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "They are protected kernel threads that ignore all signals"
+        },
+        {
+          "key": "d",
+          "text": "They are stopped processes waiting for `SIGCONT`"
+        }
+      ],
+      "explanation": "A zombie is a child that has already exited; the kernel keeps a small process-table entry holding its exit status until the parent reaps it with `wait`/`waitpid`. There is nothing left to kill. Fix the parent so it reaps children (or handles `SIGCHLD`); if the parent exits, `init` adopts and reaps the zombies. Large numbers can exhaust PIDs.",
+      "acceptance_criteria": "Selects “They have exited, but the parent has not called `wait` to collect their status”. A zombie is a child that has already exited; the kernel keeps a small process-table entry holding its exit status until the parent reaps it with `wait`/`waitpid`.",
+      "rubric": [
+        "Explains that zombies have already exited.",
+        "Explains that the parent must reap them with wait.",
+        "Explains why signals do nothing.",
+        "Proposes fixing or restarting the parent."
+      ],
+      "expected_concepts": [
+        "zombie processes",
+        "wait",
+        "SIGCHLD",
+        "process table"
+      ],
+      "misconceptions": [
+        "Zombies use CPU and memory like running processes.",
+        "`kill -9` removes any process."
+      ],
+      "resources": [
+        {
+          "title": "wait(2) manual page",
+          "url": "https://man7.org/linux/man-pages/man2/wait.2.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "linux-pipefail",
+      "topic": "shell",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A backup script that uploaded nothing",
+      "prompt": "A nightly script starts with `set -e` and runs `pg_dump shop | gzip > shop.sql.gz`, then uploads the file. One night `pg_dump` fails with an authentication error, yet the script carries on and uploads a tiny, useless backup. Why?",
+      "hint": "Which command's exit status does a pipeline report, and what does gzip do with empty input?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`set -e` is ignored for commands whose output is redirected to a file"
+        },
+        {
+          "key": "b",
+          "text": "A pipeline's status is that of its last command unless `pipefail` is set",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`pg_dump` exits with status 0 even when authentication fails"
+        },
+        {
+          "key": "d",
+          "text": "`set -e` only applies to commands that run inside a function"
+        }
+      ],
+      "explanation": "By default a pipeline returns the exit status of its last command. `pg_dump` fails, but `gzip` happily compresses the empty stream and exits 0, so the pipeline counts as a success and `set -e` never triggers. `set -o pipefail` makes the pipeline fail if any command in it fails. Also verify the artefact before uploading it, for example with a minimum size or a test restore.",
+      "acceptance_criteria": "Selects “A pipeline's status is that of its last command unless `pipefail` is set”. By default a pipeline returns the exit status of its last command.",
+      "rubric": [
+        "Explains that a pipeline's status comes from its last command.",
+        "Explains that gzip succeeds on empty input.",
+        "Proposes `set -o pipefail`.",
+        "Suggests verifying the backup before upload."
+      ],
+      "expected_concepts": [
+        "pipelines",
+        "exit status",
+        "set -e",
+        "pipefail"
+      ],
+      "misconceptions": [
+        "`set -e` catches failures anywhere in a pipeline.",
+        "A file that exists is a valid backup."
+      ],
+      "resources": [
+        {
+          "title": "Bash manual: The set builtin",
+          "url": "https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "linux-deleted-open-file",
+      "topic": "filesystem",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A full disk that du cannot explain",
+      "prompt": "`df -h /` reports the root filesystem 100% full, but `du -sh /` accounts for only half of it. Last night someone ran `rm` on a 40 GB log file that a running service writes to. What explains the gap, and what frees the space?",
+      "hint": "When are a deleted file's blocks actually released?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The filesystem's journal still holds the file; run `fsck` to clear it"
+        },
+        {
+          "key": "b",
+          "text": "The file's blocks stay allocated while a process holds it open; restart or reopen the log",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`du` cannot see files over 4 GB; use `ls -la` to find the space"
+        },
+        {
+          "key": "d",
+          "text": "Deleted files move to a hidden trash directory; empty it to free space"
+        }
+      ],
+      "explanation": "`rm` removes the directory entry (unlink), but the inode and its blocks are freed only when the last open file descriptor closes. The service still holds the file, so `df` counts the space while `du`, which walks names, cannot see it. Find it with `lsof +L1` (or `ls -l /proc/<pid>/fd`), then restart the service or make it reopen its logs; in an emergency, truncate through `/proc/<pid>/fd/<n>`. Use log rotation that signals the service instead of deleting live files.",
+      "acceptance_criteria": "Selects “The file's blocks stay allocated while a process holds it open; restart or reopen the log”. `rm` removes the directory entry (unlink), but the inode and its blocks are freed only when the last open file descriptor closes.",
+      "rubric": [
+        "Explains unlink removes the name but not the open inode.",
+        "Explains why df and du disagree.",
+        "Finds the file with lsof or /proc.",
+        "Frees space by restarting, reopening or truncating."
+      ],
+      "expected_concepts": [
+        "inodes",
+        "unlink",
+        "open file descriptors",
+        "log rotation"
+      ],
+      "misconceptions": [
+        "Deleting a file always frees its space immediately.",
+        "df and du should always agree."
+      ],
+      "resources": [
+        {
+          "title": "unlink(2) manual page",
+          "url": "https://man7.org/linux/man-pages/man2/unlink.2.html"
+        }
+      ],
+      "estimated_minutes": 6
+    },
+    {
+      "slug": "linux-exit-137-oom",
+      "topic": "processes",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Exit code 137 under load",
+      "prompt": "A worker process dies during a large batch with exit status 137 and nothing in its own logs. `dmesg` contains `Out of memory: Killed process ... (worker)`. What happened?",
+      "hint": "Exit statuses above 128 encode a signal number.",
+      "options": [
+        {
+          "key": "a",
+          "text": "The worker caught `SIGTERM` and chose to exit with status 137"
+        },
+        {
+          "key": "b",
+          "text": "The kernel's OOM killer sent `SIGKILL` (128 + 9 = 137) when memory ran out",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The worker hit a segmentation fault, which always maps to status 137"
+        },
+        {
+          "key": "d",
+          "text": "The filesystem filled up and the kernel stopped the process with `SIGSTOP`"
+        }
+      ],
+      "explanation": "Shells report a process killed by signal N as 128 + N; 137 is 128 + 9, `SIGKILL`. When the system or a cgroup runs out of memory, the kernel's OOM killer picks a victim and sends it `SIGKILL`, which cannot be caught, so the process logs nothing. Confirm with `dmesg` or `journalctl -k`, then reduce memory use (stream the batch, cap batch size), raise the memory limit, or adjust `oom_score_adj` deliberately.",
+      "acceptance_criteria": "Selects “The kernel's OOM killer sent `SIGKILL` (128 + 9 = 137) when memory ran out”. Shells report a process killed by signal N as 128 + N; 137 is 128 + 9, `SIGKILL`.",
+      "rubric": [
+        "Decodes 137 as 128 + SIGKILL.",
+        "Attributes it to the OOM killer using the kernel log.",
+        "Explains why the process logs nothing.",
+        "Proposes reducing memory use or adjusting limits."
+      ],
+      "expected_concepts": [
+        "OOM killer",
+        "exit status",
+        "SIGKILL",
+        "cgroups"
+      ],
+      "misconceptions": [
+        "Exit 137 means the program has a bug that returned 137.",
+        "The application can always log before being killed."
+      ],
+      "resources": [
+        {
+          "title": "Linux kernel docs: /proc/sys/vm (OOM behaviour)",
+          "url": "https://docs.kernel.org/admin-guide/sysctl/vm.html"
+        },
+        {
+          "title": "Bash manual: Exit status",
+          "url": "https://www.gnu.org/software/bash/manual/html_node/Exit-Status.html"
+        }
+      ],
+      "estimated_minutes": 5
+    },
+    {
+      "slug": "linux-unset-variable-rm",
+      "topic": "shell",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A cleanup script with an empty variable",
+      "prompt": "A cleanup script runs `rm -rf $BUILD_DIR/*`. One night `BUILD_DIR` is not set. What does the shell run, and what is the most robust guard?",
+      "hint": "What does `$BUILD_DIR/*` become when the variable is empty?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`rm -rf /*`; use `rm -rf \"${BUILD_DIR:?}\"/*` (and `set -u`) so an unset or empty variable aborts the script",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Nothing; Bash refuses to run a command when one of its variables is unset, so no guard is needed"
+        },
+        {
+          "key": "c",
+          "text": "`rm -rf *` in the current directory; wrap the whole command in an `if [ -d \"$BUILD_DIR\" ]` check"
+        },
+        {
+          "key": "d",
+          "text": "`rm -rf /*`, but GNU `rm` defaults to `--preserve-root`, which blocks it, so no guard is needed"
+        }
+      ],
+      "explanation": "An unset variable expands to nothing, so the command becomes `rm -rf /*`. `--preserve-root` (the GNU default) only refuses the literal `/`, not the expanded list `/bin /etc ...`, so it does not help. `${BUILD_DIR:?}` makes the shell exit with an error if the variable is unset or empty; `set -u` catches unset variables generally; quoting prevents word splitting if the path contains spaces.",
+      "acceptance_criteria": "Selects “rm -rf /*`; use `rm -rf \"${BUILD_DIR:?}\"/*` (and `set -u`) so an unset or empty variable aborts the script”. An unset variable expands to nothing, so the command becomes `rm -rf /*`.",
+      "rubric": [
+        "Shows the expansion to `rm -rf /*`.",
+        "Explains why --preserve-root does not protect against `/*`.",
+        "Uses `${VAR:?}` and/or `set -u`.",
+        "Quotes the expansion."
+      ],
+      "expected_concepts": [
+        "parameter expansion",
+        "set -u",
+        "quoting",
+        "defensive scripting"
+      ],
+      "misconceptions": [
+        "Unset variables make Bash skip the command.",
+        "--preserve-root protects against all root deletions."
+      ],
+      "resources": [
+        {
+          "title": "Bash manual: Shell parameter expansion",
+          "url": "https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html"
+        },
+        {
+          "title": "Bash manual: The set builtin",
+          "url": "https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html"
+        }
+      ],
+      "estimated_minutes": 6
+    },
+    {
+      "slug": "linux-high-load-low-cpu",
+      "topic": "processes",
+      "difficulty": "advanced",
+      "format": "free_text",
+      "title": "High load average, idle CPUs",
+      "prompt": "A 4-core server shows a load average of 40, yet `top` reports the CPUs about 85% idle and requests are timing out. Explain what Linux load average measures and walk through how you would diagnose this.",
+      "hint": "Which process states does Linux include in the load average?",
+      "explanation": "On Linux, load average counts tasks that are runnable *and* tasks in uninterruptible sleep (state D), which is usually waiting on disk or network I/O such as NFS. High load with idle CPUs therefore points at blocked I/O, not CPU saturation. Check `top`/`vmstat 1` for high `wa` (iowait) and the `b` column, `ps -eo state,pid,cmd | grep '^D'` to see which processes are blocked and on what (`/proc/<pid>/stack`, `wchan`), `iostat -x 1` for device utilisation and await times, `dmesg` for disk or NFS errors, and memory pressure (`free`, swap activity in `vmstat`, PSI in `/proc/pressure/io`). Fix the cause: a failing or saturated disk, a hung network mount, swap thrashing, or an application issuing too much synchronous I/O, and add alerting on I/O latency rather than load alone.",
+      "acceptance_criteria": "Explains that Linux load includes uninterruptible (D-state) tasks, infers I/O blocking, and uses iowait, D-state process listing, iostat and kernel logs to find the device or mount responsible.",
+      "rubric": [
+        "Explains that Linux load counts runnable and D-state tasks.",
+        "Infers I/O blocking from high load with idle CPU.",
+        "Uses vmstat/top iowait and lists D-state processes.",
+        "Checks device latency with iostat and errors in dmesg.",
+        "Considers memory pressure and swap, and proposes better alerting."
+      ],
+      "expected_concepts": [
+        "load average",
+        "uninterruptible sleep",
+        "iowait",
+        "iostat",
+        "pressure stall information"
+      ],
+      "misconceptions": [
+        "Load average is CPU utilisation.",
+        "A load above the core count always means the CPUs are saturated."
+      ],
+      "resources": [
+        {
+          "title": "Brendan Gregg: Linux load averages",
+          "url": "https://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html"
+        },
+        {
+          "title": "proc(5) manual page (loadavg)",
+          "url": "https://man7.org/linux/man-pages/man5/proc.5.html"
+        }
+      ],
+      "estimated_minutes": 12
+    }
+  ]
+}

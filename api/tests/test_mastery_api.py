@@ -61,9 +61,9 @@ def _skill(c, h, slug):
 
 def test_curriculum_endpoint_exposes_graph_and_versions(mc: TestClient) -> None:
     body = mc.get("/api/v1/curriculum").json()
-    assert body["version"] == "2026.11.1" and len(body["checksum"]) == 64
+    assert body["version"] == "2026.11.2" and len(body["checksum"]) == 64
     skills = {s["slug"]: s for s in body["skills"]}
-    assert len(skills) == 13
+    assert len(skills) == 15
     assert skills["programming-fundamentals"]["depth"] == 0
     assert skills["react"]["prerequisites"] == ["typescript", "http"]
     assert "react" in skills["typescript"]["dependants"]

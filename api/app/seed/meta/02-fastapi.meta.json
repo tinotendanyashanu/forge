@@ -38,6 +38,63 @@
       "follow_up_questions": [
         "How would you let a client deliberately clear the email field?"
       ]
+    },
+    "fa-missing-query-422": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Predict validation behaviour and filter responses.",
+      "prerequisites": [
+        "python",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "Only if `q` had a default of None.",
+        "b": "FastAPI's default validation status is 422, with a detail body.",
+        "d": "Validation stops the request before the handler is called."
+      },
+      "follow_up_questions": [
+        "How would you change all validation errors to a custom response format?"
+      ]
+    },
+    "fa-dependency-override": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Reason about dependency caching and the event loop.",
+      "prerequisites": [
+        "python",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "Depends only builds a marker; the captured callable is still the original.",
+        "c": "Calling the fake does not change what the route uses.",
+        "d": "Restarting does not rebind routes already defined with the original function."
+      },
+      "follow_up_questions": [
+        "How would you override a dependency for one test only?"
+      ]
+    },
+    "fa-sync-threadpool-limit": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Design session and transaction lifecycles.",
+      "prerequisites": [
+        "python",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "That describes blocking code inside async def.",
+        "c": "Uvicorn accepts the connections; they wait for a thread.",
+        "d": "Blocking network I/O releases the GIL."
+      },
+      "follow_up_questions": [
+        "How would you measure whether the thread limiter is the bottleneck?"
+      ]
     }
   }
 }

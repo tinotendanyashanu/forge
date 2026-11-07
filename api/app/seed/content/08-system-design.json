@@ -399,6 +399,166 @@
         }
       ],
       "estimated_minutes": 6
+    },
+    {
+      "slug": "sd-read-replicas",
+      "topic": "scaling",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A database overloaded by reads",
+      "prompt": "A product catalogue's PostgreSQL primary is at 90% CPU. About 95% of queries are reads of product pages, and a few seconds of staleness is acceptable. Which change helps most directly?",
+      "hint": "Which component is saturated, and by what kind of work?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Add read replicas and send product-page reads to them",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Add more application servers behind the load balancer"
+        },
+        {
+          "key": "c",
+          "text": "Move writes to a second primary that accepts the same tables"
+        },
+        {
+          "key": "d",
+          "text": "Increase the connection pool size on every application server"
+        }
+      ],
+      "explanation": "The bottleneck is read load on one database. Streaming replicas serve read-only queries, so routing tolerant reads to them spreads that load; a cache in front of hot pages would also help. More app servers or bigger pools add load to the same primary. Replicas do not scale writes, and replication lag means reads can be slightly stale, which this scenario allows.",
+      "acceptance_criteria": "Selects “Add read replicas and send product-page reads to them”. The bottleneck is read load on one database.",
+      "rubric": [
+        "Identifies read load on the primary as the bottleneck.",
+        "Routes stale-tolerant reads to replicas (or a cache).",
+        "Notes replicas do not scale writes and may lag."
+      ],
+      "expected_concepts": [
+        "read replicas",
+        "replication lag",
+        "read/write split",
+        "bottleneck analysis"
+      ],
+      "misconceptions": [
+        "More application servers scale the database.",
+        "Read replicas scale writes."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: High availability, load balancing and replication",
+          "url": "https://www.postgresql.org/docs/current/high-availability.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sd-queue-load-leveling",
+      "topic": "reliability",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A burst of thumbnail requests",
+      "prompt": "Users upload photos in bursts of up to 5,000 per minute after events, while the thumbnail service can process 1,000 per minute and is idle most of the day. Requests currently call it synchronously and time out during bursts. What is the best design change?",
+      "hint": "Does the thumbnail need to exist before the upload request returns?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Put uploads on a durable queue and let workers drain it at a steady rate",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Raise the client timeout to ten minutes so requests eventually succeed"
+        },
+        {
+          "key": "c",
+          "text": "Run five times the thumbnail capacity all day to cover the peak"
+        },
+        {
+          "key": "d",
+          "text": "Drop uploads that arrive while the service is busy and ask users to retry"
+        }
+      ],
+      "explanation": "Queue-based load leveling decouples the upload from the slow work: the API stores the photo, enqueues a job and returns immediately, and workers process the backlog at their own rate, optionally autoscaling on queue depth. The burst becomes a temporary backlog instead of timeouts. Provisioning for the peak wastes money, long timeouts tie up connections, and dropping work hurts users.",
+      "acceptance_criteria": "Selects “Put uploads on a durable queue and let workers drain it at a steady rate”. Queue-based load leveling decouples the upload from the slow work: the API stores the photo, enqueues a job and returns immediately, and workers process the backlog at their own rate, optionally autoscaling on queue depth.",
+      "rubric": [
+        "Proposes an asynchronous queue between upload and processing.",
+        "Explains that bursts become a backlog rather than failures.",
+        "Mentions scaling workers on queue depth or eventual completion to users."
+      ],
+      "expected_concepts": [
+        "queue-based load leveling",
+        "asynchronous processing",
+        "backpressure",
+        "autoscaling"
+      ],
+      "misconceptions": [
+        "Every request must finish its work before responding.",
+        "Capacity must always match peak load."
+      ],
+      "resources": [
+        {
+          "title": "Azure Architecture Center: Queue-based load leveling pattern",
+          "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sd-consistent-hashing",
+      "topic": "scaling",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Adding one cache node",
+      "prompt": "A cache cluster of 10 nodes chooses a node with `hash(key) % N`. You add an 11th node. Roughly what fraction of keys now map to a different node, and what reduces it?",
+      "hint": "For how many keys does `hash % 10` equal `hash % 11`?",
+      "options": [
+        {
+          "key": "a",
+          "text": "About 1/11; modulo hashing already moves only the new node's share"
+        },
+        {
+          "key": "b",
+          "text": "About 10/11; consistent hashing would move only about 1/11",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "None; existing keys stay where they are until they expire"
+        },
+        {
+          "key": "d",
+          "text": "All keys; any hashing scheme must remap everything when N changes"
+        }
+      ],
+      "explanation": "With modulo hashing, a key stays put only if `hash % 10 == hash % 11`, which holds for roughly 1 in 11 keys, so about 10/11 move and the cache effectively empties. Consistent hashing places nodes and keys on a ring (usually with many virtual nodes per server), so adding a node takes over only the keys between it and its neighbours: about 1/(N+1) of the total.",
+      "acceptance_criteria": "Selects “About 10/11; consistent hashing would move only about 1/11”. With modulo hashing, a key stays put only if `hash % 10 == hash % 11`, which holds for roughly 1 in 11 keys, so about 10/11 move and the cache effectively empties.",
+      "rubric": [
+        "Estimates that most keys move with modulo hashing.",
+        "Explains consistent hashing moves about 1/(N+1).",
+        "Mentions virtual nodes for balance."
+      ],
+      "expected_concepts": [
+        "consistent hashing",
+        "modulo hashing",
+        "rebalancing",
+        "virtual nodes"
+      ],
+      "misconceptions": [
+        "Modulo hashing only moves keys to the new node.",
+        "Rehashing is unavoidable whenever the cluster changes."
+      ],
+      "resources": [
+        {
+          "title": "Wikipedia: Consistent hashing",
+          "url": "https://en.wikipedia.org/wiki/Consistent_hashing"
+        },
+        {
+          "title": "DeCandia et al.: Dynamo, Amazon's highly available key-value store",
+          "url": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf"
+        }
+      ],
+      "estimated_minutes": 6
     }
   ]
 }

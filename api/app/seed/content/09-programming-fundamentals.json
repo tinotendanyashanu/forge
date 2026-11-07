@@ -400,6 +400,169 @@
         }
       ],
       "estimated_minutes": 15
+    },
+    {
+      "slug": "pf-set-membership",
+      "topic": "data-structures",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Checking whether a username is taken",
+      "prompt": "A sign-up service checks whether a username already exists among 2 million names held in memory. Which structure makes each check fastest on average?",
+      "hint": "How many elements does each structure have to look at?",
+      "options": [
+        {
+          "key": "a",
+          "text": "A list, checked with `name in names`"
+        },
+        {
+          "key": "b",
+          "text": "A set, checked with `name in names`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "A sorted list, scanned from the start until a match"
+        },
+        {
+          "key": "d",
+          "text": "A string of all names joined by commas"
+        }
+      ],
+      "explanation": "A set is a hash table: a membership test hashes the name and looks in one bucket, which is O(1) on average. A list is checked element by element, O(n). Scanning a sorted list from the start is still O(n) (binary search would be O(log n)). Searching a joined string is also linear and can match parts of other names.",
+      "acceptance_criteria": "Selects “A set, checked with `name in names”. A set is a hash table: a membership test hashes the name and looks in one bucket, which is O(1) on average.",
+      "rubric": [
+        "Chooses a set.",
+        "Explains average O(1) hash lookup.",
+        "Contrasts it with O(n) list scans."
+      ],
+      "expected_concepts": [
+        "sets",
+        "hash tables",
+        "membership tests",
+        "time complexity"
+      ],
+      "misconceptions": [
+        "Lists and sets have the same lookup cost.",
+        "Sorting a list makes `in` fast."
+      ],
+      "resources": [
+        {
+          "title": "Python tutorial: Data structures (sets)",
+          "url": "https://docs.python.org/3/tutorial/datastructures.html#sets"
+        },
+        {
+          "title": "Python wiki: Time complexity of built-in types",
+          "url": "https://wiki.python.org/moin/TimeComplexity"
+        }
+      ],
+      "estimated_minutes": 2
+    },
+    {
+      "slug": "pf-recursion-call-count",
+      "topic": "control-flow",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Counting recursive calls",
+      "prompt": "How many times is `fib` called in total, including the first call, when evaluating `fib(4)`?",
+      "code": "def fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nfib(4)",
+      "code_language": "python",
+      "hint": "Draw the call tree for `fib(4)` and count its nodes.",
+      "options": [
+        {
+          "key": "a",
+          "text": "4"
+        },
+        {
+          "key": "b",
+          "text": "5"
+        },
+        {
+          "key": "c",
+          "text": "8"
+        },
+        {
+          "key": "d",
+          "text": "9",
+          "correct": true
+        }
+      ],
+      "explanation": "Let C(n) be the number of calls for `fib(n)`: C(0) = C(1) = 1 and C(n) = 1 + C(n-1) + C(n-2). So C(2) = 3, C(3) = 5 and C(4) = 9. The same subproblems are recomputed many times, which is why the naive version grows exponentially and memoisation fixes it.",
+      "acceptance_criteria": "Selects “9”. Let C(n) be the number of calls for `fib(n)`: C(0) = C(1) = 1 and C(n) = 1 + C(n-1) + C(n-2).",
+      "rubric": [
+        "Sets up the call-count recurrence.",
+        "Computes the base cases correctly.",
+        "Arrives at 9 and connects it to repeated work."
+      ],
+      "expected_concepts": [
+        "recursion",
+        "call trees",
+        "recurrences",
+        "memoisation"
+      ],
+      "misconceptions": [
+        "Each call to fib(n) makes only n calls.",
+        "Recursive calls are shared automatically."
+      ],
+      "resources": [
+        {
+          "title": "Python tutorial: Defining functions",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html#defining-functions"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "pf-amortised-append",
+      "topic": "complexity",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Appends that are occasionally slow",
+      "prompt": "A dynamic array (like a Python list) occasionally takes much longer to append because it copies every element into a bigger block. Why is appending n items still O(n) in total?",
+      "hint": "Add up the sizes of all the copies made while growing to n elements.",
+      "options": [
+        {
+          "key": "a",
+          "text": "Copies happen only once, the first time the array fills up"
+        },
+        {
+          "key": "b",
+          "text": "Capacity grows geometrically, so copies total a constant times n",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The copies run in a background thread and do not count"
+        },
+        {
+          "key": "d",
+          "text": "Each copy moves only the newly appended element"
+        }
+      ],
+      "explanation": "When the array is full it allocates a block a constant factor larger (Python over-allocates by about 1.125x plus a constant; textbooks often use 2x) and copies the elements. Because sizes grow geometrically, the copy costs form a geometric series whose sum is proportional to n, so the average (amortised) cost per append is O(1), even though an individual append can be O(n). Growing by a fixed amount instead would make the total O(n²).",
+      "acceptance_criteria": "Selects “Capacity grows geometrically, so copies total a constant times n”. When the array is full it allocates a block a constant factor larger (Python over-allocates by about 1.125x plus a constant; textbooks often use 2x) and copies the elements.",
+      "rubric": [
+        "Explains geometric capacity growth.",
+        "Sums the copy costs as a geometric series.",
+        "Distinguishes amortised from worst-case per operation.",
+        "Notes that fixed increments would give O(n²)."
+      ],
+      "expected_concepts": [
+        "amortised analysis",
+        "dynamic arrays",
+        "geometric growth",
+        "worst case vs average"
+      ],
+      "misconceptions": [
+        "Every append is O(1) in the worst case.",
+        "Growing by a fixed number of slots is just as good."
+      ],
+      "resources": [
+        {
+          "title": "Python wiki: Time complexity of built-in types",
+          "url": "https://wiki.python.org/moin/TimeComplexity"
+        }
+      ],
+      "estimated_minutes": 6
     }
   ]
 }

@@ -53,6 +53,60 @@
       "follow_up_questions": [
         "Would `asyncio` tasks updating the same counter have the same problem? Why or why not?"
       ]
+    },
+    "py-sort-returns-none": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Distinguish identity from equality and spot shared mutable defaults.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Would be printed by `print(sorted(nums))` or by sorting without reassigning.",
+        "b": "Ignores the sort entirely.",
+        "d": "Sorting integers works; the problem is the return value."
+      },
+      "follow_up_questions": [
+        "Which other list methods return None for the same reason?"
+      ]
+    },
+    "py-generator-exhausted": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Explain closures, scope and copy semantics precisely.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Treats the generator like a list.",
+        "c": "Reverses the order of consumption.",
+        "d": "`sum` handles the end of iteration internally."
+      },
+      "follow_up_questions": [
+        "How would you write a function that accepts any iterable but needs two passes?"
+      ]
+    },
+    "py-cpu-bound-threads": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Match concurrency models to workloads and justify the choice.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The default max_workers is based on CPU count (min(32, cpu + 4)), not 1.",
+        "c": "asyncio runs on one thread and does not add parallelism.",
+        "d": "More threads still contend for the same GIL."
+      },
+      "follow_up_questions": [
+        "When would threads be the right choice for this service?"
+      ]
     }
   }
 }

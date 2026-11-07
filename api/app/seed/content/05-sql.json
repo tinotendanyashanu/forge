@@ -428,6 +428,179 @@
         }
       ],
       "estimated_minutes": 5
+    },
+    {
+      "slug": "sql-group-by-ungrouped-column",
+      "topic": "querying",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A column missing from GROUP BY",
+      "prompt": "In PostgreSQL, what happens when you run this query on `orders(id, customer_id, status, total)`?",
+      "code": "SELECT customer_id, status, sum(total)\nFROM orders\nGROUP BY customer_id;",
+      "code_language": "sql",
+      "hint": "Within one customer's group, how many different status values could there be?",
+      "options": [
+        {
+          "key": "a",
+          "text": "It returns one row per customer with the first status found"
+        },
+        {
+          "key": "b",
+          "text": "It fails: `status` must appear in `GROUP BY` or be used in an aggregate",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "It returns one row per order, because `status` disables grouping"
+        },
+        {
+          "key": "d",
+          "text": "It returns one row per customer with `status` set to `NULL`"
+        }
+      ],
+      "explanation": "Each output row represents a group of orders. `status` can differ within a group, so PostgreSQL rejects the query with an error that the column must appear in the `GROUP BY` clause or be used in an aggregate function. Either group by `status` too, aggregate it (for example `count(*) FILTER (WHERE status = 'paid')`), or drop it. PostgreSQL allows ungrouped columns only when they are functionally dependent on a grouped primary key.",
+      "acceptance_criteria": "Selects “It fails: `status` must appear in `GROUP BY` or be used in an aggregate”. Each output row represents a group of orders.",
+      "rubric": [
+        "States that the query fails.",
+        "Explains that status can vary within a group.",
+        "Proposes grouping or aggregating it.",
+        "Mentions the functional dependency exception."
+      ],
+      "expected_concepts": [
+        "GROUP BY",
+        "aggregates",
+        "functional dependency"
+      ],
+      "misconceptions": [
+        "Databases pick an arbitrary value for ungrouped columns.",
+        "GROUP BY works like ORDER BY."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL tutorial: Aggregate functions",
+          "url": "https://www.postgresql.org/docs/current/tutorial-agg.html"
+        },
+        {
+          "title": "PostgreSQL docs: GROUP BY clause",
+          "url": "https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sql-expression-index",
+      "topic": "indexing",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A case-insensitive login that scans the table",
+      "prompt": "`users` has 5 million rows and a B-tree index on `email`. Logins run the query below, and `EXPLAIN` shows a sequential scan. What is the best fix?",
+      "code": "SELECT id, password_hash\nFROM users\nWHERE lower(email) = lower($1);",
+      "code_language": "sql",
+      "hint": "What values does the existing index store, and what does the query compare?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Run `ANALYZE users` so the planner notices the existing index on `email`"
+        },
+        {
+          "key": "b",
+          "text": "Create an expression index on `lower(email)` so the query's condition can use it",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Replace `=` with `LIKE` so that PostgreSQL switches to an index scan"
+        },
+        {
+          "key": "d",
+          "text": "Add `email` to the `SELECT` list so the query is covered by the index"
+        }
+      ],
+      "explanation": "An index on `email` stores the raw values, so it cannot answer a condition on `lower(email)`; the planner would have to compute `lower()` for every row. An expression index, `CREATE INDEX ON users (lower(email))`, stores the computed values and matches the query's expression exactly. Alternatives are to store emails already normalised or to use the `citext` type. Up-to-date statistics do not make an index on a different expression usable.",
+      "acceptance_criteria": "Selects “Create an expression index on `lower(email)` so the query's condition can use it”. An index on `email` stores the raw values, so it cannot answer a condition on `lower(email)`; the planner would have to compute `lower()` for every row.",
+      "rubric": [
+        "Explains that the index on `email` cannot serve `lower(email)`.",
+        "Proposes an expression index on `lower(email)`.",
+        "Mentions normalising on write or citext as alternatives."
+      ],
+      "expected_concepts": [
+        "expression indexes",
+        "sargability",
+        "query planner",
+        "case-insensitive search"
+      ],
+      "misconceptions": [
+        "Any index on a column helps any condition that mentions the column.",
+        "ANALYZE makes the planner use indexes."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Indexes on expressions",
+          "url": "https://www.postgresql.org/docs/current/indexes-expressional.html"
+        },
+        {
+          "title": "PostgreSQL docs: Using EXPLAIN",
+          "url": "https://www.postgresql.org/docs/current/using-explain.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sql-seq-scan-low-selectivity",
+      "topic": "indexing",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "An index the planner ignores",
+      "prompt": "`orders` has 10 million rows and an index on `status`. `EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'delivered'` shows a sequential scan; about 60% of rows are delivered. Statistics are up to date. What is the most likely explanation?",
+      "hint": "What fraction of the table does the query return?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The index is corrupt or bloated; rebuild it with `REINDEX` and run the query again"
+        },
+        {
+          "key": "b",
+          "text": "Fetching most of the table through an index costs more than reading it sequentially",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "PostgreSQL does not use B-tree indexes on text columns compared with literals"
+        },
+        {
+          "key": "d",
+          "text": "The query needs an explicit index hint, because sequential scans are the default"
+        }
+      ],
+      "explanation": "An index scan reads index pages and then jumps to heap pages in random order. When a predicate matches a large fraction of rows, the planner's cost model correctly estimates that a sequential scan (or a bitmap scan) is cheaper. Indexes pay off for selective predicates. If you only need a few columns, consider a partial index for rare values or a covering index; PostgreSQL has no index hints by design.",
+      "acceptance_criteria": "Selects “Fetching most of the table through an index costs more than reading it sequentially”. An index scan reads index pages and then jumps to heap pages in random order.",
+      "rubric": [
+        "Explains that the predicate matches most rows.",
+        "Explains random heap access versus sequential reads.",
+        "Concludes the plan is likely correct.",
+        "Suggests partial or covering indexes for selective queries."
+      ],
+      "expected_concepts": [
+        "selectivity",
+        "query planner",
+        "sequential scan",
+        "partial indexes"
+      ],
+      "misconceptions": [
+        "An available index is always faster.",
+        "A sequential scan means the index is broken."
+      ],
+      "resources": [
+        {
+          "title": "PostgreSQL docs: Using EXPLAIN",
+          "url": "https://www.postgresql.org/docs/current/using-explain.html"
+        },
+        {
+          "title": "PostgreSQL docs: Statistics used by the planner",
+          "url": "https://www.postgresql.org/docs/current/planner-stats.html"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

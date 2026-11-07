@@ -435,6 +435,168 @@
         }
       ],
       "estimated_minutes": 5
+    },
+    {
+      "slug": "re-controlled-no-onchange",
+      "topic": "state",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "An input you cannot type into",
+      "prompt": "A user clicks this input and types, but the text never changes. Why?",
+      "code": "function NameField() {\n  const [name, setName] = useState(\"\");\n  return <input value={name} />;\n}",
+      "code_language": "tsx",
+      "hint": "What does React render into the input on every render?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Inputs need a `key` prop before they accept typing"
+        },
+        {
+          "key": "b",
+          "text": "`value` makes it controlled, and nothing updates `name` when the user types",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`useState` cannot hold strings, only numbers and objects"
+        },
+        {
+          "key": "d",
+          "text": "The input must be wrapped in a `<form>` element to be editable"
+        }
+      ],
+      "explanation": "Passing `value` makes the input controlled: React renders exactly that value every time. With no `onChange` updating `name`, each keystroke is discarded and the input stays empty. Add `onChange={e => setName(e.target.value)}`, or use `defaultValue` for an uncontrolled input. React also warns about a `value` prop without an `onChange` handler.",
+      "acceptance_criteria": "Selects “value` makes it controlled, and nothing updates `name` when the user types”. Passing `value` makes the input controlled: React renders exactly that value every time.",
+      "rubric": [
+        "Explains that `value` makes the input controlled.",
+        "Explains that state never changes, so the value is re-rendered unchanged.",
+        "Proposes onChange with setName, or defaultValue."
+      ],
+      "expected_concepts": [
+        "controlled inputs",
+        "state",
+        "onChange",
+        "uncontrolled inputs"
+      ],
+      "misconceptions": [
+        "Inputs update themselves even when controlled.",
+        "value and defaultValue mean the same thing."
+      ],
+      "resources": [
+        {
+          "title": "React docs: Controlling an input with a state variable",
+          "url": "https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "re-derived-state-effect",
+      "topic": "lists",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Filtering a list with an effect",
+      "prompt": "This component works, but each keystroke renders the list twice and the code feels fragile. What is the better approach?",
+      "code": "function List({ items }: { items: string[] }) {\n  const [query, setQuery] = useState(\"\");\n  const [visible, setVisible] = useState(items);\n  useEffect(() => {\n    setVisible(items.filter(i => i.includes(query)));\n  }, [items, query]);\n  return (\n    <>\n      <input value={query} onChange={e => setQuery(e.target.value)} />\n      <ul>{visible.map(i => <li key={i}>{i}</li>)}</ul>\n    </>\n  );\n}",
+      "code_language": "tsx",
+      "hint": "Can `visible` be calculated from values you already have?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Compute `visible` during render from `items` and `query`, without extra state",
+          "correct": true
+        },
+        {
+          "key": "b",
+          "text": "Add `visible` to the effect's dependency array as well"
+        },
+        {
+          "key": "c",
+          "text": "Move the filter into a `useLayoutEffect` so it runs before paint"
+        },
+        {
+          "key": "d",
+          "text": "Store `items` in a ref so the effect does not run on every change"
+        }
+      ],
+      "explanation": "`visible` is derived entirely from `items` and `query`, so it should not be separate state. Syncing it in an effect renders once with stale `visible`, then again after the effect sets it, and the two can drift. Compute it directly during render (wrapping it in `useMemo` only if filtering is measurably expensive).",
+      "acceptance_criteria": "Selects “Compute `visible` during render from `items` and `query`, without extra state”. `visible` is derived entirely from `items` and `query`, so it should not be separate state.",
+      "rubric": [
+        "Identifies `visible` as derived data.",
+        "Explains the extra render and stale intermediate value.",
+        "Computes during render, with useMemo only when needed."
+      ],
+      "expected_concepts": [
+        "derived state",
+        "effects",
+        "rendering",
+        "useMemo"
+      ],
+      "misconceptions": [
+        "Every value shown on screen must live in state.",
+        "Effects are the place to transform data for rendering."
+      ],
+      "resources": [
+        {
+          "title": "React docs: You might not need an effect",
+          "url": "https://react.dev/learn/you-might-not-need-an-effect"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "re-fetch-race",
+      "topic": "effects",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Search results from the wrong query",
+      "prompt": "Users type quickly and sometimes see results for an earlier query. What is the cause and fix?",
+      "code": "useEffect(() => {\n  fetch(`/api/search?q=${query}`)\n    .then(r => r.json())\n    .then(data => setResults(data));\n}, [query]);",
+      "code_language": "tsx",
+      "hint": "What guarantees the last response to arrive is for the latest query?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The dependency array is wrong; remove `query` from it"
+        },
+        {
+          "key": "b",
+          "text": "Responses can arrive out of order; use the effect cleanup to discard stale ones",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`fetch` caches responses; add `cache: \"no-store\"` to every request"
+        },
+        {
+          "key": "d",
+          "text": "State updates are batched; call `setResults` inside `flushSync`"
+        }
+      ],
+      "explanation": "Each keystroke starts a request, and a slower earlier response can arrive after a later one and overwrite it. Return a cleanup function that sets an `ignore` flag (or aborts with an `AbortController`), and only call `setResults` if the effect is still current. Data-fetching libraries handle this for you.",
+      "acceptance_criteria": "Selects “Responses can arrive out of order; use the effect cleanup to discard stale ones”. Each keystroke starts a request, and a slower earlier response can arrive after a later one and overwrite it.",
+      "rubric": [
+        "Identifies out-of-order responses as the cause.",
+        "Uses an effect cleanup with an ignore flag or AbortController.",
+        "Mentions data-fetching libraries as an alternative."
+      ],
+      "expected_concepts": [
+        "race conditions",
+        "effect cleanup",
+        "AbortController",
+        "data fetching"
+      ],
+      "misconceptions": [
+        "Responses always arrive in the order requests were sent.",
+        "React cancels fetches when dependencies change."
+      ],
+      "resources": [
+        {
+          "title": "React docs: Synchronizing with effects (fetching data)",
+          "url": "https://react.dev/learn/synchronizing-with-effects#fetching-data"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

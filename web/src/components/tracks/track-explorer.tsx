@@ -13,6 +13,7 @@ const TRACKS = [
   { id: "databases", title: "Databases", skills: ["sql"] },
   { id: "architecture", title: "Architecture & System Design", skills: ["system-design", "distributed-systems"] },
   { id: "operations", title: "DevOps & Security", skills: ["devops", "security"] },
+  { id: "tooling", title: "Git & Linux", skills: ["git", "linux"] },
   { id: "senior", title: "Senior Engineering Skills", skills: ["testing", "senior-practices"] },
 ];
 

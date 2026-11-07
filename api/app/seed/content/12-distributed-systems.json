@@ -398,6 +398,167 @@
         }
       ],
       "estimated_minutes": 15
+    },
+    {
+      "slug": "ds-eventual-consistency",
+      "topic": "consistency",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "What eventual consistency promises",
+      "prompt": "A system's replicas are described as eventually consistent. What does that guarantee?",
+      "hint": "What is promised, and what is not promised about any single read?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Every read returns the most recent write"
+        },
+        {
+          "key": "b",
+          "text": "If writes stop, all replicas converge to the same value",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Writes are applied to every replica within one second"
+        },
+        {
+          "key": "d",
+          "text": "Reads and writes are serialised in a single global order"
+        }
+      ],
+      "explanation": "Eventual consistency promises convergence: if no new updates are made, replicas eventually agree. It makes no promise about how long that takes or what an individual read returns meanwhile, so reads may be stale. Stronger models, such as linearizability or read-your-writes, add guarantees at a cost in latency or availability.",
+      "acceptance_criteria": "Selects “If writes stop, all replicas converge to the same value”. Eventual consistency promises convergence: if no new updates are made, replicas eventually agree.",
+      "rubric": [
+        "States the convergence guarantee.",
+        "Notes reads may be stale meanwhile.",
+        "Contrasts with stronger consistency models."
+      ],
+      "expected_concepts": [
+        "eventual consistency",
+        "replication",
+        "stale reads",
+        "consistency models"
+      ],
+      "misconceptions": [
+        "Eventual consistency means 'consistent after a short delay'.",
+        "Eventual consistency guarantees read-your-writes."
+      ],
+      "resources": [
+        {
+          "title": "Werner Vogels: Eventually consistent",
+          "url": "https://www.allthingsdistributed.com/2008/12/eventually_consistent.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "ds-circuit-breaker",
+      "topic": "partial-failure",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A dependency that keeps timing out",
+      "prompt": "A recommendations service is timing out on every call (5-second timeout), and your checkout threads pile up waiting for it. Which pattern stops checkout from being dragged down?",
+      "hint": "What should checkout do while it knows the dependency is unhealthy?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Retry each failed call three times with no delay"
+        },
+        {
+          "key": "b",
+          "text": "A circuit breaker that fails fast while the dependency is unhealthy",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Raise the timeout to 30 seconds so calls eventually complete"
+        },
+        {
+          "key": "d",
+          "text": "Add more checkout instances so there are more threads to wait"
+        }
+      ],
+      "explanation": "A circuit breaker counts failures and, past a threshold, opens: calls fail immediately (or return a fallback such as no recommendations) instead of waiting for timeouts. After a cool-down it lets a few trial calls through (half-open) and closes when they succeed. This frees checkout's threads and gives the dependency room to recover; immediate retries and longer timeouts do the opposite.",
+      "acceptance_criteria": "Selects “A circuit breaker that fails fast while the dependency is unhealthy”. A circuit breaker counts failures and, past a threshold, opens: calls fail immediately (or return a fallback such as no recommendations) instead of waiting for timeouts.",
+      "rubric": [
+        "Proposes a circuit breaker.",
+        "Explains closed, open and half-open states.",
+        "Mentions a fallback for the optional dependency."
+      ],
+      "expected_concepts": [
+        "circuit breaker",
+        "fail fast",
+        "fallbacks",
+        "resource exhaustion"
+      ],
+      "misconceptions": [
+        "Retries always improve reliability.",
+        "Longer timeouts make systems more robust."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Circuit breaker",
+          "url": "https://martinfowler.com/bliki/CircuitBreaker.html"
+        },
+        {
+          "title": "Azure Architecture Center: Circuit breaker pattern",
+          "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "ds-kafka-partition-ordering",
+      "topic": "messaging",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Order events processed out of order",
+      "prompt": "Order events (`created`, `paid`, `shipped`) are published to a Kafka topic with 12 partitions, using no message key. Consumers sometimes process `shipped` before `paid` for the same order. What is the fix?",
+      "hint": "Over what scope does Kafka guarantee ordering?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Use a single consumer for the whole topic"
+        },
+        {
+          "key": "b",
+          "text": "Key messages by order id so each order's events go to one partition",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Increase the number of partitions so events spread more evenly"
+        },
+        {
+          "key": "d",
+          "text": "Add timestamps and have consumers sleep before processing"
+        }
+      ],
+      "explanation": "Kafka only guarantees order within a partition. Without a key, events for one order spread across partitions and are consumed in parallel. Using the order id as the key sends all of that order's events to the same partition, preserving their order while different orders still process in parallel. Producers also need idempotence (enabled by default in recent clients) so retries do not reorder or duplicate within a partition.",
+      "acceptance_criteria": "Selects “Key messages by order id so each order's events go to one partition”. Kafka only guarantees order within a partition.",
+      "rubric": [
+        "States ordering is per partition.",
+        "Proposes keying by order id.",
+        "Explains this keeps parallelism across orders.",
+        "Mentions producer idempotence or retries."
+      ],
+      "expected_concepts": [
+        "partitions",
+        "message keys",
+        "per-key ordering",
+        "idempotent producers"
+      ],
+      "misconceptions": [
+        "Kafka orders all messages in a topic.",
+        "More partitions improve ordering."
+      ],
+      "resources": [
+        {
+          "title": "Apache Kafka docs: Introduction (topics, partitions and ordering)",
+          "url": "https://kafka.apache.org/documentation/#intro_concepts_and_terms"
+        }
+      ],
+      "estimated_minutes": 6
     }
   ]
 }

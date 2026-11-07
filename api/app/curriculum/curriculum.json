@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.1",
+  "version": "2026.11.2",
   "skills": [
     {
       "slug": "programming-fundamentals",
@@ -285,6 +285,50 @@
         "beginner": { "objective": "Identify risky changes in review.", "competency": "Identifies risk correctly on two distinct questions in separate sessions." },
         "intermediate": { "objective": "Structure decisions with explicit trade-offs.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
         "advanced": { "objective": "Lead an incident from detection to follow-up.", "competency": "Produces evidence-backed incident plans in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "git",
+      "title": "Git",
+      "category": "Foundations",
+      "summary": "Version control with Git: commits, branches, merging and safe history changes.",
+      "prerequisites": ["programming-fundamentals"],
+      "learning_objectives": [
+        "Explain Git's model of commits, trees and references.",
+        "Branch, merge and rebase without losing work.",
+        "Recover from mistakes and keep shared history safe."
+      ],
+      "subskills": [
+        { "slug": "commits", "title": "Commits & the object model" },
+        { "slug": "branching", "title": "Branching & merging" },
+        { "slug": "history", "title": "History & recovery" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Explain the working tree, index and commits, and use branches.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Choose between merge and rebase and resolve conflicts safely.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Recover lost work and rewrite history without harming collaborators.", "competency": "Diagnoses history problems correctly in two independent attempts on different days." }
+      }
+    },
+    {
+      "slug": "linux",
+      "title": "Linux",
+      "category": "Foundations",
+      "summary": "Working on Linux servers: processes, signals, files, permissions and the shell.",
+      "prerequisites": ["programming-fundamentals"],
+      "learning_objectives": [
+        "Inspect and control processes and services.",
+        "Reason about files, permissions and ownership.",
+        "Compose shell commands and scripts that fail safely."
+      ],
+      "subskills": [
+        { "slug": "processes", "title": "Processes & signals" },
+        { "slug": "filesystem", "title": "Files & permissions" },
+        { "slug": "shell", "title": "Shell & scripting" }
+      ],
+      "levels": {
+        "beginner": { "objective": "Navigate the filesystem, read permissions and inspect processes.", "competency": "Answers two distinct beginner questions correctly in separate sessions." },
+        "intermediate": { "objective": "Manage services, signals and permissions on a server.", "competency": "Succeeds on two distinct intermediate questions in separate sessions." },
+        "advanced": { "objective": "Diagnose resource and permission failures on production hosts.", "competency": "Diagnoses host-level failures correctly in two independent attempts on different days." }
       }
     }
   ]

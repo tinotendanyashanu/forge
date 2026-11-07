@@ -53,6 +53,60 @@
       "follow_up_questions": [
         "How would you encode the cursor for clients?"
       ]
+    },
+    "sql-group-by-ungrouped-column": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Apply three-valued logic and outer join semantics.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Some databases (MySQL without ONLY_FULL_GROUP_BY) do this; PostgreSQL rejects it.",
+        "c": "Grouping still applies; the query is rejected.",
+        "d": "No database fills ungrouped columns with NULL."
+      },
+      "follow_up_questions": [
+        "Why does grouping by `customers.id` let you select `customers.name`?"
+      ]
+    },
+    "sql-expression-index": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Reason about composite indexes and lost updates.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Statistics do not let an index on email serve lower(email).",
+        "c": "LIKE on a function result still cannot use the plain index.",
+        "d": "Covering does not matter when the index cannot match the condition."
+      },
+      "follow_up_questions": [
+        "How would you enforce case-insensitive uniqueness of emails?"
+      ]
+    },
+    "sql-seq-scan-low-selectivity": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Diagnose planner decisions and fix them.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Nothing suggests corruption; the plan matches the data.",
+        "c": "B-tree indexes work on text.",
+        "d": "PostgreSQL has no index hints; the planner's choice is reasonable here."
+      },
+      "follow_up_questions": [
+        "Which index would help `WHERE status = 'refunded'` if refunds are 0.1% of rows?"
+      ]
     }
   }
 }

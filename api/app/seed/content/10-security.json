@@ -395,6 +395,170 @@
         }
       ],
       "estimated_minutes": 15
+    },
+    {
+      "slug": "sec-frontend-api-key",
+      "topic": "secrets",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "An API key in a single-page app",
+      "prompt": "A React single-page app needs to call a paid third-party API that requires a secret key. Where should the key live?",
+      "hint": "Can a user read anything the browser downloads?",
+      "options": [
+        {
+          "key": "a",
+          "text": "In an environment variable such as `VITE_API_KEY`, embedded at build time"
+        },
+        {
+          "key": "b",
+          "text": "In the JavaScript bundle, obfuscated so it cannot be read"
+        },
+        {
+          "key": "c",
+          "text": "On your backend, which calls the third-party API on the user's behalf",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "In `localStorage`, written there after the user logs in"
+        }
+      ],
+      "explanation": "Anything shipped to the browser, including build-time environment variables and obfuscated strings, can be read by any user with developer tools. Keep the secret on a server you control, have the front end call your backend, and let the backend add the key, enforce authorisation and rate limits. Vite exposes `VITE_`-prefixed variables to client code precisely because they are public.",
+      "acceptance_criteria": "Selects “On your backend, which calls the third-party API on the user's behalf”. Anything shipped to the browser, including build-time environment variables and obfuscated strings, can be read by any user with developer tools.",
+      "rubric": [
+        "States that client-side code cannot keep secrets.",
+        "Proposes calling through the backend.",
+        "Mentions rate limiting or authorisation on the proxy."
+      ],
+      "expected_concepts": [
+        "client-side secrets",
+        "backend proxy",
+        "build-time environment variables"
+      ],
+      "misconceptions": [
+        "Environment variables are always secret.",
+        "Obfuscation protects secrets in the browser."
+      ],
+      "resources": [
+        {
+          "title": "OWASP Cheat Sheet: Secrets management",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"
+        },
+        {
+          "title": "Vite docs: Env variables and modes",
+          "url": "https://vite.dev/guide/env-and-mode"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "sec-reset-enumeration",
+      "topic": "auth",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A helpful password-reset message",
+      "prompt": "The password-reset form replies \"No account exists for that email\" or \"Reset link sent\". What is the main risk and the standard fix?",
+      "hint": "What can an attacker learn by submitting many emails?",
+      "options": [
+        {
+          "key": "a",
+          "text": "None; telling users about typos is good usability"
+        },
+        {
+          "key": "b",
+          "text": "It reveals which emails have accounts; return the same message either way",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "It allows SQL injection; validate the email format first"
+        },
+        {
+          "key": "d",
+          "text": "It leaks the reset token; send the token in the response body instead"
+        }
+      ],
+      "explanation": "Different responses let an attacker test a list of emails to discover who has an account, which feeds targeted phishing and credential stuffing. Respond with the same message (\"If an account exists, we've sent a link\") and similar timing whether or not the email exists, and rate-limit the endpoint. Reset tokens themselves should be random, single-use, short-lived and stored hashed.",
+      "acceptance_criteria": "Selects “It reveals which emails have accounts; return the same message either way”. Different responses let an attacker test a list of emails to discover who has an account, which feeds targeted phishing and credential stuffing.",
+      "rubric": [
+        "Identifies account enumeration.",
+        "Proposes a uniform message and similar timing.",
+        "Mentions rate limiting or token hygiene."
+      ],
+      "expected_concepts": [
+        "user enumeration",
+        "password reset",
+        "timing differences",
+        "rate limiting"
+      ],
+      "misconceptions": [
+        "Revealing whether an account exists is harmless.",
+        "Only login forms can leak account existence."
+      ],
+      "resources": [
+        {
+          "title": "OWASP Cheat Sheet: Forgot password",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html"
+        },
+        {
+          "title": "OWASP Cheat Sheet: Authentication (error messages)",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "sec-ssrf-avatar-url",
+      "topic": "injection",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Importing an avatar from a URL",
+      "prompt": "An API lets users set an avatar by URL; the server downloads the image. Running on a cloud VM, which risk matters most and how should you defend against it?",
+      "hint": "What can the server reach that the attacker cannot?",
+      "options": [
+        {
+          "key": "a",
+          "text": "XSS; escape the stored URL before rendering it anywhere on the public profile page"
+        },
+        {
+          "key": "b",
+          "text": "SSRF; allow only http(s) and block internal and metadata IPs after resolving the host",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "SQL injection; store the submitted URL using a parameterised insert statement only"
+        },
+        {
+          "key": "d",
+          "text": "CSRF; require a valid anti-CSRF token on every request that updates the avatar"
+        }
+      ],
+      "explanation": "The server makes requests to an address the attacker chooses, so they can reach things only the server can: the cloud metadata endpoint (`169.254.169.254`, which can hand out credentials), internal admin services, or localhost. Validate the scheme, resolve the hostname and reject private, loopback, link-local and metadata ranges, connect to the vetted IP (to avoid DNS rebinding), do not follow redirects blindly, set size and time limits, and run fetches from an isolated network with no access to internal services. Enforcing IMDSv2-style metadata protections helps as a second layer.",
+      "acceptance_criteria": "Selects “SSRF; allow only http(s) and block internal and metadata IPs after resolving the host”. The server makes requests to an address the attacker chooses, so they can reach things only the server can: the cloud metadata endpoint (`169.254.169.254`, which can hand out credentials), internal admin services, or localhost.",
+      "rubric": [
+        "Identifies SSRF.",
+        "Names the metadata endpoint or internal services as targets.",
+        "Validates resolved addresses and handles redirects and DNS rebinding.",
+        "Adds network-level isolation as defence in depth."
+      ],
+      "expected_concepts": [
+        "SSRF",
+        "cloud metadata",
+        "DNS rebinding",
+        "egress controls"
+      ],
+      "misconceptions": [
+        "Fetching a URL server-side is safe if the response is an image.",
+        "Blocking the string 'localhost' is enough."
+      ],
+      "resources": [
+        {
+          "title": "OWASP Cheat Sheet: Server-side request forgery prevention",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html"
+        }
+      ],
+      "estimated_minutes": 6
     }
   ]
 }

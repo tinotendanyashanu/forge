@@ -422,6 +422,170 @@
         }
       ],
       "estimated_minutes": 5
+    },
+    {
+      "slug": "py-sort-returns-none",
+      "topic": "functions",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Sorting a list in place",
+      "prompt": "What does this program print?",
+      "code": "nums = [3, 1, 2]\nnums = nums.sort()\nprint(nums)",
+      "code_language": "python",
+      "hint": "What does a mutating list method return?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`[1, 2, 3]`"
+        },
+        {
+          "key": "b",
+          "text": "`[3, 1, 2]`"
+        },
+        {
+          "key": "c",
+          "text": "`None`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "It raises `TypeError`"
+        }
+      ],
+      "explanation": "`list.sort()` sorts the list in place and returns `None`, a Python convention for methods that mutate. Assigning its result rebinds `nums` to `None`. Use `nums.sort()` on its own line, or `sorted(nums)`, which returns a new sorted list.",
+      "acceptance_criteria": "Selects “None”. `list.sort()` sorts the list in place and returns `None`, a Python convention for methods that mutate.",
+      "rubric": [
+        "States that `list.sort()` returns None.",
+        "Explains that it mutates the list in place.",
+        "Contrasts it with `sorted()`."
+      ],
+      "expected_concepts": [
+        "in-place mutation",
+        "return values",
+        "sorted vs sort"
+      ],
+      "misconceptions": [
+        "`list.sort()` returns the sorted list.",
+        "Methods always return their object."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: list.sort",
+          "url": "https://docs.python.org/3/library/stdtypes.html#list.sort"
+        }
+      ],
+      "estimated_minutes": 2
+    },
+    {
+      "slug": "py-generator-exhausted",
+      "topic": "data-model",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Summing the same generator twice",
+      "prompt": "What does this program print?",
+      "code": "squares = (x * x for x in range(3))\nprint(sum(squares), sum(squares))",
+      "code_language": "python",
+      "hint": "Can a generator be rewound after it has produced its values?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`5 5`"
+        },
+        {
+          "key": "b",
+          "text": "`5 0`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`0 5`"
+        },
+        {
+          "key": "d",
+          "text": "It raises `StopIteration`"
+        }
+      ],
+      "explanation": "A generator expression produces its values once. The first `sum` consumes 0 + 1 + 4 = 5; the second finds the generator exhausted and sums nothing, giving 0. No exception escapes, because `sum` stops cleanly when iteration ends. Use a list if you need to iterate more than once.",
+      "acceptance_criteria": "Selects “5 0”. A generator expression produces its values once.",
+      "rubric": [
+        "Explains that a generator can be iterated only once.",
+        "Computes the first sum as 5.",
+        "Explains that the exhausted generator sums to 0 without an error."
+      ],
+      "expected_concepts": [
+        "generators",
+        "iterators",
+        "lazy evaluation",
+        "exhaustion"
+      ],
+      "misconceptions": [
+        "Generators restart each time you iterate them.",
+        "Iterating an exhausted generator raises an error."
+      ],
+      "resources": [
+        {
+          "title": "Python reference: Generator expressions",
+          "url": "https://docs.python.org/3/reference/expressions.html#generator-expressions"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "py-cpu-bound-threads",
+      "topic": "concurrency",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Threads that do not speed up a CPU-bound job",
+      "prompt": "On standard (GIL) CPython, a function hashes passwords in pure Python and takes 8 seconds for a batch on one core. Running the batch across 4 threads in a `ThreadPoolExecutor` still takes about 8 seconds on a 4-core machine. What is the best explanation and fix?",
+      "hint": "Is the work waiting on I/O or executing Python code?",
+      "options": [
+        {
+          "key": "a",
+          "text": "The pool defaults to one worker; pass `max_workers=4`"
+        },
+        {
+          "key": "b",
+          "text": "Only one thread runs Python bytecode at a time; use `ProcessPoolExecutor`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Threads must be started with `asyncio.run` to use more than one core"
+        },
+        {
+          "key": "d",
+          "text": "Context switching overhead cancels the gain; use 16 threads instead"
+        }
+      ],
+      "explanation": "The GIL lets only one thread execute Python bytecode at a time, so CPU-bound pure-Python work does not run in parallel across threads. Threads help when the work waits on I/O or calls C code that releases the GIL (such as `hashlib` on large inputs). For CPU-bound Python, use processes (`ProcessPoolExecutor`), which each have their own interpreter, at the cost of pickling arguments and results. Free-threaded builds (3.13+) change this but are not the default.",
+      "acceptance_criteria": "Selects “Only one thread runs Python bytecode at a time; use `ProcessPoolExecutor”. The GIL lets only one thread execute Python bytecode at a time, so CPU-bound pure-Python work does not run in parallel across threads.",
+      "rubric": [
+        "Explains the GIL limits bytecode to one thread at a time.",
+        "Distinguishes CPU-bound from I/O-bound work.",
+        "Proposes processes, noting their overhead.",
+        "Mentions free-threaded builds or GIL-releasing C code as nuance."
+      ],
+      "expected_concepts": [
+        "GIL",
+        "CPU-bound vs I/O-bound",
+        "ProcessPoolExecutor",
+        "parallelism"
+      ],
+      "misconceptions": [
+        "Threads always use multiple cores in Python.",
+        "More threads always finish CPU work faster."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: concurrent.futures",
+          "url": "https://docs.python.org/3/library/concurrent.futures.html"
+        },
+        {
+          "title": "Python glossary: global interpreter lock",
+          "url": "https://docs.python.org/3/glossary.html#term-global-interpreter-lock"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

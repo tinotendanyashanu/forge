@@ -117,6 +117,60 @@
       "follow_up_questions": [
         "How would you reprocess events after fixing a consumer bug?"
       ]
+    },
+    "ds-eventual-consistency": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Describe partial failure and at-least-once delivery.",
+      "prerequisites": [
+        "system-design"
+      ],
+      "distractor_rationale": {
+        "a": "That is linearizability or strong consistency.",
+        "c": "No time bound is guaranteed.",
+        "d": "That describes serializability or linearizability."
+      },
+      "follow_up_questions": [
+        "Which user-facing feature would you not build on an eventually consistent store?"
+      ]
+    },
+    "ds-circuit-breaker": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Choose consistency guarantees for a feature.",
+      "prerequisites": [
+        "system-design"
+      ],
+      "distractor_rationale": {
+        "a": "Multiplies load on a failing dependency.",
+        "c": "Holds threads even longer.",
+        "d": "More threads waiting on the same failure; the pile-up continues."
+      },
+      "follow_up_questions": [
+        "How would you choose the failure threshold and cool-down?"
+      ]
+    },
+    "ds-kafka-partition-ordering": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Design for partitions and ordering.",
+      "prerequisites": [
+        "system-design"
+      ],
+      "distractor_rationale": {
+        "a": "Still unordered across partitions, and gives up parallelism.",
+        "c": "Makes the problem more likely.",
+        "d": "Sleeping only hides the race."
+      },
+      "follow_up_questions": [
+        "What happens to per-key ordering if you later change the number of partitions?"
+      ]
     }
   }
 }

@@ -1,7 +1,7 @@
 +++
 slug = "linux-processes-files-permissions"
-skill = "devops"
-topic = "containers"
+skill = "linux"
+topic = "processes"
 difficulty = "beginner"
 title = "Linux: processes, files and permissions"
 summary = "The Linux concepts every backend engineer uses daily: the filesystem, permissions, processes, signals, environment variables and exit codes."
@@ -17,9 +17,9 @@ misconceptions = [
   "kill always stops a process immediately.",
   "Files a container writes are kept when the container is replaced.",
 ]
-checks = ["devops-container-ephemeral-fs", "devops-docker-layer-order"]
+checks = ["linux-octal-mode", "linux-kill-default-signal", "linux-redirect-truncate"]
 status = "reviewed"
-version = 1
+version = 2
 provenance = "ai-assisted draft (Claude), self-reviewed; commands checked on Ubuntu 24.04; pending independent human review"
 
 [[resources]]

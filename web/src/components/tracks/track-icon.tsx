@@ -10,6 +10,8 @@ import {
   ShieldCheck,
   Container,
   GitBranch,
+  GitCommitHorizontal,
+  Terminal,
   Blocks,
   Code,
   Zap,
@@ -32,6 +34,8 @@ const ICONS: Record<string, LucideIcon> = {
   devops: Container,
   "distributed-systems": Blocks,
   "senior-practices": GitBranch,
+  git: GitCommitHorizontal,
+  linux: Terminal,
 };
 
 export function TrackIcon({

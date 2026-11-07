@@ -56,6 +56,63 @@
       "follow_up_questions": [
         "Why do correlated failures (shared zone, shared deploy) undermine this calculation?"
       ]
+    },
+    "sd-read-replicas": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Explain stateless scaling and cache-aside.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "b": "App servers are not the bottleneck and add database connections.",
+        "c": "Multi-primary writes add conflict handling and do not target the read load.",
+        "d": "More connections increase contention on the saturated primary."
+      },
+      "follow_up_questions": [
+        "Which reads must still go to the primary, and why?"
+      ]
+    },
+    "sd-queue-load-leveling": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Estimate capacity and design retries.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "b": "Ties up connections and still fails beyond capacity.",
+        "c": "Works but wastes capacity most of the day.",
+        "d": "Loses work and pushes the problem onto users."
+      },
+      "follow_up_questions": [
+        "How would you show users that a thumbnail is still processing?"
+      ]
+    },
+    "sd-consistent-hashing": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Resolve consistency races in caches.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "That is the behaviour of consistent hashing, not modulo.",
+        "c": "The mapping changes immediately, so lookups go to the wrong node.",
+        "d": "Consistent hashing exists precisely to avoid this."
+      },
+      "follow_up_questions": [
+        "Why do implementations assign many virtual nodes to each physical server?"
+      ]
     }
   }
 }

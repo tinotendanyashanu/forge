@@ -104,6 +104,54 @@
         "How would you handle ties in score?",
         "How would the design change if ranks may be up to one minute stale?"
       ]
+    },
+    "pf-set-membership": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Predict the output of short programs with loops and functions.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Checks elements one by one.",
+        "c": "A linear scan is O(n); only binary search uses the order.",
+        "d": "Linear search, and substrings can match the wrong name."
+      },
+      "follow_up_questions": [
+        "What does a set cost compared with a list in memory?"
+      ]
+    },
+    "pf-recursion-call-count": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Explain aliasing, recursion and complexity trade-offs.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Counts only one branch down to the base case.",
+        "b": "Confuses the call count with fib(5).",
+        "c": "Misses one node of the call tree."
+      },
+      "follow_up_questions": [
+        "How many calls does a memoised version make for `fib(4)`?"
+      ]
+    },
+    "pf-amortised-append": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Select and justify structures for non-trivial problems.",
+      "prerequisites": [],
+      "distractor_rationale": {
+        "a": "Copies repeat every time capacity runs out.",
+        "c": "Copies are done synchronously by the append.",
+        "d": "Every existing element moves to the new block."
+      },
+      "follow_up_questions": [
+        "Why can amortised O(1) still be a problem for a latency-sensitive system?"
+      ]
     }
   }
 }

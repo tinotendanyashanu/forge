@@ -1,7 +1,7 @@
 +++
 slug = "git-version-control"
-skill = "devops"
-topic = "ci-cd"
+skill = "git"
+topic = "branching"
 difficulty = "beginner"
 title = "Git: commits, branches and safe history"
 summary = "How Git stores history as snapshots and pointers, how branches and merges really work, and which operations are safe on shared history."
@@ -17,9 +17,9 @@ misconceptions = [
   "Deleting a file in a new commit removes it from the repository's history.",
   "Force-pushing is fine whenever your local history looks right.",
 ]
-checks = ["sec-leaked-api-key", "devops-build-once-promote"]
+checks = ["git-staged-snapshot", "git-branch-is-pointer", "git-revert-shared"]
 status = "reviewed"
-version = 1
+version = 2
 provenance = "ai-assisted draft (Claude), self-reviewed; commands checked with git 2.x; pending independent human review"
 
 [[resources]]

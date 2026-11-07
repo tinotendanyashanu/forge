@@ -384,6 +384,172 @@
         }
       ],
       "estimated_minutes": 5
+    },
+    {
+      "slug": "fa-missing-query-422",
+      "topic": "request-validation",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A request without a required query parameter",
+      "prompt": "A client calls `GET /search` with no query string. What does FastAPI return?",
+      "code": "@app.get(\"/search\")\nasync def search(q: str):\n    return {\"q\": q}",
+      "code_language": "python",
+      "hint": "What makes a query parameter optional in FastAPI?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`200` with `q` set to `None`"
+        },
+        {
+          "key": "b",
+          "text": "`400 Bad Request` with an empty body"
+        },
+        {
+          "key": "c",
+          "text": "`422` with a JSON body describing the missing `q`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "`500`, because the handler fails with a `TypeError`"
+        }
+      ],
+      "explanation": "A parameter with a type annotation and no default is required. FastAPI validates the request before calling the handler, finds `q` missing, and responds with status 422 and a JSON `detail` list naming the location (`query`, `q`) and the error type. The handler never runs. Give `q` a default (for example `q: str | None = None`) to make it optional.",
+      "acceptance_criteria": "Selects “422` with a JSON body describing the missing `q”. A parameter with a type annotation and no default is required.",
+      "rubric": [
+        "Identifies `q` as required because it has no default.",
+        "States that FastAPI responds 422 before the handler runs.",
+        "Describes the error detail and how to make it optional."
+      ],
+      "expected_concepts": [
+        "query parameters",
+        "required vs optional",
+        "422 validation errors"
+      ],
+      "misconceptions": [
+        "Missing parameters become None automatically.",
+        "FastAPI returns 400 for validation errors by default."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI docs: Query parameters",
+          "url": "https://fastapi.tiangolo.com/tutorial/query-params/"
+        },
+        {
+          "title": "FastAPI docs: Handling errors (RequestValidationError)",
+          "url": "https://fastapi.tiangolo.com/tutorial/handling-errors/"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "fa-dependency-override",
+      "topic": "dependencies",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A test that still hits the real database",
+      "prompt": "A test uses `unittest.mock.patch(\"app.db.get_db\", fake_get_db)`, but requests made with `TestClient` still use the real database. Endpoints declare `db = Depends(get_db)`. What is the right fix?",
+      "hint": "When did FastAPI capture the dependency function?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Patch `fastapi.Depends` so it returns the fake"
+        },
+        {
+          "key": "b",
+          "text": "Set `app.dependency_overrides[get_db] = fake_get_db` in the test",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Call `fake_get_db()` at the top of every test before the request"
+        },
+        {
+          "key": "d",
+          "text": "Restart the app inside the test after applying the patch"
+        }
+      ],
+      "explanation": "`Depends(get_db)` captured a reference to the original function object when the route was defined, so patching the module attribute later does not change what FastAPI calls. `app.dependency_overrides` maps the original dependency to a replacement and is consulted on every request, including sub-dependencies. Clear the overrides after the test (for example in a fixture) so tests stay isolated.",
+      "acceptance_criteria": "Selects “Set `app.dependency_overrides[get_db] = fake_get_db` in the test”. `Depends(get_db)` captured a reference to the original function object when the route was defined, so patching the module attribute later does not change what FastAPI calls.",
+      "rubric": [
+        "Explains that Depends holds a reference to the original function.",
+        "Uses `app.dependency_overrides`.",
+        "Resets overrides after the test."
+      ],
+      "expected_concepts": [
+        "dependency injection",
+        "dependency_overrides",
+        "mock patching",
+        "test isolation"
+      ],
+      "misconceptions": [
+        "Patching a module function changes every existing reference to it.",
+        "Dependencies are looked up by name at request time."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI docs: Testing dependencies with overrides",
+          "url": "https://fastapi.tiangolo.com/advanced/testing-dependencies/"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "fa-sync-threadpool-limit",
+      "topic": "async-handlers",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Moving blocking work to a plain def endpoint",
+      "prompt": "An endpoint calls a slow blocking SDK (about 2 seconds per call). It was `async def` and stalled every other request, so you changed it to plain `def`. Under 200 concurrent requests, other endpoints are fine but this one now queues heavily. Why?",
+      "hint": "How many worker threads can run `def` endpoints at the same time by default?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Plain `def` endpoints run one at a time on the event loop thread"
+        },
+        {
+          "key": "b",
+          "text": "Plain `def` endpoints run in a thread pool with a default limit of 40 threads",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Uvicorn rejects concurrent connections to synchronous endpoints"
+        },
+        {
+          "key": "d",
+          "text": "Python's GIL blocks all threads while the SDK waits on the network"
+        }
+      ],
+      "explanation": "FastAPI runs `def` endpoints in a worker thread so the event loop stays free. Those threads come from AnyIO's default capacity limiter, 40 tokens shared across the process, so at most about 40 of these calls run at once and the rest wait. Options: use an async client for the SDK, raise the limiter deliberately, run more worker processes, or move the slow call to a background queue. Blocking I/O releases the GIL, so the GIL is not the bottleneck.",
+      "acceptance_criteria": "Selects “Plain `def` endpoints run in a thread pool with a default limit of 40 threads”. FastAPI runs `def` endpoints in a worker thread so the event loop stays free.",
+      "rubric": [
+        "Explains that `def` endpoints run in a thread pool.",
+        "Names the default limit of 40 threads.",
+        "Proposes an async client, a tuned limiter, more workers or a queue.",
+        "Explains why the GIL is not the cause."
+      ],
+      "expected_concepts": [
+        "thread pool",
+        "AnyIO capacity limiter",
+        "blocking I/O",
+        "async vs sync endpoints"
+      ],
+      "misconceptions": [
+        "Plain def endpoints block the event loop.",
+        "Threads waiting on the network hold the GIL."
+      ],
+      "resources": [
+        {
+          "title": "FastAPI docs: Concurrency and async / await",
+          "url": "https://fastapi.tiangolo.com/async/"
+        },
+        {
+          "title": "AnyIO docs: Working with threads (default thread limiter)",
+          "url": "https://anyio.readthedocs.io/en/stable/threads.html"
+        }
+      ],
+      "estimated_minutes": 6
     }
   ]
 }

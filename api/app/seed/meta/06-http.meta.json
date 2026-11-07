@@ -53,6 +53,60 @@
       "follow_up_questions": [
         "Why can varying on `Accept-Language` hurt cache hit rates?"
       ]
+    },
+    "http-no-store-vs-no-cache": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Choose correct methods and status codes.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Allows storage, with revalidation before reuse.",
+        "c": "Stale immediately, but still storable.",
+        "d": "Controls stale reuse, not storage."
+      },
+      "follow_up_questions": [
+        "Which directive keeps the response out of shared caches but allows the browser to cache it?"
+      ]
+    },
+    "http-etag-304": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Design caching and explain preflight behaviour.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Works but wastes bandwidth; the request explicitly allows 304.",
+        "c": "412 is for If-Match / If-Unmodified-Since failures.",
+        "d": "204 does not instruct the cache to reuse its stored body."
+      },
+      "follow_up_questions": [
+        "Which headers should a 304 response include?"
+      ]
+    },
+    "http-cors-credentials-wildcard": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Design idempotent, retry-safe APIs.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The wildcard is invalid for credentialed requests.",
+        "c": "Browsers do not retry without credentials.",
+        "d": "Subdomains are different origins; the request is still sent."
+      },
+      "follow_up_questions": [
+        "Why is reflecting the Origin header without a check dangerous?"
+      ]
     }
   }
 }

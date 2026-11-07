@@ -450,6 +450,172 @@
         }
       ],
       "estimated_minutes": 5
+    },
+    {
+      "slug": "test-discovery-name",
+      "topic": "test-design",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "A test that never ran",
+      "prompt": "This file is `tests/test_cart.py`. The suite passes, but the bug in `total` is real. Why did pytest not catch it?",
+      "code": "from cart import total\n\ndef check_total():\n    assert total([2, 3]) == 5",
+      "code_language": "python",
+      "hint": "Which function names does pytest collect?",
+      "options": [
+        {
+          "key": "a",
+          "text": "pytest only runs tests marked with `@pytest.mark.test` or listed in `pytest.ini`"
+        },
+        {
+          "key": "b",
+          "text": "pytest collects functions whose names start with `test`; this one is never collected",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Plain `assert` statements are stripped unless pytest runs with the `-O` flag"
+        },
+        {
+          "key": "d",
+          "text": "pytest skips any test function that does not request at least one fixture"
+        }
+      ],
+      "explanation": "By default pytest collects functions whose names start with `test` in files named `test_*.py` or `*_test.py`. `check_total` does not match, so it was never run, and an empty run looks green. Rename it `test_total`, and watch for a test count that does not change when you add tests.",
+      "acceptance_criteria": "Selects “pytest collects functions whose names start with `test`; this one is never collected”. By default pytest collects functions whose names start with `test` in files named `test_*.py` or `*_test.py`.",
+      "rubric": [
+        "Identifies the naming convention for test functions.",
+        "Explains that an uncollected test silently passes.",
+        "Proposes renaming and checking the collected count."
+      ],
+      "expected_concepts": [
+        "test discovery",
+        "naming conventions",
+        "false confidence"
+      ],
+      "misconceptions": [
+        "Any function in a test file is a test.",
+        "A green suite means every test ran."
+      ],
+      "resources": [
+        {
+          "title": "pytest docs: Conventions for Python test discovery",
+          "url": "https://docs.pytest.org/en/stable/explanation/goodpractices.html#conventions-for-python-test-discovery"
+        }
+      ],
+      "estimated_minutes": 2
+    },
+    {
+      "slug": "test-shared-state-order",
+      "topic": "reliability",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Passes alone, fails in the suite",
+      "prompt": "`test_b` passes when run on its own but fails when the whole file runs. What is the cause?",
+      "code": "REGISTRY = []\n\ndef register(name):\n    REGISTRY.append(name)\n\ndef test_a():\n    register(\"x\")\n    assert \"x\" in REGISTRY\n\ndef test_b():\n    assert REGISTRY == []",
+      "code_language": "python",
+      "hint": "What does `test_b` see if `test_a` ran first?",
+      "options": [
+        {
+          "key": "a",
+          "text": "pytest runs tests in parallel by default"
+        },
+        {
+          "key": "b",
+          "text": "`test_a` mutates module-level state that `test_b` depends on",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`test_b` needs a `@pytest.mark.order` marker"
+        },
+        {
+          "key": "d",
+          "text": "Assertions in the first test disable the second"
+        }
+      ],
+      "explanation": "`REGISTRY` is a module-level list shared by every test in the process. `test_a` appends to it, so when `test_b` runs afterwards the list is not empty. Tests must not depend on order: create fresh state in a fixture (or reset it with `monkeypatch`), so each test starts from a known baseline. Running tests in random order (for example with `pytest-randomly`) exposes these dependencies.",
+      "acceptance_criteria": "Selects “test_a` mutates module-level state that `test_b` depends on”. `REGISTRY` is a module-level list shared by every test in the process.",
+      "rubric": [
+        "Identifies shared module-level state.",
+        "Explains the order dependency.",
+        "Proposes fixtures or monkeypatch for fresh state.",
+        "Suggests random ordering to detect it."
+      ],
+      "expected_concepts": [
+        "test isolation",
+        "shared state",
+        "fixtures",
+        "order dependency"
+      ],
+      "misconceptions": [
+        "Tests run in isolated processes by default.",
+        "Fixing the order is a valid solution."
+      ],
+      "resources": [
+        {
+          "title": "pytest docs: How to use fixtures",
+          "url": "https://docs.pytest.org/en/stable/how-to/fixtures.html"
+        },
+        {
+          "title": "Martin Fowler: Eradicating non-determinism in tests",
+          "url": "https://martinfowler.com/articles/nonDeterminism.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "test-mock-without-autospec",
+      "topic": "test-doubles",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "A mock that accepts anything",
+      "prompt": "`send_email(to, subject, body)` was renamed `send_email(recipient, subject, body)`, and production calls with `to=` started failing. The unit test still passes. Why, and what would have caught it?",
+      "code": "from unittest.mock import patch\n\ndef test_notifies_owner():\n    with patch(\"app.notify.send_email\") as send:\n        notify_owner(order)\n        send.assert_called_once_with(to=\"a@b.c\", subject=\"Paid\", body=ANY)",
+      "code_language": "python",
+      "hint": "What does a default MagicMock do with unexpected keyword arguments?",
+      "options": [
+        {
+          "key": "a",
+          "text": "pytest cached the old function object; clearing `.pytest_cache` would have caught it"
+        },
+        {
+          "key": "b",
+          "text": "A plain mock accepts any arguments; `autospec=True` enforces the real signature",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`assert_called_once_with` only checks how many calls were made, not their arguments"
+        },
+        {
+          "key": "d",
+          "text": "`patch` stops replacing a function once its parameters are renamed in the source"
+        }
+      ],
+      "explanation": "`patch` replaces the function with a `MagicMock` that accepts any call, so `send_email(to=...)` succeeds in the test even though the real function no longer takes `to`. `patch(..., autospec=True)` (or `create_autospec`) builds a mock with the real signature, so the wrong keyword raises `TypeError` in the test. Integration or contract tests catch the rest.",
+      "acceptance_criteria": "Selects “A plain mock accepts any arguments; `autospec=True` enforces the real signature”. `patch` replaces the function with a `MagicMock` that accepts any call, so `send_email(to=...)` succeeds in the test even though the real function no longer takes `to`.",
+      "rubric": [
+        "Explains that plain mocks accept any arguments.",
+        "Proposes autospec to enforce signatures.",
+        "Mentions integration tests as a complement."
+      ],
+      "expected_concepts": [
+        "autospec",
+        "mock drift",
+        "test doubles",
+        "signature checking"
+      ],
+      "misconceptions": [
+        "A passing mock-based test proves the call is valid.",
+        "Mocks check signatures by default."
+      ],
+      "resources": [
+        {
+          "title": "Python docs: unittest.mock autospeccing",
+          "url": "https://docs.python.org/3/library/unittest.mock.html#autospeccing"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

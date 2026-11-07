@@ -53,6 +53,60 @@
       "follow_up_questions": [
         "How would `readonly` in the parameter type prevent this?"
       ]
+    },
+    "ts-generic-inference": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Narrow unions and distinguish unknown from any.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Generics keep the specific type.",
+        "b": "Drops the declared `| undefined`.",
+        "d": "Confuses the element type T with the array type T[]."
+      },
+      "follow_up_questions": [
+        "What does `noUncheckedIndexedAccess` change about `xs[0]`?"
+      ]
+    },
+    "ts-as-const-union": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Model states with unions and reason about generic inference.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Would be the result without `as const`.",
+        "c": "That is close to the type of ROLES itself, not of an element.",
+        "d": "That is the tuple type, not the indexed element type."
+      },
+      "follow_up_questions": [
+        "How would you validate an untrusted string as a `Role` at runtime?"
+      ]
+    },
+    "ts-never-exhaustive": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Design validation at trust boundaries.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The never check exists to turn this into a compile error.",
+        "c": "Adding a member to a union is valid.",
+        "d": "TypeScript never adds runtime code."
+      },
+      "follow_up_questions": [
+        "How does `noImplicitReturns` interact with this pattern?"
+      ]
     }
   }
 }

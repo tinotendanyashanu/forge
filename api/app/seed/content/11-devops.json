@@ -398,6 +398,169 @@
         }
       ],
       "estimated_minutes": 15
+    },
+    {
+      "slug": "devops-traces-for-latency",
+      "topic": "observability",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Which service made the request slow?",
+      "prompt": "A checkout request passes through five services and occasionally takes 4 seconds. Which signal best shows where the time was spent in one slow request?",
+      "hint": "Which signal follows one request across services?",
+      "options": [
+        {
+          "key": "a",
+          "text": "A metric of average CPU usage per service"
+        },
+        {
+          "key": "b",
+          "text": "A distributed trace with a span for each service call",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "The load balancer's total request count"
+        },
+        {
+          "key": "d",
+          "text": "The application's error log for the last hour"
+        }
+      ],
+      "explanation": "A distributed trace follows one request across services, recording a span with start time and duration for each hop, so the slow span stands out. Metrics are excellent for spotting that latency rose across many requests but aggregate away the individual path. Logs help once you know where to look, especially if they carry the trace id.",
+      "acceptance_criteria": "Selects “A distributed trace with a span for each service call”. A distributed trace follows one request across services, recording a span with start time and duration for each hop, so the slow span stands out.",
+      "rubric": [
+        "Chooses distributed tracing.",
+        "Explains spans and per-hop timing.",
+        "Contrasts traces with metrics and logs."
+      ],
+      "expected_concepts": [
+        "distributed tracing",
+        "spans",
+        "metrics vs logs vs traces"
+      ],
+      "misconceptions": [
+        "Metrics alone can show the path of a single request.",
+        "Logs and traces are the same thing."
+      ],
+      "resources": [
+        {
+          "title": "OpenTelemetry: Observability primer",
+          "url": "https://opentelemetry.io/docs/concepts/observability-primer/"
+        },
+        {
+          "title": "OpenTelemetry: Traces",
+          "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "devops-shell-form-sigterm",
+      "topic": "containers",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A container that always takes ten seconds to stop",
+      "prompt": "A Python service handles `SIGTERM` gracefully, yet `docker stop` always waits 10 seconds and then kills it. The Dockerfile ends with `CMD python server.py`. What is the most likely cause?",
+      "hint": "Which process is PID 1 in this container?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Docker sends `SIGINT` instead of `SIGTERM`, and the service only handles `SIGTERM`"
+        },
+        {
+          "key": "b",
+          "text": "Shell form runs the app under `/bin/sh -c`, which does not forward `SIGTERM` to it",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Containers cannot receive any signals unless they run with the `--privileged` flag"
+        },
+        {
+          "key": "d",
+          "text": "Python can only handle signals in worker threads, never in the main interpreter thread"
+        }
+      ],
+      "explanation": "The shell form wraps the command in `/bin/sh -c`, so the shell is PID 1 and Python is its child. `docker stop` sends `SIGTERM` to PID 1; a typical `sh` does not forward it, so the app never shuts down and Docker sends `SIGKILL` after the 10-second grace period. Use the exec form `CMD [\"python\", \"server.py\"]` so Python is PID 1, or add a small init such as `tini` (`docker run --init`) to forward signals and reap children.",
+      "acceptance_criteria": "Selects “Shell form runs the app under `/bin/sh -c`, which does not forward `SIGTERM` to it”. The shell form wraps the command in `/bin/sh -c`, so the shell is PID 1 and Python is its child.",
+      "rubric": [
+        "Explains shell form makes /bin/sh PID 1.",
+        "Explains SIGTERM is not forwarded, then SIGKILL after the timeout.",
+        "Proposes exec form or an init process."
+      ],
+      "expected_concepts": [
+        "PID 1",
+        "signals",
+        "exec form vs shell form",
+        "graceful shutdown"
+      ],
+      "misconceptions": [
+        "Docker kills containers instantly.",
+        "Every process in a container receives the stop signal."
+      ],
+      "resources": [
+        {
+          "title": "Dockerfile reference: Shell and exec form",
+          "url": "https://docs.docker.com/reference/dockerfile/#shell-and-exec-form"
+        },
+        {
+          "title": "Docker CLI reference: docker stop",
+          "url": "https://docs.docker.com/reference/cli/docker/container/stop/"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "devops-expand-contract",
+      "topic": "ci-cd",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Renaming a column during a rolling deploy",
+      "prompt": "You need to rename `users.fullname` to `users.display_name` with zero downtime. Deployments are rolling, so old and new app versions run together for several minutes. Which plan is safe?",
+      "hint": "Which code versions will see the schema at the same time?",
+      "options": [
+        {
+          "key": "a",
+          "text": "One release that renames the column in a migration and updates all the code at the same time"
+        },
+        {
+          "key": "b",
+          "text": "Add the new column, write both and backfill, switch reads, then drop the old column in a later release",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Rename the column first during a quiet hour with low traffic, then deploy the new code"
+        },
+        {
+          "key": "d",
+          "text": "Replace the table with a view named `users` that exposes both column names at once"
+        }
+      ],
+      "explanation": "During a rolling deploy, old code still reads `fullname` while new code expects `display_name`, so any single-step rename breaks one version. The expand-and-contract (parallel change) sequence keeps both working: add the new column, have code write both and backfill existing rows, switch reads to the new column, stop writing the old one, and drop it only after no running version uses it. Each step is independently deployable and reversible.",
+      "acceptance_criteria": "Selects “Add the new column, write both and backfill, switch reads, then drop the old column in a later release”. During a rolling deploy, old code still reads `fullname` while new code expects `display_name`, so any single-step rename breaks one version.",
+      "rubric": [
+        "Explains old and new versions run concurrently.",
+        "Describes expand, migrate/backfill, switch, contract.",
+        "Notes each step can be rolled back."
+      ],
+      "expected_concepts": [
+        "expand and contract",
+        "zero-downtime migrations",
+        "rolling deploys",
+        "backward compatibility"
+      ],
+      "misconceptions": [
+        "Schema changes can ship atomically with code.",
+        "Quiet hours make breaking migrations safe."
+      ],
+      "resources": [
+        {
+          "title": "Martin Fowler: Parallel change (expand and contract)",
+          "url": "https://martinfowler.com/bliki/ParallelChange.html"
+        }
+      ],
+      "estimated_minutes": 6
     }
   ]
 }

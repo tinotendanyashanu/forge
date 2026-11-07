@@ -1,0 +1,183 @@
+{
+  "skill": "linux",
+  "batch": "P4a",
+  "content_version": 1,
+  "questions": {
+    "linux-octal-mode": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Navigate the filesystem, read permissions and inspect processes.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Gives others read and execute.",
+        "c": "Removes execute and gives the group read only.",
+        "d": "Reverses owner and group."
+      },
+      "follow_up_questions": [
+        "What would `chmod g+w deploy.sh` change in the string?"
+      ]
+    },
+    "linux-kill-default-signal": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Navigate the filesystem, read permissions and inspect processes.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Describes SIGKILL (`kill -9`).",
+        "c": "Describes SIGSTOP.",
+        "d": "The kernel never restarts processes; a supervisor such as systemd might."
+      },
+      "follow_up_questions": [
+        "Why do service managers send SIGTERM first and SIGKILL only after a timeout?"
+      ]
+    },
+    "linux-redirect-truncate": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Navigate the filesystem, read permissions and inspect processes.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "That is the effect of `>>`.",
+        "c": "Only with `set -o noclobber`, which is off by default.",
+        "d": "The shell performs the redirection, not echo."
+      },
+      "follow_up_questions": [
+        "How can a running service keep writing to a log you truncated?"
+      ]
+    },
+    "linux-directory-execute": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Manage services, signals and permissions on a server.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The directory check fails first.",
+        "c": "Reading does not need the file's execute bit.",
+        "d": "Knowing the path does not help without search permission on the directory."
+      },
+      "follow_up_questions": [
+        "What would mode `711` on the directory allow and forbid?"
+      ]
+    },
+    "linux-zombie-process": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Manage services, signals and permissions on a server.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Describes state D (uninterruptible sleep).",
+        "c": "Kernel threads appear in square brackets, not as defunct children.",
+        "d": "Describes state T."
+      },
+      "follow_up_questions": [
+        "Why do containers often need a small init process as PID 1?"
+      ]
+    },
+    "linux-pipefail": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Manage services, signals and permissions on a server.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "Redirection does not disable set -e.",
+        "c": "pg_dump exits non-zero on connection or authentication failure.",
+        "d": "`set -e` applies throughout the script, with some documented exceptions."
+      },
+      "follow_up_questions": [
+        "Which contexts disable `set -e` even inside a script that sets it?"
+      ]
+    },
+    "linux-deleted-open-file": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Diagnose resource and permission failures on production hosts.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "The journal does not keep deleted file data, and fsck is not run on a mounted root.",
+        "c": "du handles large files.",
+        "d": "rm does not use a trash directory."
+      },
+      "follow_up_questions": [
+        "How does `copytruncate` log rotation avoid this problem, and what does it risk?"
+      ]
+    },
+    "linux-exit-137-oom": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Diagnose resource and permission failures on production hosts.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "a": "SIGTERM would usually give 143 (128 + 15), and the kernel log names the OOM killer.",
+        "c": "A segmentation fault is signal 11, so 139.",
+        "d": "SIGSTOP pauses; it does not end the process."
+      },
+      "follow_up_questions": [
+        "In a container, why might the OOM kill happen while the host still has free memory?"
+      ]
+    },
+    "linux-unset-variable-rm": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Diagnose resource and permission failures on production hosts.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {
+        "b": "Unset variables silently expand to empty strings unless set -u is on.",
+        "c": "The slash remains, so the glob is `/*`, not `*`.",
+        "d": "--preserve-root only blocks the literal `/` argument."
+      },
+      "follow_up_questions": [
+        "What else would you add before the `rm` to make the script fail safe?"
+      ]
+    },
+    "linux-high-load-low-cpu": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4a",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Diagnose resource and permission failures on production hosts.",
+      "prerequisites": [
+        "programming-fundamentals"
+      ],
+      "distractor_rationale": {},
+      "follow_up_questions": [
+        "How would the diagnosis differ if CPUs were 100% busy with the same load?"
+      ]
+    }
+  }
+}

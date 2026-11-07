@@ -124,6 +124,63 @@
       "follow_up_questions": [
         "How would you adapt the flow for accounts protected by multi-factor authentication?"
       ]
+    },
+    "sec-frontend-api-key": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Identify common vulnerability classes.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "Build-time variables are embedded in the public bundle.",
+        "b": "Obfuscated strings are trivially recovered.",
+        "d": "localStorage is readable by the user and by any injected script."
+      },
+      "follow_up_questions": [
+        "What would you add to the backend proxy to stop it becoming a free API for others?"
+      ]
+    },
+    "sec-reset-enumeration": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Apply mitigations in application code.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "Usability gain does not outweigh disclosing registered users.",
+        "c": "Message wording is unrelated to injection.",
+        "d": "Tokens must only go to the account's email."
+      },
+      "follow_up_questions": [
+        "How can response timing still leak account existence?"
+      ]
+    },
+    "sec-ssrf-avatar-url": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4c",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Threat-model a service.",
+      "prerequisites": [
+        "http",
+        "sql"
+      ],
+      "distractor_rationale": {
+        "a": "A secondary concern; the server-side fetch is the main risk.",
+        "c": "Storage should be parameterised anyway, but it is not the main threat.",
+        "d": "CSRF does not address the server fetching attacker-chosen addresses."
+      },
+      "follow_up_questions": [
+        "Why must you validate the IP you connect to, not just the hostname you resolved earlier?"
+      ]
     }
   }
 }

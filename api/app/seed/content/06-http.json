@@ -426,6 +426,170 @@
         }
       ],
       "estimated_minutes": 5
+    },
+    {
+      "slug": "http-no-store-vs-no-cache",
+      "topic": "caching",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Keeping a response out of caches",
+      "prompt": "An API returns a user's bank statement. Which `Cache-Control` directive stops browsers and shared caches from storing the response at all?",
+      "hint": "Which directive is about storage, and which are about reuse?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`no-cache`"
+        },
+        {
+          "key": "b",
+          "text": "`no-store`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`max-age=0`"
+        },
+        {
+          "key": "d",
+          "text": "`must-revalidate`"
+        }
+      ],
+      "explanation": "`no-store` tells every cache not to store the response. Despite its name, `no-cache` allows storing but requires revalidation with the origin before each reuse. `max-age=0` makes the response stale immediately, and `must-revalidate` forbids serving it stale; neither forbids storing it.",
+      "acceptance_criteria": "Selects “no-store”. `no-store` tells every cache not to store the response.",
+      "rubric": [
+        "Chooses `no-store`.",
+        "Explains that `no-cache` means revalidate, not do not store.",
+        "Distinguishes freshness directives from storage."
+      ],
+      "expected_concepts": [
+        "Cache-Control",
+        "no-store",
+        "no-cache",
+        "revalidation"
+      ],
+      "misconceptions": [
+        "`no-cache` means do not cache.",
+        "`max-age=0` prevents storage."
+      ],
+      "resources": [
+        {
+          "title": "MDN: Cache-Control",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "http-etag-304",
+      "topic": "caching",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "A conditional GET",
+      "prompt": "A browser has a cached copy of `/api/catalog` with `ETag: \"v42\"`. It sends `If-None-Match: \"v42\"`, and the catalog has not changed. What should the server respond?",
+      "hint": "What does the browser already have?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`200 OK` with the full catalog again"
+        },
+        {
+          "key": "b",
+          "text": "`304 Not Modified` with no body",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`412 Precondition Failed`"
+        },
+        {
+          "key": "d",
+          "text": "`204 No Content` with the ETag only"
+        }
+      ],
+      "explanation": "`If-None-Match` asks for the resource only if its current ETag differs. When it matches, the server replies `304 Not Modified` without a body, and the browser reuses its cached copy, saving bandwidth and serialisation. `412` is for failed `If-Match` preconditions on writes; `204` means a successful response with no content, which would not tell the cache to reuse its copy.",
+      "acceptance_criteria": "Selects “304 Not Modified` with no body”. `If-None-Match` asks for the resource only if its current ETag differs.",
+      "rubric": [
+        "Chooses 304.",
+        "Explains that the cached body is reused.",
+        "Distinguishes If-None-Match from If-Match and 412."
+      ],
+      "expected_concepts": [
+        "conditional requests",
+        "ETag",
+        "If-None-Match",
+        "304"
+      ],
+      "misconceptions": [
+        "A matching ETag should return the body again.",
+        "412 is used for cache hits."
+      ],
+      "resources": [
+        {
+          "title": "MDN: 304 Not Modified",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/304"
+        },
+        {
+          "title": "MDN: ETag",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "http-cors-credentials-wildcard",
+      "topic": "browser-security",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Cookies and a wildcard origin",
+      "prompt": "A front end at `https://app.example.com` calls `https://api.example.com` with `fetch(url, { credentials: \"include\" })`. The API responds with `Access-Control-Allow-Origin: *` and `Access-Control-Allow-Credentials: true`. What does the browser do?",
+      "hint": "Which value of Access-Control-Allow-Origin is allowed with credentials?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Sends the cookies and gives the response to the page, since both CORS headers are set"
+        },
+        {
+          "key": "b",
+          "text": "Blocks the page from reading the response, because `*` is not allowed with credentials",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "Ignores the credentials option and silently retries the request without any cookies"
+        },
+        {
+          "key": "d",
+          "text": "Sends no request at all, because both origins share the parent domain `example.com`"
+        }
+      ],
+      "explanation": "For credentialed requests, the browser rejects a wildcard `Access-Control-Allow-Origin`. The server must echo the exact allowed origin (and send `Vary: Origin` if it varies), along with `Access-Control-Allow-Credentials: true`. Echoing any origin blindly would let any site read users' authenticated data, so check it against an allowlist.",
+      "acceptance_criteria": "Selects “Blocks the page from reading the response, because `*` is not allowed with credentials”. For credentialed requests, the browser rejects a wildcard `Access-Control-Allow-Origin`.",
+      "rubric": [
+        "States the browser blocks the response.",
+        "Explains wildcard is forbidden with credentials.",
+        "Proposes echoing an allowlisted origin with Vary: Origin."
+      ],
+      "expected_concepts": [
+        "CORS",
+        "credentialed requests",
+        "Access-Control-Allow-Origin",
+        "Vary"
+      ],
+      "misconceptions": [
+        "`*` allows everything, including cookies.",
+        "CORS stops the request from reaching the server."
+      ],
+      "resources": [
+        {
+          "title": "MDN: Cross-Origin Resource Sharing (credentialed requests)",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#credentialed_requests_and_wildcards"
+        },
+        {
+          "title": "MDN: Access-Control-Allow-Origin",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

@@ -56,6 +56,63 @@
       "follow_up_questions": [
         "When would you pass a custom comparison function to `memo`, and what are the risks?"
       ]
+    },
+    "re-controlled-no-onchange": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Explain state snapshots and keys.",
+      "prerequisites": [
+        "typescript",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "key is for identity in lists.",
+        "c": "useState can hold any value.",
+        "d": "Inputs are editable outside forms."
+      },
+      "follow_up_questions": [
+        "When would you prefer an uncontrolled input?"
+      ]
+    },
+    "re-derived-state-effect": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Diagnose effect dependencies and derived state.",
+      "prerequisites": [
+        "typescript",
+        "http"
+      ],
+      "distractor_rationale": {
+        "b": "Would cause an infinite loop of updates.",
+        "c": "Still keeps redundant state and an extra render.",
+        "d": "Hides changes from React and breaks updates."
+      },
+      "follow_up_questions": [
+        "When is an effect the right tool in this component?"
+      ]
+    },
+    "re-fetch-race": {
+      "version": 1,
+      "status": "reviewed",
+      "batch": "P4b",
+      "provenance": "ai-assisted draft (Claude), self-reviewed, blind second-model review; pending independent human review",
+      "learning_objective": "Prevent stale and out-of-order data.",
+      "prerequisites": [
+        "typescript",
+        "http"
+      ],
+      "distractor_rationale": {
+        "a": "Then the effect would not re-run for new queries.",
+        "c": "Caching does not reorder responses.",
+        "d": "Batching is not the cause; the stale response is."
+      },
+      "follow_up_questions": [
+        "How does aborting differ from ignoring a stale response?"
+      ]
     }
   }
 }

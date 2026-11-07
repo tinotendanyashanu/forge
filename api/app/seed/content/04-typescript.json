@@ -420,6 +420,171 @@
         }
       ],
       "estimated_minutes": 5
+    },
+    {
+      "slug": "ts-generic-inference",
+      "topic": "generics",
+      "difficulty": "beginner",
+      "format": "single_choice",
+      "title": "Inferring a generic return type",
+      "prompt": "What type does TypeScript infer for `x` (with `strict` on)?",
+      "code": "function first<T>(xs: T[]): T | undefined {\n  return xs[0];\n}\n\nconst x = first([1, 2, 3]);",
+      "code_language": "ts",
+      "hint": "What is `T` when the argument is `number[]`?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`any`"
+        },
+        {
+          "key": "b",
+          "text": "`number`"
+        },
+        {
+          "key": "c",
+          "text": "`number | undefined`",
+          "correct": true
+        },
+        {
+          "key": "d",
+          "text": "`number[] | undefined`"
+        }
+      ],
+      "explanation": "`T` is inferred from the argument as `number`, so the return type `T | undefined` becomes `number | undefined`. The `undefined` is there because the array might be empty, which forces callers to handle that case.",
+      "acceptance_criteria": "Selects “number | undefined”. `T` is inferred from the argument as `number`, so the return type `T | undefined` becomes `number | undefined`.",
+      "rubric": [
+        "Infers `T` as number from the argument.",
+        "Substitutes it into the return type.",
+        "Explains why `undefined` is included."
+      ],
+      "expected_concepts": [
+        "generics",
+        "type inference",
+        "union with undefined"
+      ],
+      "misconceptions": [
+        "Generic functions return `any`.",
+        "Type parameters must always be written explicitly."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Generics",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html"
+        }
+      ],
+      "estimated_minutes": 3
+    },
+    {
+      "slug": "ts-as-const-union",
+      "topic": "type-system",
+      "difficulty": "intermediate",
+      "format": "single_choice",
+      "title": "Deriving a union from an array",
+      "prompt": "What is the type `Role`?",
+      "code": "const ROLES = [\"admin\", \"editor\", \"viewer\"] as const;\ntype Role = (typeof ROLES)[number];",
+      "code_language": "ts",
+      "hint": "What would the array's type be without `as const`?",
+      "options": [
+        {
+          "key": "a",
+          "text": "`string`"
+        },
+        {
+          "key": "b",
+          "text": "`\"admin\" | \"editor\" | \"viewer\"`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "`readonly string[]`"
+        },
+        {
+          "key": "d",
+          "text": "`[\"admin\", \"editor\", \"viewer\"]`"
+        }
+      ],
+      "explanation": "`as const` makes the array a readonly tuple of literal types instead of `string[]`. Indexing its type with `number` gives the union of the element types, so `Role` is `\"admin\" | \"editor\" | \"viewer\"`. Without `as const`, `Role` would widen to `string`. This keeps a runtime list and a type in sync from one source.",
+      "acceptance_criteria": "Selects “\"admin\" | \"editor\" | \"viewer\"”. `as const` makes the array a readonly tuple of literal types instead of `string[]`.",
+      "rubric": [
+        "Explains that `as const` preserves literal types.",
+        "Explains indexed access with `number`.",
+        "Notes that without it the type widens to string."
+      ],
+      "expected_concepts": [
+        "const assertions",
+        "literal types",
+        "indexed access types",
+        "single source of truth"
+      ],
+      "misconceptions": [
+        "Types can be derived from values only with enums.",
+        "`as const` only affects mutability."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript 3.4 release notes: const assertions",
+          "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions"
+        },
+        {
+          "title": "TypeScript handbook: Indexed access types",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html"
+        }
+      ],
+      "estimated_minutes": 4
+    },
+    {
+      "slug": "ts-never-exhaustive",
+      "topic": "narrowing",
+      "difficulty": "advanced",
+      "format": "single_choice",
+      "title": "Adding a new case to a union",
+      "prompt": "A teammate adds `| { kind: \"triangle\"; base: number; height: number }` to `Shape` but forgets to update `area`. What happens?",
+      "code": "type Shape =\n  | { kind: \"circle\"; r: number }\n  | { kind: \"square\"; side: number };\n\nfunction area(s: Shape): number {\n  switch (s.kind) {\n    case \"circle\": return Math.PI * s.r ** 2;\n    case \"square\": return s.side ** 2;\n    default: {\n      const _exhaustive: never = s;\n      return _exhaustive;\n    }\n  }\n}",
+      "code_language": "ts",
+      "hint": "What type does `s` have in the default branch after the change?",
+      "options": [
+        {
+          "key": "a",
+          "text": "Nothing until runtime, when `area` returns `undefined` for triangles"
+        },
+        {
+          "key": "b",
+          "text": "A compile error at `const _exhaustive: never = s`, because `s` is not `never`",
+          "correct": true
+        },
+        {
+          "key": "c",
+          "text": "A compile error on the new union member's declaration itself"
+        },
+        {
+          "key": "d",
+          "text": "TypeScript silently adds a default case that returns `0`"
+        }
+      ],
+      "explanation": "After the two cases, TypeScript narrows `s` to whatever members remain. With only circle and square, that is `never`, so assigning to a `never` variable compiles. Once triangle exists, `s` is the triangle type in the default branch and cannot be assigned to `never`, so the compiler points to the exact function that needs updating.",
+      "acceptance_criteria": "Selects “A compile error at `const _exhaustive: never = s`, because `s` is not `never”. After the two cases, TypeScript narrows `s` to whatever members remain.",
+      "rubric": [
+        "Explains narrowing in each case.",
+        "Explains that the remaining type is `never` only when all cases are handled.",
+        "Explains how the new member causes a compile error."
+      ],
+      "expected_concepts": [
+        "exhaustiveness checking",
+        "never",
+        "discriminated unions",
+        "narrowing"
+      ],
+      "misconceptions": [
+        "Switch statements over unions are checked automatically without this pattern.",
+        "never is only used for functions that throw."
+      ],
+      "resources": [
+        {
+          "title": "TypeScript handbook: Exhaustiveness checking",
+          "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking"
+        }
+      ],
+      "estimated_minutes": 5
     }
   ]
 }

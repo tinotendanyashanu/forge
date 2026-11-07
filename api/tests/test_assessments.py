@@ -27,8 +27,8 @@ def test_start_session_caps_length_to_available_questions(client: TestClient) ->
     assert session["status"] == "active"
     assert session["skill"] == {"slug": "python", "title": "Python"}
     assert session["answered_count"] == 0
-    # Python has two beginner questions; the default length (5) is capped.
-    assert session["target_question_count"] == 2
+    # Python has three beginner questions; the default length (5) is capped.
+    assert session["target_question_count"] == 3
 
 
 def test_start_session_respects_requested_length(client: TestClient) -> None:
@@ -305,7 +305,7 @@ def test_new_sessions_prefer_unseen_questions(client: TestClient) -> None:
 def test_progress_for_new_learner_is_all_zero(client: TestClient) -> None:
     h = new_learner(client)
     body = client.get("/api/v1/progress", headers=h).json()
-    assert len(body["skills"]) == 13  # every curriculum skill, assessable or not
+    assert len(body["skills"]) == 15  # every curriculum skill, assessable or not
     for p in body["skills"]:
         assert p["answers_submitted"] == 0
         assert p["last_activity_at"] is None

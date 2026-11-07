@@ -21,7 +21,7 @@ Question slugs are stable identifiers. The seed loader upserts by slug and **dea
 ## Stages for every batch
 
 1. **Plan the batch** from the gap list in `AUDIT.md`. Keep batches small (one or two skills, 10–40 questions).
-2. **Author** content and metadata. Record provenance honestly, e.g. "ai-assisted draft".
+2. **Author** content and metadata. Record provenance honestly, e.g. "ai-assisted draft". Check every new slug against the whole existing bank first: the loader upserts by slug, so a reused slug silently replaces an existing question.
 3. **Execute code.** For every question whose answer depends on running code, run the snippet and compare it with the keyed answer.
 4. **Run the gate:** `venv/bin/python -m app.seed.qa --check-urls`. Errors block the batch. Review every warning that refers to the new questions; warnings on unchanged content are tracked in the audit.
 5. **Blind second pass (advisory).** Give a different model each single-choice question *without* the key and ask it to answer, flag ambiguity and list errors; for free-text, ask it to critique the reference answer. Investigate every disagreement and fix genuine issues. This is not human verification.
