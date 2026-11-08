@@ -1,6 +1,6 @@
 # P5: Subskill lesson completion — first batch
 
-**Date:** 2026-11-08. **Status: validated locally; NOT DEPLOYED. Deployment requires user approval.**
+**Date:** 2026-11-08. **Status: deployed and verified at `f26daf2` after explicit user approval.** See [P5 deployment result](P5_DEPLOYMENT.md). The validation and proposed deployment sections below record the preparation baseline.
 
 Ten original lessons, about 12,666 words in total, are ready for review. They fill ten previously uncovered subskills without changing the application architecture, UI, question bank, mastery engine, curriculum version or existing prerequisite relationships. Each lesson is `reviewed` (AI-assisted writing plus independent AI critique). **None is human-verified.**
 
