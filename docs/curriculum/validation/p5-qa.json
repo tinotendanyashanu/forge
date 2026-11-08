@@ -1,0 +1,180 @@
+{
+  "errors": [],
+  "warnings": [
+    "fastapi/fa-response-model-filtering: no hint",
+    "fastapi/fa-blocking-call-in-async-handler: no hint",
+    "react/re-index-as-key: no hint",
+    "react/re-index-as-key: correct option is much longer than every distractor",
+    "react/re-object-dependency: no hint",
+    "typescript/ts-unknown-vs-any: no hint",
+    "typescript/ts-unknown-vs-any: correct option is much longer than every distractor",
+    "typescript/ts-typeof-narrowing: no hint",
+    "typescript/ts-keyof-generic: no hint",
+    "sql/sql-null-comparison: no hint",
+    "sql/sql-left-join-where: no hint",
+    "sql/sql-composite-index-order: no hint",
+    "http/http-non-idempotent-method: no hint",
+    "http/http-401-vs-403: no hint",
+    "http/http-cors-preflight: no hint",
+    "testing/test-pytest-fixture-scope: no hint",
+    "testing/test-mock-where-to-patch: no hint",
+    "system-design/sd-stateless-scaling: no hint",
+    "system-design/sd-stateless-scaling: correct option is much longer than every distractor",
+    "system-design/sd-cache-aside: no hint",
+    "system-design/sd-backoff-jitter: no hint",
+    "system-design/sd-backoff-jitter: correct option is much longer than every distractor",
+    "correct answers cluster on one option key: {'a': 16, 'b': 82, 'c': 27, 'd': 10}",
+    "near-duplicate (0.63): py-equality-vs-identity / py-late-binding-closures",
+    "near-duplicate (0.69): py-equality-vs-identity / py-sort-returns-none",
+    "near-duplicate (0.64): py-equality-vs-identity / pf-alias-vs-copy",
+    "near-duplicate (0.61): py-late-binding-closures / py-sort-returns-none",
+    "near-duplicate (0.68): py-late-binding-closures / py-generator-exhausted",
+    "near-duplicate (0.6): py-sort-returns-none / py-generator-exhausted",
+    "near-duplicate (0.61): sql-left-join-where / sql-left-join-count-star"
+  ],
+  "stats": {
+    "questions": 158,
+    "by_skill_level_scored": {
+      "python": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "fastapi": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "react": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "typescript": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "sql": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "http": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "testing": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "system-design": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "programming-fundamentals": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "security": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "devops": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "distributed-systems": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "senior-practices": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "git": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      },
+      "linux": {
+        "beginner": 3,
+        "intermediate": 3,
+        "advanced": 3
+      }
+    },
+    "correct_key_distribution": {
+      "a": 16,
+      "b": 82,
+      "c": 27,
+      "d": 10
+    },
+    "near_duplicates": [
+      [
+        "py-equality-vs-identity",
+        "py-late-binding-closures",
+        0.63
+      ],
+      [
+        "py-equality-vs-identity",
+        "py-sort-returns-none",
+        0.69
+      ],
+      [
+        "py-equality-vs-identity",
+        "pf-alias-vs-copy",
+        0.64
+      ],
+      [
+        "py-late-binding-closures",
+        "py-sort-returns-none",
+        0.61
+      ],
+      [
+        "py-late-binding-closures",
+        "py-generator-exhausted",
+        0.68
+      ],
+      [
+        "py-sort-returns-none",
+        "py-generator-exhausted",
+        0.6
+      ],
+      [
+        "sql-left-join-where",
+        "sql-left-join-count-star",
+        0.61
+      ]
+    ],
+    "questions_with_metadata": 118,
+    "questions_without_metadata": 40,
+    "lessons": 25,
+    "lessons_by_skill": {
+      "programming-fundamentals": 3,
+      "http": 3,
+      "fastapi": 1,
+      "sql": 3,
+      "react": 1,
+      "typescript": 3,
+      "testing": 1,
+      "security": 1,
+      "git": 1,
+      "linux": 1,
+      "python": 3,
+      "system-design": 1,
+      "distributed-systems": 1,
+      "devops": 1,
+      "senior-practices": 1
+    },
+    "urls_checked": 239,
+    "urls_ok": 239
+  }
+}

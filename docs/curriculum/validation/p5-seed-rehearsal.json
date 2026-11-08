@@ -1,0 +1,351 @@
+{
+  "baseline": {
+    "learners": {
+      "count": 1,
+      "sha256": "33df3d27c7ed13a1eec32fdabc05e2e2186c616b5c01c1ce971684b84d74b083"
+    },
+    "assessment_sessions": {
+      "count": 3,
+      "sha256": "670127c9132f67fa4dda5bc19214b0dab2ef28c589e140a2491c89bae3fae21c"
+    },
+    "session_items": {
+      "count": 3,
+      "sha256": "5fdf9a55b7bd0bec0ddb897112059a9615b2fc7d6f7c28b2a4ff7a6e8ab3a899"
+    },
+    "answers": {
+      "count": 3,
+      "sha256": "39fefa095ae2c6ad925a1803ca715a2baa59fd59251682c94df650be2068af00"
+    },
+    "evaluation_results": {
+      "count": 3,
+      "sha256": "9fd93bc4406cb5a01c15ee19786a4cf8543ebc2228129f645045ce8349bb3ae1"
+    },
+    "interview_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_challenges": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "mastery_evidence": {
+      "count": 3,
+      "sha256": "d2d3656e0e3dca6baf9f68b7199f41638268db4ad5d19177cf7941a15ed3fd69"
+    },
+    "skill_mastery": {
+      "count": 1,
+      "sha256": "431f01004b0367a9ab9a88b0155002cf0331072c09a1d6f53735b77440866891"
+    },
+    "mastery_events": {
+      "count": 2,
+      "sha256": "aab7bb707ef09cb78c585f4aae041bd084dad318d14ee57e667a368be7ae55c5"
+    },
+    "review_cards": {
+      "count": 1,
+      "sha256": "140c5da633a3f53dd5391a73f60ef7b3f738ab1aa1aacdd680961ccb731c98cd"
+    },
+    "review_events": {
+      "count": 3,
+      "sha256": "7dc62fb1ccf1446812354dfd1d831aad57f95dfcaa6037f4200b5412d12f0987"
+    },
+    "lesson_reads": {
+      "count": 1,
+      "sha256": "0482fa647dd7891a55ed7704140018ec3e4b6f0d6de90634c92d6cb9d15ee0f4"
+    },
+    "skills": {
+      "count": 15,
+      "sha256": "50056e40fc3ee2ab20f3afb70b0b5a7dd5a20bed1f4347871fe7ad266d276980"
+    },
+    "topics": {
+      "count": 45,
+      "sha256": "783e3dd6b79a48dc0e75db33ba065a27ec27e25d17899beced57ca1f79c1c834"
+    },
+    "questions": {
+      "count": 158,
+      "sha256": "41aebed22c354a0e4fb07955aa533054f7a3ccc4d416f3eff89aa17d55507782"
+    },
+    "question_options": {
+      "count": 540,
+      "sha256": "e94f8bc400f5689040fd6afdc1b77f7e5832184588d1c1c96f35d16926e60350"
+    },
+    "skill_prerequisites": {
+      "count": 21,
+      "sha256": "2ff0fbb91b8779786af65bc14c09ab471635498c914ff224cdfed3e818b15973"
+    },
+    "lessons": {
+      "count": 15,
+      "sha256": "38649645ca06ba6a00dfec8f52f655d2fa80e1b6a10eefa1214a66ce16938073"
+    },
+    "lesson_questions": {
+      "count": 44,
+      "sha256": "b527cef21ac642c788ce0ff156a2035b6baed62f8bf175b058497792d67f02a7"
+    },
+    "lesson_resources": {
+      "count": 49,
+      "sha256": "f4b89bc8acf87433f5162090d94be43df1e4a15aa363d1f7af2a35ac50980d6d"
+    },
+    "counts": {
+      "active_questions": 158,
+      "inactive_questions": 0,
+      "active_lessons": 15,
+      "covered_subskills": 15
+    },
+    "lesson_ids": {
+      "tracing-program-state": 1,
+      "http-requests-and-semantics": 2,
+      "fastapi-validation-and-dependencies": 3,
+      "postgres-transactions-and-concurrency": 4,
+      "react-state-and-rendering": 5,
+      "typescript-narrowing-and-unions": 6,
+      "unit-tests-that-matter": 7,
+      "security-auth-and-injection": 8,
+      "git-version-control": 9,
+      "linux-processes-files-permissions": 10,
+      "python-concurrency-models": 11,
+      "caching-and-scaling-reads": 12,
+      "timeouts-retries-idempotency": 13,
+      "safe-delivery-and-observability": 14,
+      "code-review-that-finds-risk": 15
+    }
+  },
+  "first_seed": {
+    "learners": {
+      "count": 1,
+      "sha256": "33df3d27c7ed13a1eec32fdabc05e2e2186c616b5c01c1ce971684b84d74b083"
+    },
+    "assessment_sessions": {
+      "count": 3,
+      "sha256": "670127c9132f67fa4dda5bc19214b0dab2ef28c589e140a2491c89bae3fae21c"
+    },
+    "session_items": {
+      "count": 3,
+      "sha256": "5fdf9a55b7bd0bec0ddb897112059a9615b2fc7d6f7c28b2a4ff7a6e8ab3a899"
+    },
+    "answers": {
+      "count": 3,
+      "sha256": "39fefa095ae2c6ad925a1803ca715a2baa59fd59251682c94df650be2068af00"
+    },
+    "evaluation_results": {
+      "count": 3,
+      "sha256": "9fd93bc4406cb5a01c15ee19786a4cf8543ebc2228129f645045ce8349bb3ae1"
+    },
+    "interview_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_challenges": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "mastery_evidence": {
+      "count": 3,
+      "sha256": "d2d3656e0e3dca6baf9f68b7199f41638268db4ad5d19177cf7941a15ed3fd69"
+    },
+    "skill_mastery": {
+      "count": 1,
+      "sha256": "431f01004b0367a9ab9a88b0155002cf0331072c09a1d6f53735b77440866891"
+    },
+    "mastery_events": {
+      "count": 2,
+      "sha256": "aab7bb707ef09cb78c585f4aae041bd084dad318d14ee57e667a368be7ae55c5"
+    },
+    "review_cards": {
+      "count": 1,
+      "sha256": "140c5da633a3f53dd5391a73f60ef7b3f738ab1aa1aacdd680961ccb731c98cd"
+    },
+    "review_events": {
+      "count": 3,
+      "sha256": "7dc62fb1ccf1446812354dfd1d831aad57f95dfcaa6037f4200b5412d12f0987"
+    },
+    "lesson_reads": {
+      "count": 1,
+      "sha256": "0482fa647dd7891a55ed7704140018ec3e4b6f0d6de90634c92d6cb9d15ee0f4"
+    },
+    "skills": {
+      "count": 15,
+      "sha256": "50056e40fc3ee2ab20f3afb70b0b5a7dd5a20bed1f4347871fe7ad266d276980"
+    },
+    "topics": {
+      "count": 45,
+      "sha256": "783e3dd6b79a48dc0e75db33ba065a27ec27e25d17899beced57ca1f79c1c834"
+    },
+    "questions": {
+      "count": 158,
+      "sha256": "41aebed22c354a0e4fb07955aa533054f7a3ccc4d416f3eff89aa17d55507782"
+    },
+    "question_options": {
+      "count": 540,
+      "sha256": "e94f8bc400f5689040fd6afdc1b77f7e5832184588d1c1c96f35d16926e60350"
+    },
+    "skill_prerequisites": {
+      "count": 21,
+      "sha256": "2ff0fbb91b8779786af65bc14c09ab471635498c914ff224cdfed3e818b15973"
+    },
+    "lessons": {
+      "count": 25,
+      "sha256": "6650cdeaf43233ed9e7ddbbae8ce47bbcedfb4a46b7b4522aff7856498961051"
+    },
+    "lesson_questions": {
+      "count": 81,
+      "sha256": "a731bf6bdc0ed1e1a42f18a40b8cfb07b0eff9fbb177855b2d94b38a490c2a23"
+    },
+    "lesson_resources": {
+      "count": 86,
+      "sha256": "81f7e50f042831ea82332ea70ff955f5984b7a89de6c3bfd6628c053a24a3a8b"
+    },
+    "counts": {
+      "active_questions": 158,
+      "inactive_questions": 0,
+      "active_lessons": 25,
+      "covered_subskills": 25
+    },
+    "lesson_ids": {
+      "tracing-program-state": 1,
+      "http-requests-and-semantics": 2,
+      "fastapi-validation-and-dependencies": 3,
+      "postgres-transactions-and-concurrency": 4,
+      "react-state-and-rendering": 5,
+      "typescript-narrowing-and-unions": 6,
+      "unit-tests-that-matter": 7,
+      "security-auth-and-injection": 8,
+      "git-version-control": 9,
+      "linux-processes-files-permissions": 10,
+      "python-concurrency-models": 11,
+      "caching-and-scaling-reads": 12,
+      "timeouts-retries-idempotency": 13,
+      "safe-delivery-and-observability": 14,
+      "code-review-that-finds-risk": 15,
+      "choosing-data-structures": 16,
+      "reasoning-about-complexity": 17,
+      "python-objects-equality-and-copying": 18,
+      "python-functions-scope-and-closures": 19,
+      "sql-querying-joins-and-nulls": 20,
+      "postgres-indexes-and-query-plans": 21,
+      "typescript-runtime-boundaries": 22,
+      "typescript-generics-that-preserve-relationships": 23,
+      "http-caching-and-validation": 24,
+      "browser-origins-cors-and-csrf": 25
+    }
+  },
+  "second_seed": {
+    "learners": {
+      "count": 1,
+      "sha256": "33df3d27c7ed13a1eec32fdabc05e2e2186c616b5c01c1ce971684b84d74b083"
+    },
+    "assessment_sessions": {
+      "count": 3,
+      "sha256": "670127c9132f67fa4dda5bc19214b0dab2ef28c589e140a2491c89bae3fae21c"
+    },
+    "session_items": {
+      "count": 3,
+      "sha256": "5fdf9a55b7bd0bec0ddb897112059a9615b2fc7d6f7c28b2a4ff7a6e8ab3a899"
+    },
+    "answers": {
+      "count": 3,
+      "sha256": "39fefa095ae2c6ad925a1803ca715a2baa59fd59251682c94df650be2068af00"
+    },
+    "evaluation_results": {
+      "count": 3,
+      "sha256": "9fd93bc4406cb5a01c15ee19786a4cf8543ebc2228129f645045ce8349bb3ae1"
+    },
+    "interview_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_challenges": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "mastery_evidence": {
+      "count": 3,
+      "sha256": "d2d3656e0e3dca6baf9f68b7199f41638268db4ad5d19177cf7941a15ed3fd69"
+    },
+    "skill_mastery": {
+      "count": 1,
+      "sha256": "431f01004b0367a9ab9a88b0155002cf0331072c09a1d6f53735b77440866891"
+    },
+    "mastery_events": {
+      "count": 2,
+      "sha256": "aab7bb707ef09cb78c585f4aae041bd084dad318d14ee57e667a368be7ae55c5"
+    },
+    "review_cards": {
+      "count": 1,
+      "sha256": "140c5da633a3f53dd5391a73f60ef7b3f738ab1aa1aacdd680961ccb731c98cd"
+    },
+    "review_events": {
+      "count": 3,
+      "sha256": "7dc62fb1ccf1446812354dfd1d831aad57f95dfcaa6037f4200b5412d12f0987"
+    },
+    "lesson_reads": {
+      "count": 1,
+      "sha256": "0482fa647dd7891a55ed7704140018ec3e4b6f0d6de90634c92d6cb9d15ee0f4"
+    },
+    "skills": {
+      "count": 15,
+      "sha256": "50056e40fc3ee2ab20f3afb70b0b5a7dd5a20bed1f4347871fe7ad266d276980"
+    },
+    "topics": {
+      "count": 45,
+      "sha256": "783e3dd6b79a48dc0e75db33ba065a27ec27e25d17899beced57ca1f79c1c834"
+    },
+    "questions": {
+      "count": 158,
+      "sha256": "41aebed22c354a0e4fb07955aa533054f7a3ccc4d416f3eff89aa17d55507782"
+    },
+    "question_options": {
+      "count": 540,
+      "sha256": "e94f8bc400f5689040fd6afdc1b77f7e5832184588d1c1c96f35d16926e60350"
+    },
+    "skill_prerequisites": {
+      "count": 21,
+      "sha256": "2ff0fbb91b8779786af65bc14c09ab471635498c914ff224cdfed3e818b15973"
+    },
+    "lessons": {
+      "count": 25,
+      "sha256": "6650cdeaf43233ed9e7ddbbae8ce47bbcedfb4a46b7b4522aff7856498961051"
+    },
+    "lesson_questions": {
+      "count": 81,
+      "sha256": "a731bf6bdc0ed1e1a42f18a40b8cfb07b0eff9fbb177855b2d94b38a490c2a23"
+    },
+    "lesson_resources": {
+      "count": 86,
+      "sha256": "81f7e50f042831ea82332ea70ff955f5984b7a89de6c3bfd6628c053a24a3a8b"
+    },
+    "counts": {
+      "active_questions": 158,
+      "inactive_questions": 0,
+      "active_lessons": 25,
+      "covered_subskills": 25
+    },
+    "lesson_ids": {
+      "tracing-program-state": 1,
+      "http-requests-and-semantics": 2,
+      "fastapi-validation-and-dependencies": 3,
+      "postgres-transactions-and-concurrency": 4,
+      "react-state-and-rendering": 5,
+      "typescript-narrowing-and-unions": 6,
+      "unit-tests-that-matter": 7,
+      "security-auth-and-injection": 8,
+      "git-version-control": 9,
+      "linux-processes-files-permissions": 10,
+      "python-concurrency-models": 11,
+      "caching-and-scaling-reads": 12,
+      "timeouts-retries-idempotency": 13,
+      "safe-delivery-and-observability": 14,
+      "code-review-that-finds-risk": 15,
+      "choosing-data-structures": 16,
+      "reasoning-about-complexity": 17,
+      "python-objects-equality-and-copying": 18,
+      "python-functions-scope-and-closures": 19,
+      "sql-querying-joins-and-nulls": 20,
+      "postgres-indexes-and-query-plans": 21,
+      "typescript-runtime-boundaries": 22,
+      "typescript-generics-that-preserve-relationships": 23,
+      "http-caching-and-validation": 24,
+      "browser-origins-cors-and-csrf": 25
+    }
+  },
+  "history_unchanged": true,
+  "logical_idempotency": true
+}

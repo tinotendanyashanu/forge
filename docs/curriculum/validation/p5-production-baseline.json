@@ -1,0 +1,125 @@
+{
+  "lessons": [
+    [
+      "tracing-program-state",
+      "programming-fundamentals",
+      "control-flow"
+    ],
+    [
+      "python-concurrency-models",
+      "python",
+      "concurrency"
+    ],
+    [
+      "typescript-narrowing-and-unions",
+      "typescript",
+      "narrowing"
+    ],
+    [
+      "http-requests-and-semantics",
+      "http",
+      "semantics"
+    ],
+    [
+      "postgres-transactions-and-concurrency",
+      "sql",
+      "transactions"
+    ],
+    [
+      "react-state-and-rendering",
+      "react",
+      "state"
+    ],
+    [
+      "fastapi-validation-and-dependencies",
+      "fastapi",
+      "request-validation"
+    ],
+    [
+      "unit-tests-that-matter",
+      "testing",
+      "test-design"
+    ],
+    [
+      "security-auth-and-injection",
+      "security",
+      "auth"
+    ],
+    [
+      "safe-delivery-and-observability",
+      "devops",
+      "ci-cd"
+    ],
+    [
+      "caching-and-scaling-reads",
+      "system-design",
+      "caching"
+    ],
+    [
+      "timeouts-retries-idempotency",
+      "distributed-systems",
+      "partial-failure"
+    ],
+    [
+      "code-review-that-finds-risk",
+      "senior-practices",
+      "code-review"
+    ],
+    [
+      "git-version-control",
+      "git",
+      "branching"
+    ],
+    [
+      "linux-processes-files-permissions",
+      "linux",
+      "processes"
+    ]
+  ],
+  "sha256": {
+    "api/app/seed/content/01-python.json": "f0a9ce9f35b50f59414d9ca0922104bec4aa0f52a5795e0294c1c1f19408b157",
+    "api/app/seed/content/02-fastapi.json": "8143cead09cc52c50ff6b76e5a12d27903c54c1b1dff4149161935c66f3f218b",
+    "api/app/seed/content/03-react.json": "99cf72d73ab39e3ddbd8bf805e081cc65cda9a42cb1071535afe14ba5b636faa",
+    "api/app/seed/content/04-typescript.json": "3b82cf4b7b75019f3665e5223897e3844f314a3bb59fbacf4d5ef40ed7e20665",
+    "api/app/seed/content/05-sql.json": "2d5bab39f5c41c8e8ae3d556769190591c76abc0d2a67bfa9efc86bcf82b5916",
+    "api/app/seed/content/06-http.json": "a83b6426b1778f426afc394af4669207b70b8ae27a38061ba8a408db39250b81",
+    "api/app/seed/content/07-testing.json": "0bab7db3d381490b65525d28252b0abcf8d0e2b0c34f08cf2283002f5bb29463",
+    "api/app/seed/content/08-system-design.json": "871c9cb501bca2dbba89952d1f0cb3f6cb519caa93d2657775b763a3a9b918b5",
+    "api/app/seed/content/09-programming-fundamentals.json": "accf368df7d9ccab08a16a267f12ebe960d6c8f3ef3c0cc4c1f318a89e9d919e",
+    "api/app/seed/content/10-security.json": "74b548c0f5370dd8f79e5af56adf5af394c92739c2cdcc021fa5a1b31c1a7d1d",
+    "api/app/seed/content/11-devops.json": "6a09660386fd763ba4a4c1a0730006bdcb1fdb9db12fee45a1cc0383a69f2ec3",
+    "api/app/seed/content/12-distributed-systems.json": "bc1c97988b01000ee697b997d176bd0f982a5be07615dd1eeff4947879096283",
+    "api/app/seed/content/13-senior-practices.json": "0115f3214058ce5fda59f1c5c61cee7ee27eb7368dc835771132f58cdf1b074f",
+    "api/app/seed/content/14-git.json": "b83433d8b26ba26b49c0463bfc97a3785cffb999713f5c2aa71a209c75c156d1",
+    "api/app/seed/content/15-linux.json": "bcde6a1c8a6dcc70b1f52ff0909fe29cc1799dd4a88ace02e6faf74872194d05",
+    "api/app/seed/lessons/01-tracing-program-state.md": "eb2b87486ab57da65254c7a4ce99b10c63e5d141d33e9ea0188324210d0324ad",
+    "api/app/seed/lessons/02-http-requests-and-semantics.md": "404d3098ee43291e4a789a841df6639849ac9c7093106cb16625282cbd05534e",
+    "api/app/seed/lessons/03-fastapi-validation-and-dependencies.md": "9de577124b1e457044f3f8c601248eff30e27127ea75295901617dbeda90f7b6",
+    "api/app/seed/lessons/04-postgres-transactions-and-concurrency.md": "166f18b96cf9b36f7cb56e20acf5c960107af929771069e89488e6dbca6df9c5",
+    "api/app/seed/lessons/05-react-state-and-rendering.md": "b334b48a0246db21a5da9dfdd467904d4b5779e1c62777e0b7212911f7a36cb2",
+    "api/app/seed/lessons/06-typescript-narrowing-and-unions.md": "b17060f00d4cd64d18c64c1ba009f5d5347f4b337a37440912bcbf9214f40a0d",
+    "api/app/seed/lessons/07-unit-tests-that-matter.md": "6d6004e0ce00979803cf635f628961a76a548b1f478d7f363d608e62f8e78f51",
+    "api/app/seed/lessons/08-security-auth-and-injection.md": "4b012ee1b099e5ffc8ca8f2976ce2dd2dba45cf21d26a253d8b7fe78f31268af",
+    "api/app/seed/lessons/09-git-version-control.md": "5d4dbf3aaa158971dd83e565ec4ed17fafbda9c18fd287c8b751ef323d025d87",
+    "api/app/seed/lessons/10-linux-processes-files-permissions.md": "e09ec3cad980e661ae986945481512345db5811987c5419ccf687747d89cbfcc",
+    "api/app/seed/lessons/11-python-concurrency-models.md": "f7ee45f86e5b90c114dd385ca50190398cf22af14b72b7dfaa17c14985596758",
+    "api/app/seed/lessons/12-caching-and-scaling-reads.md": "03d48043477ff59acc2c9bb060a73990d39ce0fa5d422fd6499dc078a16cffea",
+    "api/app/seed/lessons/13-timeouts-retries-idempotency.md": "3cf9a0800a912b616f5ade3aa1450f0ea11b8ef49c25f363338f500c0b2ae8b9",
+    "api/app/seed/lessons/14-safe-delivery-and-observability.md": "409a3056e8d089966f4cf485bd544296e467dc30ede84b3e79da828e653ada0c",
+    "api/app/seed/lessons/15-code-review-that-finds-risk.md": "75d5e8a268045c0a33b18ca5db1a428262686a42c220a4fa2624d00c1e78af77",
+    "api/app/curriculum/curriculum.json": "4f4eb928bee1243b526cb3bfdbc725f0b894acb5b63fe8b8f6a9b0063fdc0941"
+  },
+  "counts": {
+    "skills": 15,
+    "subskills": 45,
+    "questions": 158,
+    "inactive_questions": 0,
+    "lessons": 15,
+    "checks": 44,
+    "resources": 49,
+    "answers": 3,
+    "sessions": 3,
+    "mastery_evidence": 3,
+    "lesson_reads": 0
+  }
+}

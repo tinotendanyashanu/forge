@@ -1,0 +1,522 @@
+{
+  "model": "gpt-oss:120b",
+  "reviewed_at": "2026-11-08T08:09:44.200545+00:00",
+  "generics_retry_at": "2026-11-08T08:11:34.571761+00:00",
+  "human_verified": false,
+  "results": [
+    {
+      "slug": "choosing-data-structures",
+      "sha256": "936ff27044c298c952ac085f6181d974f8c815aa9db8588b7221395a60652809",
+      "usage": {
+        "prompt_tokens": 2217,
+        "completion_tokens": 4088,
+        "total_tokens": 6305,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The lesson labels the difficulty as \"beginner\" while introducing heaps and concurrency considerations that are typically intermediate topics.",
+            "reason": "Beginners may not yet be comfortable with heapq usage or multi\u2011process deduplication concerns, which could overwhelm them and reduce confidence.",
+            "fix": "Adjust the difficulty to \"intermediate\" or add a clear note that the heap and multi\u2011process sections are optional extensions for more advanced learners."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The statement \"A set offers no insertion-order guarantee\" is correct, but the later comment \"The second is a presentation choice, not the iteration order of a set\" may confuse readers about set ordering.",
+            "reason": "Readers might infer that a set's iteration order is deterministic unless sorted, which is not guaranteed by the language.",
+            "fix": "Clarify that set iteration order is arbitrary and should never be relied upon; the call to sorted() is used solely to produce a deterministic display for the example."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The prerequisite list includes only \"tracing-program-state\" but the lesson also uses hashability and heap invariants that may be new to beginners.",
+            "reason": "Learners without prior exposure to hashable objects or heap priority\u2011queue concepts could struggle with the examples and explanations.",
+            "fix": "Add \"understanding of hashable objects\" and \"basic knowledge of heap priority queues\" to the prerequisites, or provide brief sidebars that introduce these ideas."
+          },
+          {
+            "severity": "important",
+            "claim": "The practice exercise asks to \"Test ... repeated IDs with different priorities\" while the lesson\u2019s deduplication policy discards later arrivals entirely, ignoring their priority.",
+            "reason": "If a later duplicate carries a higher priority, the current design will still ignore it, which may not match realistic requirements and could lead to incorrect test expectations.",
+            "fix": "Explicitly state in the exercise that the deduplication policy is \"first arrival wins\" and that later duplicates are ignored regardless of priority, or expand the lesson to discuss alternative policies where later arrivals can update priority."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson mentions that a container\u2019s individual method guarantees do not make a multi\u2011step business operation atomic but provides no concrete example of achieving atomicity across workers.",
+            "reason": "Providing a concrete pattern (e.g., a database unique constraint, a transactional INSERT, or a Redis SETNX operation) would make the production guidance more actionable.",
+            "fix": "Add a short example or reference illustrating how to perform atomic deduplication using a shared store, such as a SQL UNIQUE index or a Redis atomic command."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The resources list links to the generic Python docs but does not point to the heapq documentation that explains the need for a tie\u2011breaking sequence number.",
+            "reason": "Learners may miss why the extra sequence field is required to avoid TypeError when priorities tie.",
+            "fix": "Add a link to the heapq documentation section on \"priority queue implementation notes\" or include an inline comment referencing that explanation."
+          }
+        ],
+        "pedagogy": "The lesson presents a clear mental model, concrete code examples, and common misconceptions that align well with its objectives. It integrates a realistic scenario, progressive checks, and a hands\u2011on practice exercise, which together support active learning. Minor mismatches in difficulty labeling and missing prerequisites slightly reduce accessibility for true beginners, but the overall structure and feedback mechanisms are strong.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "reasoning-about-complexity",
+      "sha256": "ef858a9c6b0b14d9fbcef2bb5b250cb3fcb3aaf70e06943d40de3005445cb281",
+      "usage": {
+        "prompt_tokens": 2208,
+        "completion_tokens": 2465,
+        "total_tokens": 4673,
+        "prompt_tokens_details": {
+          "cached_tokens": 48
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "important",
+            "claim": "Constructing a set from m distinct fixed-size keys takes O(m) expected time and O(m) space.",
+            "reason": "While the average (amortized) cost of building a Python set is linear, the worst\u2011case time can be O(m\u00b2) if many hash collisions occur or if the hash function degrades, because each insertion may trigger a resize and rehashing of the entire table.",
+            "fix": "Add a clarification: \"Building a set is O(m) average (amortized) time, but in the pathological worst case of many hash collisions it can degrade to O(m\u00b2).\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Prerequisites list only includes \"choosing-data-structures\".",
+            "reason": "The lesson assumes familiarity with basic Python syntax, loops, list comprehensions, and the semantics of sets and deques, which are not covered by the single prerequisite.",
+            "fix": "Expand the prerequisites to include items such as \"basic Python syntax and control flow\", \"list and set basics in Python\", and \"using collections.deque\"."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The function shifted_references(n) is presented as counting references shifted by repeatedly removing the first item of a list.",
+            "reason": "The function merely computes the arithmetic sum of 0..n\u20111 and does not actually perform list removals, which could mislead learners about the relationship between the code and the described operation.",
+            "fix": "Either rename the function to something like sum_of_range(n) and explain that it models the total number of shifts, or implement the removal loop explicitly to demonstrate the cost."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Estimated completion time is 30 minutes.",
+            "reason": "For learners at the intermediate level who may need to read, understand, run code, and perform the practice exercise with timing measurements, 30 minutes is likely optimistic.",
+            "fix": "Adjust the estimated_minutes to a higher value (e.g., 45\u201360 minutes) or note that the practice portion may require additional time."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"checks\" list includes identifiers (pf-membership-in-loop, pf-bfs-pop-front, pf-amortised-append) without explanation.",
+            "reason": "Learners may not understand what these identifiers refer to, reducing the usefulness of the checklist.",
+            "fix": "Provide a brief description for each check, e.g., \"pf-membership-in-loop: verify that set construction is outside the record loop\"."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Version is set to 1 while resources point to CPython 3.12 implementation details.",
+            "reason": "If the lesson is used with earlier Python versions, behavior of list, set, or deque may differ (e.g., growth factors), potentially confusing learners.",
+            "fix": "State the required Python version (>=3.12) in the prerequisites or note any version\u2011specific differences."
+          }
+        ],
+        "pedagogy": "The lesson delivers a solid intermediate treatment of time and space complexity with clear examples, accurate worst\u2011case/average\u2011case distinctions, and useful practice tasks. Minor issues include missing worst\u2011case set analysis, incomplete prerequisite specification, and a slightly optimistic time estimate. Addressing these will improve clarity and accessibility without altering the core instructional value.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "python-objects-equality-and-copying",
+      "sha256": "9b8bf764b023ed9d65e501ea8e2a550ca3682fb33a60b6c227f6b55903debfe0",
+      "usage": {
+        "prompt_tokens": 2150,
+        "completion_tokens": 3083,
+        "total_tokens": 5233,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The lesson states \"Using `is` to compare IDs, prices or user input\" as a common mistake without qualifying the limited cases where `is` is appropriate.",
+            "reason": "While `is` should not be used for value comparison, it is valid for identity checks of singletons (e.g., `None`, `True`, `False`) and for intentional object identity tests. The blanket statement may mislead beginners into thinking `is` is never appropriate.",
+            "fix": "Add a brief clarification, e.g., \"Avoid `is` for value comparison; it is only appropriate when you deliberately need to test object identity, such as checking for `None` or other singletons.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The output section lists the line \"True\" without indicating which `print` produced it, which could cause confusion for learners.",
+            "reason": "The fourth `print` statement (`print(original[\"tags\"] is shallow[\"tags\"])`) yields `True`, but the output block does not label it, making it harder to map output to code.",
+            "fix": "Annotate the output block with comments or separate lines, e.g.,\n```\nMina ['trial', 'reviewed']          # original name and tags\n['trial']                           # deep\u2011copied tags\nFalse False                         # equality and identity of dicts\nTrue                                # tags list is shared\nTrue False                          # left vs right list comparison\n[0, 2, 4]                           # first consumption of generator\n[]                                  # second consumption (exhausted)\nAccount is unhashable               # hash test\n```"
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson mentions \"Python 3.12 or later\" but the concepts demonstrated (e.g., `dict.copy`, `copy.deepcopy`, generator exhaustion) are available in much earlier versions.",
+            "reason": "Stating a minimum version of 3.12 may unnecessarily restrict learners who are on older, still\u2011supported versions (e.g., 3.9, 3.10).",
+            "fix": "Replace the version note with \"Python 3.8+ (the examples run on 3.12 and later)\" or simply omit the version requirement."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson\u2019s \u201cHow it works\u201d section says \"A deep copy recursively copies supported components and uses a memo to preserve sharing and handle cycles within the copied graph.\"",
+            "reason": "This is accurate, but the term \"supported components\" is vague; it may lead learners to assume that all objects are deep\u2011copyable, which is not true (e.g., open file handles, sockets, and many custom objects raise errors or are copied shallowly).",
+            "fix": "Add a sentence such as: \"Objects that define a custom `__deepcopy__` method, or that are inherently non\u2011copyable (e.g., open files, network sockets), are not duplicated automatically; attempting to deepcopy them may raise `TypeError` or result in a shallow copy of that part of the graph.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The practice exercise asks learners to \"preserve that sharing\" when two fields refer to the same list, but does not explain why preserving or breaking sharing matters.",
+            "reason": "Understanding the impact of shared mutable state is central to the lesson\u2019s objectives; without guidance, learners may choose arbitrarily.",
+            "fix": "Add a short prompt: \"Explain whether preserving the original shared reference is desirable in your scenario (e.g., when the two fields are meant to stay synchronized) and how your implementation reflects that choice.\""
+          }
+        ],
+        "pedagogy": "The lesson provides a clear, beginner\u2011friendly narrative that introduces identity, equality, shallow vs. deep copying, and iterator lifetimes with concrete, runnable examples. The objectives align with the content, and the progression from mental model to worked example, common mistakes, production considerations, and practice exercises supports incremental learning. The inclusion of check questions with feedback reinforces understanding. Minor wording refinements (as noted) would improve precision, but overall the material is well\u2011structured, appropriately scoped for a beginner level, and includes actionable practice that consolidates the concepts.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "python-functions-scope-and-closures",
+      "sha256": "3145fd6d751ec0a32498ea83bd1e2c2be05d0e519701847590fc7c67abbeac29",
+      "usage": {
+        "prompt_tokens": 2177,
+        "completion_tokens": 3086,
+        "total_tokens": 5263,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not explain that a list comprehension creates its own local scope, which influences how the late\u2011binding closure bug works.",
+            "reason": "In Python 3 the loop variable of a list comprehension is local to the comprehension, not the surrounding function. The lambda still closes over that variable, which after the comprehension finishes holds the last iterated value. Learners may assume the variable is in the function scope, leading to confusion.",
+            "fix": "Add a sentence in the \"How it works\" or \"Worked example\" section: \"A list comprehension has its own implicit function scope; the loop variable lives in that scope, and any inner lambda captures that single variable, resulting in the late\u2011binding behavior shown.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson mentions the common mistake of using `bucket or []` but does not illustrate the broader impact of replacing other falsy values.",
+            "reason": "Using `or []` will also replace legitimate falsy arguments such as an empty tuple, `0`, `False`, or a user\u2011provided sentinel that evaluates to false, unintentionally altering the function contract.",
+            "fix": "Extend the bullet to read: \"Replacing a missing collection with `bucket or []` also replaces any falsy value (e.g., an empty list, `0`, `False`). Use an explicit `is None` check to preserve the intended contract.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not provide a concrete fix for the `callbacks_bad` closure bug using default arguments.",
+            "reason": "While the factory `callback_for` is shown, learners may benefit from seeing the minimal change that makes the list\u2011comprehension version correct, reinforcing the pattern of default\u2011argument capture.",
+            "fix": "Add an example: `def callbacks_fixed(): return [lambda cid=customer_id: cid for customer_id in [10,20,30]]` and note that the default argument captures the current value."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The practice exercise asks to \u201cChange the source order dictionary and global discount afterward, then execute all callbacks\u201d but does not explicitly state that the callbacks must remain unaffected by those later changes.",
+            "reason": "Without a clear expectation, learners might mistakenly think mutating the original dictionary is acceptable, which would break the intended isolation.",
+            "fix": "Clarify the exercise description: \"After registering the callbacks, mutate the original order dictionary and a global discount variable. When the callbacks are later invoked, they must still return the ID and discount rate that were captured at registration time, demonstrating proper snapshotting or copying.\""
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson states that examples use Python\u202f3.12 or later, implying that earlier versions behave differently.",
+            "reason": "The demonstrated behaviors (default\u2011argument evaluation, closure late binding, `list.sort` return value) are identical in all supported Python\u202f3 versions. Over\u2011specifying 3.12 may mislead beginners into thinking they need that exact version.",
+            "fix": "Replace the version note with: \"Examples are written for Python\u202f3.12, but the concepts and code work unchanged in any Python\u202f3.x version.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not mention thread\u2011safety considerations when using mutable default arguments.",
+            "reason": "In multi\u2011threaded programs, a shared mutable default can cause race conditions, which is an important practical pitfall beyond the single\u2011threaded examples shown.",
+            "fix": "Add a brief note in the \"Common mistakes\" or \"In production\" section: \"When functions may be called from multiple threads, a shared mutable default can lead to race conditions. Prefer `None` sentinel and allocate a new object per call, or protect access with synchronization primitives if sharing is intentional.\""
+          }
+        ],
+        "pedagogy": "The lesson provides a clear mental model, concrete runnable examples, and targeted misconceptions for beginners. It balances theory with practice, includes checks, and offers useful advice for production code. Minor clarifications (scope of comprehensions, explicit fix patterns, version wording, and thread safety) would improve completeness without altering the beginner focus.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "sql-querying-joins-and-nulls",
+      "sha256": "70b0eb48b60b7f7dbdd0f679fa27a2a4cd064e16fe0e0a15fce8d0b9e50a31e0",
+      "usage": {
+        "prompt_tokens": 2303,
+        "completion_tokens": 3655,
+        "total_tokens": 5958,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "error",
+            "claim": "Prerequisite \"choosing-data-structures\" is listed for a beginner SQL lesson.",
+            "reason": "The prerequisite refers to a topic unrelated to SQL fundamentals and will confuse learners who expect a prerequisite about relational concepts or basic SELECT syntax.",
+            "fix": "Replace the prerequisite with something like \"basic understanding of relational tables, primary/foreign keys, and simple SELECT statements\"."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not demonstrate the \"sql-group-by-ungrouped-column\" check.",
+            "reason": "While grouping is discussed, there is no concrete example showing the error that occurs when a non\u2011aggregated column is selected without being in the GROUP BY clause, which is one of the listed checks.",
+            "fix": "Add a short example such as:\n```sql\nSELECT c.id, c.name, COUNT(o.id)\nFROM lesson_customers c\nLEFT JOIN lesson_orders o ON o.customer_id = c.id\nGROUP BY c.id;\n```\nExplain that PostgreSQL will raise \"column \\\"c.name\\\" must appear in the GROUP BY clause or be used in an aggregate function\" and show how to fix it by adding `c.name` to GROUP BY."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The explanation of three\u2011valued logic does not explicitly cover the ON clause.",
+            "reason": "Learners may assume the ON clause behaves like a regular Boolean filter, but it also follows three\u2011valued logic; rows where ON evaluates to UNKNOWN are treated as non\u2011matching (and for LEFT JOIN cause the fallback row).",
+            "fix": "Add a sentence in the \"How it works\" section: \"The ON predicate is evaluated with three\u2011valued logic as well; rows where the predicate is UNKNOWN are considered non\u2011matching and, for a LEFT JOIN, result in the null\u2011extended fallback row for the left side.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"Common mistakes\" bullet about using DISTINCT could be expanded.",
+            "reason": "While it warns against over\u2011using DISTINCT, it does not explain that DISTINCT also changes the semantics of COUNT(DISTINCT ...) and can hide legitimate duplicate values, which is a subtle pitfall for beginners.",
+            "fix": "Extend the bullet to: \"Adding DISTINCT changes the result set before aggregation. It can hide real duplicate rows and also affect COUNT(DISTINCT ...) semantics, so use it only when you truly need to eliminate duplicates, not as a quick fix for incorrect joins.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The data type for monetary totals is declared as `integer`.",
+            "reason": "Using an integer simplifies the example, but it may give the impression that whole\u2011number totals are appropriate for money, which is misleading for real\u2011world applications.",
+            "fix": "Add a note after the table definition: \"In production use `numeric` or `money` types to store currency values with appropriate precision; `integer` is used here only for simplicity.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The practice task mentions \"rows have a deterministic order\" without specifying the ordering clause.",
+            "reason": "Learners might forget to add an ORDER BY, leading to nondeterministic result ordering across runs.",
+            "fix": "Specify in the acceptance criteria that the query should end with `ORDER BY c.id` (or another unique column) to guarantee deterministic ordering."
+          }
+        ],
+        "pedagogy": "The lesson provides a clear, beginner\u2011friendly progression: it introduces the grain concept, explains three\u2011valued logic, contrasts ON vs WHERE in LEFT JOINs, and reinforces learning with concrete queries, misconceptions, and practice tasks. The inclusion of checks and real PostgreSQL examples strengthens mastery. Minor gaps (misaligned prerequisite and missing GROUP BY error example) are noted, but overall the material is well\u2011structured, accurate, and pedagogically sound.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "postgres-indexes-and-query-plans",
+      "sha256": "9428b444bcf7af603325761224bd3cabc5d9d645ff700691c83f64d8fea45b5c",
+      "usage": {
+        "prompt_tokens": 2331,
+        "completion_tokens": 3253,
+        "total_tokens": 5584,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "error",
+            "claim": "Run all statements together in a scratch database. Temporary tables are discarded by rollback:",
+            "reason": "In PostgreSQL a temporary table persists for the whole session; a ROLLBACK only undoes the data modifications, not the table definition. The statement incorrectly suggests the table itself is dropped.",
+            "fix": "Replace the sentence with: \"Run all statements together in a scratch database. Data inserted into temporary tables is rolled back, but the temporary table definition remains for the session.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Cost units are planner units, not milliseconds.",
+            "reason": "While correct, learners may still interpret \"planner units\" as time. Clarifying that they are arbitrary cost units derived from configuration parameters helps prevent misunderstanding.",
+            "fix": "Add a brief clarification, e.g., \"Planner cost numbers are expressed in arbitrary cost units based on settings such as `seq_page_cost` and `random_page_cost`; they are not directly comparable to milliseconds.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Running EXPLAIN ANALYZE on a production write without realizing that it executes the write. A rollback does not undo every possible external effect.",
+            "reason": "The warning is accurate but could be more explicit about the fact that `EXPLAIN ANALYZE` actually performs the DML operation, which may have side\u2011effects beyond the database (triggers, external services, etc.).",
+            "fix": "Expand the note to: \"`EXPLAIN ANALYZE` runs the statement exactly as written, so an INSERT/UPDATE/DELETE will modify the database and fire any associated triggers or side\u2011effects before the transaction is rolled back.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "An index on `(tenant_id, created_at, id)` groups keys by tenant, then time, then ID. Constraining tenant equality lets the engine navigate a contiguous tenant range and continue through time order.",
+            "reason": "The statement is correct, but it omits that specifying `DESC` in the index definition can avoid a backward scan and may improve performance for descending order queries.",
+            "fix": "Mention that the index could be created as `CREATE INDEX ... ON lesson_events (tenant_id, created_at DESC, id DESC);` to match the query\u2019s ordering direction directly."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Expression indexes add write work and bind a query to an expression and its semantics, including collation behavior.",
+            "reason": "The lesson does not explicitly note that the usefulness of a `lower(email)` index depends on the database collation; with a case\u2011sensitive collation the index may not be used.",
+            "fix": "Add a note: \"Ensure the database collation is case\u2011insensitive or that the expression matches the collation used; otherwise the `lower(email)` index may be ignored by the planner.\""
+          }
+        ],
+        "pedagogy": "The lesson provides a solid intermediate treatment of PostgreSQL indexing, covering composite and expression indexes, planner cost interpretation, and keyset pagination. It aligns well with its objectives, includes a reproducible hands\u2011on example, and offers reflective questions. Minor inaccuracies (temporary\u2011table rollback) and opportunities for deeper clarification (cost units, index direction, collation effects) are present but do not undermine the core learning outcomes. Overall the pedagogical flow is logical and the exercises are useful for reinforcing concepts.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "typescript-runtime-boundaries",
+      "sha256": "5cc60b4b742b9e22d18e1962a4b5afc8cfd6b6931fe694193c32f09d686cc01f",
+      "usage": {
+        "prompt_tokens": 2340,
+        "completion_tokens": 3627,
+        "total_tokens": 5967,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The `parseAccount` function returns an `Account` by directly accessing `value.id` and `value.name` after runtime checks without a proper TypeScript type guard.",
+            "reason": "After the initial `typeof` and `Array.isArray` checks, TypeScript narrows `value` only to `object`. Accessing `value.id` and `value.name` therefore has the type `any`, which defeats static type safety and can hide errors if the checks are modified later.",
+            "fix": "Introduce a user\u2011defined type guard that narrows the unknown value to a shape with the required properties, e.g.\n```ts\nfunction isAccountShape(v: unknown): v is { id: unknown; name: unknown } {\n  return typeof v === \"object\" && v !== null && !Array.isArray(v) &&\n    \"id\" in v && \"name\" in v;\n}\n\nfunction parseAccount(value: unknown): Account {\n  if (!isAccountShape(value)) throw new Error(\"Invalid account\");\n  if (typeof value.id !== \"number\" || !Number.isSafeInteger(value.id) || value.id <= 0) throw new Error(\"Invalid account\");\n  if (typeof value.name !== \"string\") throw new Error(\"Invalid account\");\n  return { id: value.id, name: value.name };\n}\n```"
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson lists `string[]` assignable to `(string | number)[]` as a valid example of array covariance.",
+            "reason": "While the assignment is allowed in TypeScript, it is unsound because it permits writing a `number` through the wider reference, mutating the original `string[]`. The lesson mentions this, but it could mislead beginners to think this behavior is intentional rather than a known type\u2011system limitation.",
+            "fix": "Add a brief note clarifying that this covariance is a known unsoundness in TypeScript\u2019s type system and that enabling the `--noImplicitAny` and `--strictFunctionTypes` flags does not change it. Recommend using `readonly` arrays or generic invariance patterns when true safety is required."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Prerequisites only list \"typescript-narrowing-and-unions\" and \"choosing-data-structures\".",
+            "reason": "Understanding `unknown`, type assertions, and basic type\u2011guard patterns is essential for this lesson, yet they are not explicitly listed as prerequisites.",
+            "fix": "Add \"unknown type and type\u2011guard basics\" (or a reference to the narrowing lesson) to the `prerequisites` array."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Estimated time of 30 minutes may be optimistic for complete comprehension and the practice exercise for absolute beginners.",
+            "reason": "The lesson includes reading, code compilation, runtime verification, and a non\u2011trivial practice task. Beginners often need additional time to experiment and debug.",
+            "fix": "Adjust `estimated_minutes` to 45\u201360 minutes or add a note that the time is a lower bound."
+          }
+        ],
+        "pedagogy": "The lesson provides a clear, concrete example that demonstrates the gap between compile\u2011time types and runtime values. It correctly distinguishes assertions, unknown, and runtime validation, and it includes useful misconceptions and common\u2011mistake sections. The progression from mental model to worked example, then to practice, follows a solid beginner\u2011to\u2011intermediate flow. Minor improvements\u2014adding an explicit type guard, clarifying array covariance unsoundness, expanding prerequisites, and adjusting the time estimate\u2014would make the material more robust and reduce potential confusion for newcomers.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "http-caching-and-validation",
+      "sha256": "34b7b95cab1bd9dc37bd7ce0ff28b0cbb8e3cf82f2101da8abc78f59cd9eb51f",
+      "usage": {
+        "prompt_tokens": 2291,
+        "completion_tokens": 3397,
+        "total_tokens": 5688,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "important",
+            "claim": "The lesson assumes the learner can run the FastAPI/Starlette example without prior Python or FastAPI knowledge.",
+            "reason": "The example imports FastAPI, TestClient, and Starlette static files, which require a Python development environment and familiarity with these libraries. A beginner who only knows HTTP semantics may be unable to execute the code, reducing the lesson's accessibility.",
+            "fix": "Add a prerequisite entry such as \"python-fastapi\" or include a brief setup guide (e.g., `pip install fastapi[all] starlette httpx`) and a short explanation of the involved objects."
+          },
+          {
+            "severity": "important",
+            "claim": "The statement \"TestClient does not implement a browser cache, so the second request deliberately performs validation even though the first response permits fresh reuse\" may be misinterpreted as implying that validation is always required.",
+            "reason": "Beginners might think that a client must always send `If-None-Match` for cached resources, which is not true for real browsers when the cached entry is still fresh. The example purposely forces validation, but the lesson does not explicitly contrast this with normal fresh reuse.",
+            "fix": "Add a clarifying sentence: \"In a real browser, a second request made within the `max\u2011age` window would be served from the local cache without any network request; the TestClient forces a conditional request to demonstrate validation logic.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not mention the `must-revalidate` (or `proxy-revalidate`) directive, which is essential for ensuring that stale responses are not used without revalidation.",
+            "reason": "While `no-cache` forces validation before reuse, `must-revalidate` is the directive that forces validation *after* a response becomes stale. Omitting it leaves a gap in the beginner's understanding of how to enforce strict freshness requirements.",
+            "fix": "Add a short paragraph in the \"How it works\" section describing `must-revalidate` and give an example header: `Cache-Control: public, max-age=60, must-revalidate`."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The concept of the `Age` header and how caches compute the current age of a response is not explained.",
+            "reason": "Understanding that caches add an `Age` header and that freshness is calculated as `Age + (now - response_time) < max-age` helps learners reason about why a response may become stale before the client sees it.",
+            "fix": "Insert a brief explanation after the freshness discussion: \"When a response passes through intermediate caches, each adds an `Age` header indicating how long the response has been stored. The final cache adds the time elapsed since it received the response to compute the current age used for freshness checks.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The practice exercise asks learners to \"change the content and confirm that the old validator obtains the new representation\" without specifying how to trigger a validator change.",
+            "reason": "Learners may be unsure whether to edit the file on disk, modify a database entry, or change server code. Lack of concrete steps can lead to confusion and incomplete verification.",
+            "fix": "Provide a concrete step, e.g., \"Edit `guide.txt` in the temporary directory to add a new line, then repeat the request with the original ETag; the server should now return 200 with a new ETag and body.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"Common mistakes\" bullet about generating ETags from unrelated metadata could be expanded with a concrete anti\u2011pattern and a recommended approach.",
+            "reason": "Beginners may not know what constitutes a good ETag source. Without an example, they might still generate weak validators incorrectly.",
+            "fix": "Add an example: \"Bad: using a database row ID as an ETag when the row's content can change without the ID changing. Good: using a hash of the response body or the file's last-modified timestamp combined with its size.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not discuss high\u2011cardinality `Vary` headers and their impact on cache fragmentation.",
+            "reason": "While the lesson warns against varying on high\u2011cardinality headers, it does not explain why (e.g., each distinct header value creates a separate cache entry, potentially exhausting cache storage). This nuance is valuable for learners moving beyond basics.",
+            "fix": "Add a short note: \"Headers like `User-Agent` or `Cookie` have many possible values; using them in `Vary` can cause a cache to store a separate copy for each user, defeating the benefits of caching. Prefer `Vary: Accept-Language` for language negotiation and avoid `Vary` on authentication data.\""
+          }
+        ],
+        "pedagogy": "The lesson provides a solid conceptual foundation for HTTP caching, correctly distinguishes storage, freshness, and validation, and includes a runnable code example that demonstrates ETag\u2011based conditional GETs. It integrates security considerations and common pitfalls, making it suitable for beginners with some programming background. Minor gaps\u2014such as missing directives (`must-revalidate`), lack of `Age` header explanation, and insufficient setup prerequisites\u2014limit its completeness, but the overall progression from theory to practice is clear and the exercises reinforce key ideas.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "browser-origins-cors-and-csrf",
+      "sha256": "d58b53c845e9ba32afd719447e50b349ce9f14254614abd7d4d06cd51db0617c",
+      "usage": {
+        "prompt_tokens": 2492,
+        "completion_tokens": 2971,
+        "total_tokens": 5463,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "important",
+            "claim": "The lesson states that \"Some browsers apply a temporary POST exception to recently set cookies when Lax is merely the default\".",
+            "reason": "The SameSite=Lax default does not create a temporary exception for POST requests. Lax cookies are omitted on cross\u2011site POSTs (including form submissions) unless the request is a top\u2011level navigation using a safe method (GET/HEAD). No browser currently implements a \"temporary POST exception\" based on recent cookie creation, so the statement is factually incorrect and may mislead learners about cookie behavior.",
+            "fix": "Replace the sentence with a precise description: \"SameSite=Lax cookies are omitted on cross\u2011site POST requests, but they are sent on top\u2011level navigations using safe methods (GET/HEAD).\" If you want to discuss recent changes, note that browsers now treat cookies without an explicit SameSite attribute as Lax by default, but this does not affect POST handling."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson refers to \"the linked FORGE checks\" covering preflight, explicit Lax cookies and wildcard credential rules.",
+            "reason": "No publicly documented \"FORGE\" assessment suite exists for these topics, and the reference appears to be a copy\u2011paste error from another project. Presenting a non\u2011existent resource can cause confusion and makes the learning path incomplete.",
+            "fix": "Either provide a real link to the assessment suite (e.g., a GitHub repository or internal LMS) or remove the reference. If the checks are internal, rename them to a generic identifier like \"the provided practice checks\" and describe where learners can find them."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The example description says \"The executable example uses FORGE's FastAPI and Starlette stack.\"",
+            "reason": "The term \"FORGE\" is likely a typo; the code uses FastAPI and Starlette directly. The extra brand name adds no value and may confuse readers about required dependencies.",
+            "fix": "Edit the sentence to read: \"The executable example uses FastAPI with the Starlette middleware stack.\""
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The sentence \"A cross\u2011origin fetch defaults to the same\u2011origin credentials mode\" could be misinterpreted.",
+            "reason": "While technically correct (the default credentials mode is \"same\u2011origin\"), the phrasing may suggest that credentials are sent on cross\u2011origin requests unless overridden, which is the opposite of the actual behavior.",
+            "fix": "Clarify: \"A fetch request defaults to the 'same\u2011origin' credentials mode, meaning credentials are only sent when the request URL shares the same origin as the calling script. For cross\u2011origin requests you must set credentials: 'include' to send cookies or HTTP auth.\""
+          }
+        ],
+        "pedagogy": "The lesson provides a solid intermediate treatment of origins, CORS, and CSRF, correctly distinguishing request sending from response reading and emphasizing that CORS is not an authorization mechanism. It progresses logically from concepts to a concrete FastAPI example, includes hands\u2011on practice, and ties security controls together (SameSite, CSRF tokens, Origin/Referer checks). The prerequisites (basic HTTP request semantics and caching) are appropriate, and the objectives align with the content. Minor issues (a few inaccurate statements and a stray brand reference) do not undermine the core teaching but should be corrected to avoid confusion. Overall, the material is well\u2011structured, the exercises are useful for reinforcing browser\u2011side behavior, and the pedagogical flow from theory to practice is effective.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "typescript-generics-that-preserve-relationships",
+      "sha256": "9ee3502afb5e6022250f5f95cf46cb1160a21f7b8155270527d3b779a30c8aac",
+      "usage": {
+        "prompt_tokens": 2242,
+        "completion_tokens": 4034,
+        "total_tokens": 6276,
+        "prompt_tokens_details": {
+          "cached_tokens": 2224
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The `first` helper returns `T | undefined` for any readonly array.",
+            "reason": "When the caller knows the array is non\u2011empty, the `undefined` part forces unnecessary narrowing. TypeScript can express a non\u2011empty array with a tuple type (`[T, ...T[]]`) or overload, providing a tighter return type (`T`).",
+            "fix": "Add an overload: `function first<T>(values: readonly [T, ...T[]]): T; function first<T>(values: readonly T[]): T | undefined;` This keeps the current behavior for possibly empty arrays while giving a precise `T` return for guaranteed non\u2011empty inputs."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "`findById` accepts `id: number` even though the constraint only guarantees `id` is a number on `T`.",
+            "reason": "If a caller uses a type where `id` is a narrower numeric literal (e.g., `type Foo = { id: 42; name: string }`), the function forces a `number` and discards that literal information, reducing type safety.",
+            "fix": "Make the `id` parameter generic on the same property: `function findById<T extends { id: number }>(values: readonly T[], id: T[\"id\"]): T | undefined { ... }` This preserves the exact `id` type the caller provides."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson states that a `readonly` array parameter prevents the helper from modifying the array, but it does not clarify that the elements themselves are not made readonly.",
+            "reason": "Readers may incorrectly assume that `readonly T[]` yields deep immutability, leading to bugs when the returned element is mutated elsewhere. TypeScript\u2019s `readonly` only applies to the array\u2019s mutating methods, not to the objects stored inside.",
+            "fix": "Add a clarification: \"`readonly T[]` makes the *array* itself immutable (no push/pop), but the elements retain their original mutability. To make elements readonly you would need `readonly (Readonly<T>)[]` or a mapped type.\"\nOptionally, change the `first` signature to `function first<T>(values: readonly Readonly<T>[]): Readonly<T> | undefined` if deep immutability is desired."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The practice task asks for a `pluck` helper that returns the selected values with their correct array element type, but does not specify the return type shape.",
+            "reason": "Without guidance, learners might return a plain array (`T[K][]`) that loses tuple length information when the input is a tuple, or they might forget to preserve `readonly`ness, causing mutable results from a readonly input.",
+            "fix": "Suggest the signature: `function pluck<T, K extends keyof T>(records: readonly T[], key: K): Array<T[K]>;` and note that if preserving tuple length is required, a mapped tuple type can be used: `function pluck<T extends readonly any[], K extends keyof T[number]>(records: T, key: K): { [I in keyof T]: T[I][K] }`."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson\u2019s prerequisite list includes only `typescript-runtime-boundaries`, which may be unfamiliar to beginners.",
+            "reason": "Learners who have not yet covered basic TypeScript syntax (interfaces, type aliases, basic generics) might struggle with the material, reducing its accessibility for the intended intermediate audience.",
+            "fix": "Add prerequisite items such as `basic-typescript`, `functions`, and `type-aliases` to ensure learners have the foundational knowledge before tackling generic relationships."
+          }
+        ],
+        "pedagogy": "The lesson presents a clear mental model, concrete code examples, and purposeful compile\u2011time checks. It progresses logically from simple generic signatures to constrained generics and discusses common pitfalls. The inclusion of `@ts-expect-error` blocks reinforces the relationship between type parameters and compiler enforcement. Exercises are well\u2011aligned with objectives, though minor clarifications (deep readonly, non\u2011empty array handling) would improve precision. Overall, the pedagogical flow is solid for an intermediate audience.",
+        "reasoning_answers_checked": true
+      }
+    }
+  ]
+}

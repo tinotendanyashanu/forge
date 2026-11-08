@@ -1,0 +1,290 @@
+{
+  "baseline": "8062fa9",
+  "existing_seed_files_checked": 54,
+  "curriculum_checksum": "4f4eb928bee1243b526cb3bfdbc725f0b894acb5b63fe8b8f6a9b0063fdc0941",
+  "examples": [
+    {
+      "slug": "choosing-data-structures",
+      "language": "python",
+      "mapping": [
+        "programming-fundamentals",
+        "data-structures"
+      ],
+      "checks": [
+        "pf-set-membership",
+        "pf-alias-vs-copy",
+        "pf-priority-structure",
+        "pf-leaderboard-design"
+      ],
+      "stdout": "['T3', 'T1', 'T2']\n['T1', 'T2', 'T3']\n['T1', 'T2', 'T3']"
+    },
+    {
+      "slug": "reasoning-about-complexity",
+      "language": "python",
+      "mapping": [
+        "programming-fundamentals",
+        "complexity"
+      ],
+      "checks": [
+        "pf-membership-in-loop",
+        "pf-bfs-pop-front",
+        "pf-amortised-append"
+      ],
+      "stdout": "([], 6)\n([], 24)\n[3, 1, 3]\n6 28"
+    },
+    {
+      "slug": "python-objects-equality-and-copying",
+      "language": "python",
+      "mapping": [
+        "python",
+        "data-model"
+      ],
+      "checks": [
+        "py-equality-vs-identity",
+        "py-shallow-vs-deep-copy",
+        "py-generator-exhausted",
+        "py-eq-without-hash"
+      ],
+      "stdout": "Mina ['trial', 'reviewed']\n['trial']\nFalse False\nTrue\nTrue False\n[0, 2, 4]\n[]\nAccount is unhashable"
+    },
+    {
+      "slug": "python-functions-scope-and-closures",
+      "language": "python",
+      "mapping": [
+        "python",
+        "functions"
+      ],
+      "checks": [
+        "py-mutable-default-argument",
+        "py-sort-returns-none",
+        "py-late-binding-closures"
+      ],
+      "stdout": "['first']\n['first', 'second']\n['first'] ['second']\n[30, 30, 30]\n[10, 20, 30]\n[10, 20, 30]\n[10, 20, 30] None\n[10, 20, 30]"
+    },
+    {
+      "slug": "sql-querying-joins-and-nulls",
+      "language": "sql",
+      "mapping": [
+        "sql",
+        "querying"
+      ],
+      "checks": [
+        "sql-null-comparison",
+        "sql-left-join-where",
+        "sql-group-by-ungrouped-column",
+        "sql-left-join-count-star"
+      ],
+      "results": [
+        [
+          [
+            1,
+            "Asha",
+            1,
+            40
+          ],
+          [
+            2,
+            "Bo",
+            0,
+            0
+          ],
+          [
+            3,
+            "Cy",
+            0,
+            0
+          ]
+        ],
+        [
+          [
+            1,
+            2,
+            2
+          ],
+          [
+            2,
+            1,
+            0
+          ],
+          [
+            3,
+            1,
+            1
+          ]
+        ],
+        [
+          [
+            13
+          ]
+        ],
+        []
+      ],
+      "plans": [],
+      "server_version": "16.15"
+    },
+    {
+      "slug": "postgres-indexes-and-query-plans",
+      "language": "sql",
+      "mapping": [
+        "sql",
+        "indexing"
+      ],
+      "checks": [
+        "sql-composite-index-order",
+        "sql-expression-index",
+        "sql-seq-scan-low-selectivity",
+        "sql-offset-vs-keyset",
+        "sql-unused-index"
+      ],
+      "results": [
+        [
+          [
+            19907
+          ],
+          [
+            19807
+          ],
+          [
+            19707
+          ]
+        ],
+        [
+          [
+            19607
+          ],
+          [
+            19507
+          ],
+          [
+            19407
+          ]
+        ],
+        [
+          [
+            123
+          ]
+        ]
+      ],
+      "plans": [
+        [
+          "Limit  (cost=419.58..419.59 rows=3 width=12) (actual time=0.438..0.439 rows=3 loops=1)",
+          "  Buffers: local hit=167",
+          "  ->  Sort  (cost=419.58..420.08 rows=200 width=12) (actual time=0.438..0.438 rows=3 loops=1)",
+          "        Sort Key: created_at DESC, id DESC",
+          "        Sort Method: top-N heapsort  Memory: 25kB",
+          "        Buffers: local hit=167",
+          "        ->  Seq Scan on lesson_events  (cost=0.00..417.00 rows=200 width=12) (actual time=0.003..0.416 rows=200 loops=1)",
+          "              Filter: (tenant_id = 7)",
+          "              Rows Removed by Filter: 19800",
+          "              Buffers: local hit=167",
+          "Planning:",
+          "  Buffers: shared hit=33, local hit=1",
+          "Planning Time: 0.116 ms",
+          "Execution Time: 0.453 ms"
+        ],
+        [
+          "Limit  (cost=0.29..8.02 rows=3 width=12) (actual time=0.016..0.018 rows=3 loops=1)",
+          "  Buffers: local hit=2 read=2",
+          "  ->  Index Only Scan Backward using lesson_events_recent on lesson_events  (cost=0.29..515.73 rows=200 width=12) (actual time=0.016..0.017 rows=3 loops=1)",
+          "        Index Cond: (tenant_id = 7)",
+          "        Heap Fetches: 3",
+          "        Buffers: local hit=2 read=2",
+          "Planning:",
+          "  Buffers: shared hit=14, local read=1",
+          "Planning Time: 0.177 ms",
+          "Execution Time: 0.043 ms"
+        ]
+      ],
+      "server_version": "16.15"
+    },
+    {
+      "slug": "typescript-runtime-boundaries",
+      "language": "typescript",
+      "mapping": [
+        "typescript",
+        "type-system"
+      ],
+      "checks": [
+        "ts-unknown-vs-any",
+        "ts-as-const-union",
+        "ts-runtime-boundaries",
+        "ts-excess-property-check",
+        "ts-array-covariance"
+      ],
+      "expected_compile_errors": [
+        "../../../../../../var/folders/2q/8dcclg2j1638rj74cv58z8180000gn/T/forge-p5-ts-o2luy6q2/example.ts(41,12): error TS2339: Property 'push' does not exist on type 'readonly string[]'."
+      ],
+      "in_operator_narrows_to_number": true,
+      "stdout": "7 Ada false\nInvalid account\nstring\ntrue\nnumber\n2"
+    },
+    {
+      "slug": "typescript-generics-that-preserve-relationships",
+      "language": "typescript",
+      "mapping": [
+        "typescript",
+        "generics"
+      ],
+      "checks": [
+        "ts-generic-inference",
+        "ts-keyof-generic"
+      ],
+      "expected_compile_errors": [
+        "../../../../../../var/folders/2q/8dcclg2j1638rj74cv58z8180000gn/T/forge-p5-ts-cvnbkf25/example.ts(29,25): error TS2345: Argument of type '\"missing\"' is not assignable to parameter of type '\"name\" | \"id\" | \"active\"'.",
+        "../../../../../../var/folders/2q/8dcclg2j1638rj74cv58z8180000gn/T/forge-p5-ts-cvnbkf25/example.ts(30,9): error TS2322: Type 'string' is not assignable to type 'number'.",
+        "../../../../../../var/folders/2q/8dcclg2j1638rj74cv58z8180000gn/T/forge-p5-ts-cvnbkf25/example.ts(31,15): error TS2322: Type 'string' is not assignable to type 'number'."
+      ],
+      "stdout": "ADA\ntrue\n10 undefined\nAda\ntrue"
+    },
+    {
+      "slug": "http-caching-and-validation",
+      "language": "python",
+      "mapping": [
+        "http",
+        "caching"
+      ],
+      "checks": [
+        "http-no-store-vs-no-cache",
+        "http-cache-personalised",
+        "http-etag-304",
+        "http-vary-language"
+      ],
+      "stdout": "200 public, max-age=60\nCache me.\n304 0\nTrue\n200 Cache me."
+    },
+    {
+      "slug": "browser-origins-cors-and-csrf",
+      "language": "python",
+      "mapping": [
+        "http",
+        "browser-security"
+      ],
+      "checks": [
+        "http-cors-preflight",
+        "http-samesite-lax-post",
+        "http-cors-credentials-wildcard"
+      ],
+      "stdout": "200 https://app.example.test\ntrue\nTrue\n400 False\n200 1 False"
+    }
+  ],
+  "coverage": {
+    "skills": 15,
+    "subskills": 45,
+    "questions": 158,
+    "lessons": 25,
+    "covered_subskills": 25
+  },
+  "review_disagreement_probes": {
+    "transactional_temp_ddl_undone": true,
+    "group_by_primary_key": [
+      [
+        1,
+        "Ada",
+        1
+      ]
+    ],
+    "invalid_grouping_rejected": true,
+    "case_sensitive_collation_expression_index": [
+      "Index Scan using p5_case_lower on p5_case_probe  (cost=0.29..8.30 rows=1 width=22)",
+      "  Index Cond: (lower(email) = 'user123@example.test'::text)"
+    ]
+  }
+}

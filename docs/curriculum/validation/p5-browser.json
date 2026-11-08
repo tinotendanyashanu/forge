@@ -1,0 +1,12 @@
+{
+  "browser": "Chrome/156.0.8078.4",
+  "counts": {
+    "simple": 1,
+    "preflight": 2,
+    "json": 1,
+    "cache": 2,
+    "conditional": 1,
+    "cross_site_post_cookie": "none"
+  },
+  "passed": true
+}

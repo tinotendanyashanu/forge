@@ -1,0 +1,245 @@
+{
+  "batch": "P5",
+  "date": "2026-11-08",
+  "status": "validated; not deployed",
+  "human_verified": false,
+  "baseline_commit": "8062fa9",
+  "curriculum_version": "2026.11.2",
+  "lessons": [
+    {
+      "slug": "choosing-data-structures",
+      "skill": "programming-fundamentals",
+      "topic": "data-structures",
+      "title": "Choosing data structures from the operations you need",
+      "difficulty": "beginner",
+      "checks": [
+        "pf-set-membership",
+        "pf-alias-vs-copy",
+        "pf-priority-structure",
+        "pf-leaderboard-design"
+      ],
+      "prerequisites": [
+        "tracing-program-state"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/16-choosing-data-structures.md",
+      "sha256": "58bbcb204853f6bf85fb3b8a20238a7b11688345f77696f3c161af3c38a52e6e",
+      "words": 1304
+    },
+    {
+      "slug": "reasoning-about-complexity",
+      "skill": "programming-fundamentals",
+      "topic": "complexity",
+      "title": "Reasoning about time and space complexity",
+      "difficulty": "intermediate",
+      "checks": [
+        "pf-membership-in-loop",
+        "pf-bfs-pop-front",
+        "pf-amortised-append"
+      ],
+      "prerequisites": [
+        "choosing-data-structures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/17-reasoning-about-complexity.md",
+      "sha256": "a31c7d2970eba173278436f2310adf9e200e8ccaf7a2d7c06e6901974611333c",
+      "words": 1246
+    },
+    {
+      "slug": "python-objects-equality-and-copying",
+      "skill": "python",
+      "topic": "data-model",
+      "title": "Python objects: identity, equality, copying and iteration",
+      "difficulty": "beginner",
+      "checks": [
+        "py-equality-vs-identity",
+        "py-shallow-vs-deep-copy",
+        "py-generator-exhausted",
+        "py-eq-without-hash"
+      ],
+      "prerequisites": [
+        "tracing-program-state",
+        "choosing-data-structures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/18-python-objects-equality-and-copying.md",
+      "sha256": "6223eed732dd285e77b73e1e15d52645847d5b59986777655ed35cd02e3784db",
+      "words": 1239
+    },
+    {
+      "slug": "python-functions-scope-and-closures",
+      "skill": "python",
+      "topic": "functions",
+      "title": "Python functions: contracts, scope and closures",
+      "difficulty": "beginner",
+      "checks": [
+        "py-mutable-default-argument",
+        "py-sort-returns-none",
+        "py-late-binding-closures"
+      ],
+      "prerequisites": [
+        "tracing-program-state",
+        "python-objects-equality-and-copying"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 28,
+      "path": "api/app/seed/lessons/19-python-functions-scope-and-closures.md",
+      "sha256": "c1318773e77c2d64be24a49c3cfe1ec3433b02426c956294648e19ad533081d4",
+      "words": 1178
+    },
+    {
+      "slug": "sql-querying-joins-and-nulls",
+      "skill": "sql",
+      "topic": "querying",
+      "title": "SQL queries: joins, NULL and the grain of a result",
+      "difficulty": "beginner",
+      "checks": [
+        "sql-null-comparison",
+        "sql-left-join-where",
+        "sql-group-by-ungrouped-column",
+        "sql-left-join-count-star"
+      ],
+      "prerequisites": [
+        "choosing-data-structures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/20-sql-querying-joins-and-nulls.md",
+      "sha256": "727a4d0957cc8aaa201594b0576c0fc0d0faeda2d80849b0553f32a458c4bbab",
+      "words": 1276
+    },
+    {
+      "slug": "postgres-indexes-and-query-plans",
+      "skill": "sql",
+      "topic": "indexing",
+      "title": "PostgreSQL indexes: from predicates to execution plans",
+      "difficulty": "intermediate",
+      "checks": [
+        "sql-composite-index-order",
+        "sql-expression-index",
+        "sql-seq-scan-low-selectivity",
+        "sql-offset-vs-keyset",
+        "sql-unused-index"
+      ],
+      "prerequisites": [
+        "sql-querying-joins-and-nulls",
+        "reasoning-about-complexity"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 35,
+      "path": "api/app/seed/lessons/21-postgres-indexes-and-query-plans.md",
+      "sha256": "7fe27273c6f7576847c9322f87e5a75a9430793f0f1d4460d0367acf2f911157",
+      "words": 1264
+    },
+    {
+      "slug": "typescript-runtime-boundaries",
+      "skill": "typescript",
+      "topic": "type-system",
+      "title": "TypeScript boundaries: what types prove and what they cannot",
+      "difficulty": "beginner",
+      "checks": [
+        "ts-unknown-vs-any",
+        "ts-as-const-union",
+        "ts-runtime-boundaries",
+        "ts-excess-property-check",
+        "ts-array-covariance"
+      ],
+      "prerequisites": [
+        "typescript-narrowing-and-unions",
+        "choosing-data-structures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/22-typescript-runtime-boundaries.md",
+      "sha256": "621ab6ab5d93c8a298ce2e96040ea4ea6984ea457d10402f73c1406bbfb194c5",
+      "words": 1241
+    },
+    {
+      "slug": "typescript-generics-that-preserve-relationships",
+      "skill": "typescript",
+      "topic": "generics",
+      "title": "TypeScript generics that preserve relationships",
+      "difficulty": "intermediate",
+      "checks": [
+        "ts-generic-inference",
+        "ts-keyof-generic"
+      ],
+      "prerequisites": [
+        "typescript-runtime-boundaries"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 28,
+      "path": "api/app/seed/lessons/23-typescript-generics-that-preserve-relationships.md",
+      "sha256": "8bf8b3bcd5a875ed9cf382d68433a66a7bcddae2e842c61fc660ae9ffd3cac63",
+      "words": 1263
+    },
+    {
+      "slug": "http-caching-and-validation",
+      "skill": "http",
+      "topic": "caching",
+      "title": "HTTP caching: storage, freshness and validation",
+      "difficulty": "beginner",
+      "checks": [
+        "http-no-store-vs-no-cache",
+        "http-cache-personalised",
+        "http-etag-304",
+        "http-vary-language"
+      ],
+      "prerequisites": [
+        "http-requests-and-semantics"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/24-http-caching-and-validation.md",
+      "sha256": "c4e0ba039b990ef2896fcd3922ad98c7b6aa58d1ca593cca0f01b68ac2336acf",
+      "words": 1366
+    },
+    {
+      "slug": "browser-origins-cors-and-csrf",
+      "skill": "http",
+      "topic": "browser-security",
+      "title": "Browser security: origins, CORS, cookies and CSRF",
+      "difficulty": "intermediate",
+      "checks": [
+        "http-cors-preflight",
+        "http-samesite-lax-post",
+        "http-cors-credentials-wildcard"
+      ],
+      "prerequisites": [
+        "http-requests-and-semantics",
+        "http-caching-and-validation"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 35,
+      "path": "api/app/seed/lessons/25-browser-origins-cors-and-csrf.md",
+      "sha256": "24a61387e42e120197c4d1faf12898b75568a8715e6537e5476fa938498504a1",
+      "words": 1289
+    }
+  ],
+  "expected_counts": {
+    "skills": 15,
+    "subskills": 45,
+    "prerequisite_edges": 21,
+    "active_questions": 158,
+    "inactive_questions": 0,
+    "active_lessons": 25,
+    "lesson_checks": 81,
+    "lesson_resources": 86
+  },
+  "validation": {
+    "backend": "404 passed in 127.81s",
+    "lint": "passed",
+    "typecheck": "passed",
+    "production_build": "webpack passed; Turbopack blocked by local port restriction",
+    "runtime_versions": {
+      "python": "3.14.7",
+      "typescript": "5.9.3",
+      "node": "26.10.0",
+      "postgresql": "16.15",
+      "chromium": "156.0.8078.4"
+    }
+  }
+}

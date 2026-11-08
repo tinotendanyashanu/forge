@@ -135,7 +135,10 @@ def test_recommendations_suggest_unread_lessons(client: TestClient):
     client.post("/api/v1/lessons/tracing-program-state/complete", headers=h)
     after = client.get("/api/v1/recommendations", headers=h).json()[0]
     assert after["skill"]["slug"] == "programming-fundamentals"
-    assert after["lesson"] is None  # no other unread lesson for this skill and level
+    assert after["lesson"]["slug"] == "choosing-data-structures"
+    client.post("/api/v1/lessons/choosing-data-structures/complete", headers=h)
+    after_both = client.get("/api/v1/recommendations", headers=h).json()[0]
+    assert after_both["lesson"] is None  # remaining complexity lesson is above beginner
 
 
 def test_learner_lesson_routes_are_private_and_local_only(client: TestClient, settings):
