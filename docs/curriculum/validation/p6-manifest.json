@@ -1,0 +1,237 @@
+{
+  "batch": "P6",
+  "date": "2026-11-08",
+  "status": "validated locally; NOT DEPLOYED; separate approval required",
+  "human_verified": false,
+  "baseline_commit": "f26daf2d8e5f8d6fdec1db8334baeebd5a3ce61c",
+  "curriculum_version": "2026.11.2",
+  "lessons": [
+    {
+      "slug": "react-list-identity-and-derived-data",
+      "skill": "react",
+      "topic": "lists",
+      "title": "React lists: identity, local state and derived data",
+      "difficulty": "beginner",
+      "checks": [
+        "re-index-as-key",
+        "re-derived-state-effect"
+      ],
+      "prerequisites": [
+        "react-state-and-rendering"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/26-react-list-identity-and-derived-data.md",
+      "sha256": "b5728fd1895daffaff769545f4641daa5a5a7ff9fcd1f54b45741853b58e36e6",
+      "words": 1247
+    },
+    {
+      "slug": "react-effects-and-request-lifetimes",
+      "skill": "react",
+      "topic": "effects",
+      "title": "React effects: synchronization, cleanup and stale results",
+      "difficulty": "intermediate",
+      "checks": [
+        "re-object-dependency",
+        "re-strictmode-double-effect",
+        "re-fetch-race-condition",
+        "re-fetch-race"
+      ],
+      "prerequisites": [
+        "react-state-and-rendering",
+        "react-list-identity-and-derived-data"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/27-react-effects-and-request-lifetimes.md",
+      "sha256": "0fdd9aac8b1c8030a02c8d5b8649249eba2c45d94846beeef98dd27906519c13",
+      "words": 1242
+    },
+    {
+      "slug": "fastapi-dependency-lifetimes-and-overrides",
+      "skill": "fastapi",
+      "topic": "dependencies",
+      "title": "FastAPI dependencies: composition, lifetime and test overrides",
+      "difficulty": "intermediate",
+      "checks": [
+        "fa-dependency-caching",
+        "fa-db-session-dependency",
+        "fa-dependency-override"
+      ],
+      "prerequisites": [
+        "fastapi-validation-and-dependencies",
+        "python-functions-scope-and-closures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/28-fastapi-dependency-lifetimes-and-overrides.md",
+      "sha256": "66d95630ef98af618800de46feb9426ff8835727e7ead20d1249f3278fd45d94",
+      "words": 1151
+    },
+    {
+      "slug": "fastapi-async-handlers-and-bounded-work",
+      "skill": "fastapi",
+      "topic": "async-handlers",
+      "title": "FastAPI async handlers: event-loop safety and bounded work",
+      "difficulty": "intermediate",
+      "checks": [
+        "fa-blocking-call-in-async-handler",
+        "fa-background-task-durability",
+        "fa-sync-threadpool-limit"
+      ],
+      "prerequisites": [
+        "python-concurrency-models",
+        "fastapi-dependency-lifetimes-and-overrides"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/29-fastapi-async-handlers-and-bounded-work.md",
+      "sha256": "179f907279e0da501d3b253bb02a702c38a7fd897d7deb5c4cccc0e29277c58f",
+      "words": 1133
+    },
+    {
+      "slug": "test-doubles-fixtures-and-patching",
+      "skill": "testing",
+      "topic": "test-doubles",
+      "title": "Test doubles: fixtures, contracts and patching the right name",
+      "difficulty": "intermediate",
+      "checks": [
+        "test-pytest-fixture-scope",
+        "test-mock-where-to-patch",
+        "test-overspecified-mock",
+        "test-mock-without-autospec"
+      ],
+      "prerequisites": [
+        "unit-tests-that-matter",
+        "python-functions-scope-and-closures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/30-test-doubles-fixtures-and-patching.md",
+      "sha256": "3b98001d68a009a60e437b6a4907136d0c82de110870d7cf34fa2314de32849e",
+      "words": 1132
+    },
+    {
+      "slug": "reliable-tests-time-state-and-order",
+      "skill": "testing",
+      "topic": "reliability",
+      "title": "Reliable tests: time, shared state and execution order",
+      "difficulty": "beginner",
+      "checks": [
+        "test-now-in-assertion",
+        "test-flaky-investigation",
+        "test-shared-state-order"
+      ],
+      "prerequisites": [
+        "unit-tests-that-matter"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/31-reliable-tests-time-state-and-order.md",
+      "sha256": "ff3c6c35adbde31dd2829413d498f1ab23e12b847beb92e86792407131d6de1d",
+      "words": 1163
+    },
+    {
+      "slug": "injection-safe-data-boundaries",
+      "skill": "security",
+      "topic": "injection",
+      "title": "Injection defenses: keeping data out of interpreter control",
+      "difficulty": "beginner",
+      "checks": [
+        "sec-parameterised-query",
+        "sec-react-xss-bio",
+        "sec-ssrf-avatar-url"
+      ],
+      "prerequisites": [
+        "security-auth-and-injection",
+        "sql-querying-joins-and-nulls",
+        "python-functions-scope-and-closures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/32-injection-safe-data-boundaries.md",
+      "sha256": "20636f8bb3a11c67dce19c74c75141b4704480ed41143f71a9f55bec519ff96b",
+      "words": 1269
+    },
+    {
+      "slug": "secrets-storage-rotation-and-exposure",
+      "skill": "security",
+      "topic": "secrets",
+      "title": "Secrets: storage, rotation and exposure response",
+      "difficulty": "intermediate",
+      "checks": [
+        "sec-frontend-api-key",
+        "sec-password-storage",
+        "sec-leaked-api-key"
+      ],
+      "prerequisites": [
+        "security-auth-and-injection",
+        "python-functions-scope-and-closures"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/33-secrets-storage-rotation-and-exposure.md",
+      "sha256": "f01d11a8170ebaa076bb344ce113f3666aec68fd4c013b651df35922bf4487a1",
+      "words": 1249
+    },
+    {
+      "slug": "git-commits-index-and-object-identity",
+      "skill": "git",
+      "topic": "commits",
+      "title": "Git commits: the index, snapshots and object identity",
+      "difficulty": "beginner",
+      "checks": [
+        "git-staged-snapshot",
+        "git-ignore-tracked-file",
+        "git-hash-chain"
+      ],
+      "prerequisites": [
+        "tracing-program-state"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/34-git-commits-index-and-object-identity.md",
+      "sha256": "a524dcf81638b07682fff4f5ad7dbf6756a29d5450eee547dde1e555cd427ff5",
+      "words": 1199
+    },
+    {
+      "slug": "linux-filesystem-paths-and-permissions",
+      "skill": "linux",
+      "topic": "filesystem",
+      "title": "Linux filesystems: paths, permissions and open-file lifetime",
+      "difficulty": "beginner",
+      "checks": [
+        "linux-octal-mode",
+        "linux-directory-execute",
+        "linux-deleted-open-file"
+      ],
+      "prerequisites": [
+        "linux-processes-files-permissions"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/35-linux-filesystem-paths-and-permissions.md",
+      "sha256": "7c30139c5c47aed6be1dc91eeabfb4b9d70ea9b33216913b8372c023f75bcb81",
+      "words": 1183
+    }
+  ],
+  "expected_counts": {
+    "skills": 15,
+    "subskills": 45,
+    "prerequisite_edges": 21,
+    "active_questions": 158,
+    "inactive_questions": 0,
+    "active_lessons": 35,
+    "lesson_checks": 112,
+    "lesson_resources": 123
+  },
+  "validation": {
+    "backend": "404 passed in 123.74s",
+    "frontend": "lint, typecheck and production webpack build passed",
+    "urls_checked": 253,
+    "urls_ok": 253,
+    "warnings": "30 unchanged assessment warnings",
+    "independent_advisory_model": "gpt-oss:120b",
+    "human_verified": false
+  }
+}

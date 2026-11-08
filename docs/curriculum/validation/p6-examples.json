@@ -1,0 +1,247 @@
+{
+  "baseline": "f26daf2d8e5f8d6fdec1db8334baeebd5a3ce61c",
+  "existing_files_unchanged": 65,
+  "curriculum_checksum": "4f4eb928bee1243b526cb3bfdbc725f0b894acb5b63fe8b8f6a9b0063fdc0941",
+  "examples": [
+    {
+      "slug": "react-list-identity-and-derived-data",
+      "mapping": [
+        "react",
+        "lists"
+      ],
+      "checks": [
+        "re-index-as-key",
+        "re-derived-state-effect"
+      ],
+      "code_blocks": 1,
+      "verification": "See p6-browser.json for actual React/Chromium execution"
+    },
+    {
+      "slug": "react-effects-and-request-lifetimes",
+      "mapping": [
+        "react",
+        "effects"
+      ],
+      "checks": [
+        "re-object-dependency",
+        "re-strictmode-double-effect",
+        "re-fetch-race-condition",
+        "re-fetch-race"
+      ],
+      "code_blocks": 1,
+      "verification": "See p6-browser.json for actual React/Chromium execution"
+    },
+    {
+      "slug": "fastapi-dependency-lifetimes-and-overrides",
+      "mapping": [
+        "fastapi",
+        "dependencies"
+      ],
+      "checks": [
+        "fa-dependency-caching",
+        "fa-db-session-dependency",
+        "fa-dependency-override"
+      ],
+      "code_blocks": 1,
+      "stdout": "True real\nTrue fake\n409\n['open', 'close', 'fake-open', 'fake-close', 'open', 'close']"
+    },
+    {
+      "slug": "fastapi-async-handlers-and-bounded-work",
+      "mapping": [
+        "fastapi",
+        "async-handlers"
+      ],
+      "checks": [
+        "fa-blocking-call-in-async-handler",
+        "fa-background-task-durability",
+        "fa-sync-threadpool-limit"
+      ],
+      "code_blocks": 1,
+      "stdout": "2 ['one', 'two']\nTrue\n40"
+    },
+    {
+      "slug": "test-doubles-fixtures-and-patching",
+      "mapping": [
+        "testing",
+        "test-doubles"
+      ],
+      "checks": [
+        "test-pytest-fixture-scope",
+        "test-mock-where-to-patch",
+        "test-overspecified-mock",
+        "test-mock-without-autospec"
+      ],
+      "code_blocks": 3,
+      "unique_tests": 4,
+      "runs": [
+        {
+          "reverse": false,
+          "hash_seed": "1",
+          "timezone": "UTC",
+          "passed": 4
+        },
+        {
+          "reverse": true,
+          "hash_seed": "1",
+          "timezone": "UTC",
+          "passed": 4
+        },
+        {
+          "reverse": false,
+          "hash_seed": "42",
+          "timezone": "America/New_York",
+          "passed": 4
+        }
+      ]
+    },
+    {
+      "slug": "reliable-tests-time-state-and-order",
+      "mapping": [
+        "testing",
+        "reliability"
+      ],
+      "checks": [
+        "test-now-in-assertion",
+        "test-flaky-investigation",
+        "test-shared-state-order"
+      ],
+      "code_blocks": 1,
+      "unique_tests": 5,
+      "runs": [
+        {
+          "reverse": false,
+          "hash_seed": "1",
+          "timezone": "UTC",
+          "passed": 5
+        },
+        {
+          "reverse": true,
+          "hash_seed": "1",
+          "timezone": "UTC",
+          "passed": 5
+        },
+        {
+          "reverse": false,
+          "hash_seed": "42",
+          "timezone": "America/New_York",
+          "passed": 5
+        }
+      ]
+    },
+    {
+      "slug": "injection-safe-data-boundaries",
+      "mapping": [
+        "security",
+        "injection"
+      ],
+      "checks": [
+        "sec-parameterised-query",
+        "sec-react-xss-bio",
+        "sec-ssrf-avatar-url"
+      ],
+      "code_blocks": 1,
+      "isolation": {
+        "image": "python:3.12-slim",
+        "user": "65534:65534",
+        "network": "none",
+        "read_only_root": true,
+        "capabilities": "none",
+        "memory_mb": 128,
+        "cpus": 0.5,
+        "pids": 32,
+        "scratch_mb": 16,
+        "container_timeout_seconds": 20,
+        "host_timeout_seconds": 90
+      },
+      "stdout": "[11, 12]\n[]\nUnsupported sort\n&lt;b&gt;untrusted&lt;/b&gt;"
+    },
+    {
+      "slug": "secrets-storage-rotation-and-exposure",
+      "mapping": [
+        "security",
+        "secrets"
+      ],
+      "checks": [
+        "sec-frontend-api-key",
+        "sec-password-storage",
+        "sec-leaked-api-key"
+      ],
+      "code_blocks": 1,
+      "isolation": {
+        "image": "python:3.12-slim",
+        "user": "65534:65534",
+        "network": "none",
+        "read_only_root": true,
+        "capabilities": "none",
+        "memory_mb": 128,
+        "cpus": 0.5,
+        "pids": 32,
+        "scratch_mb": 16,
+        "container_timeout_seconds": 20,
+        "host_timeout_seconds": 90
+      },
+      "stdout": "ServiceConfig(endpoint='https://payments.example.test')\nTrue\n{'endpoint': 'https://payments.example.test'}\nPAYMENT_API_KEY is required\nTrue"
+    },
+    {
+      "slug": "git-commits-index-and-object-identity",
+      "mapping": [
+        "git",
+        "commits"
+      ],
+      "checks": [
+        "git-staged-snapshot",
+        "git-ignore-tracked-file",
+        "git-hash-chain"
+      ],
+      "code_blocks": 1,
+      "stdout": "draft\ndraft\nrevised\nstill tracked\ncommit\ntree\nblob\nsame tree\ndifferent commit"
+    },
+    {
+      "slug": "linux-filesystem-paths-and-permissions",
+      "mapping": [
+        "linux",
+        "filesystem"
+      ],
+      "checks": [
+        "linux-octal-mode",
+        "linux-directory-execute",
+        "linux-deleted-open-file"
+      ],
+      "code_blocks": 1,
+      "isolation": {
+        "image": "python:3.12-slim",
+        "user": "65534:65534",
+        "network": "none",
+        "read_only_root": true,
+        "capabilities": "none",
+        "memory_mb": 128,
+        "cpus": 0.5,
+        "pids": 32,
+        "scratch_mb": 16,
+        "container_timeout_seconds": 20,
+        "host_timeout_seconds": 90
+      },
+      "stdout": "0o640\n['note.txt']\nsearch denied\nkept alive\nlisting denied\nFalse\nkept alive"
+    }
+  ],
+  "runtime_versions": {
+    "fastapi": "0.162.0",
+    "starlette": "1.10.0",
+    "anyio": "4.16.0",
+    "httpx": "0.28.1",
+    "pytest": "9.2.0",
+    "python": "3.14.7",
+    "git": "git version 2.55.0"
+  },
+  "fastapi_depends_exposes_scope": true,
+  "linux_image_id": "sha256:02108f5d322dd89f1c9e552442c25acb0543dfdbc455693a5599624f20d9155d",
+  "coverage": {
+    "skills": 15,
+    "subskills": 45,
+    "lessons": 35,
+    "covered_subskills": 35,
+    "questions": 158,
+    "new_check_links": 31,
+    "new_resources": 37
+  }
+}

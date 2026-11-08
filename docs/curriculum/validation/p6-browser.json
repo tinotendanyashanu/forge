@@ -1,0 +1,58 @@
+{
+  "react": "19.3.0",
+  "browser": "Chrome/156.0.8078.4",
+  "results": [
+    {
+      "lesson": "react-list-identity-and-derived-data",
+      "variant": "original",
+      "after_reverse": [
+        {
+          "id": "b2",
+          "value": "Bo"
+        },
+        {
+          "id": "a1",
+          "value": "Asha note"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "lesson": "react-list-identity-and-derived-data",
+      "variant": "index",
+      "after_reverse": [
+        {
+          "id": "b2",
+          "value": "Asha note"
+        },
+        {
+          "id": "a1",
+          "value": "Bo"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "lesson": "react-effects-and-request-lifetimes",
+      "variant": "original timers",
+      "passed": true
+    },
+    {
+      "lesson": "react-effects-and-request-lifetimes",
+      "variant": "controlled out-of-order, rejection and unmount",
+      "publications": [
+        "fast",
+        "fail"
+      ],
+      "passed": true
+    },
+    {
+      "lesson": "react-effects-and-request-lifetimes",
+      "variant": "development StrictMode replay",
+      "setups": 2,
+      "publications": 1,
+      "passed": true
+    }
+  ],
+  "errors": []
+}

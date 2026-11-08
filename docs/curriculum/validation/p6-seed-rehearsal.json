@@ -1,0 +1,1008 @@
+{
+  "baseline_commit": "f26daf2d8e5f8d6fdec1db8334baeebd5a3ce61c",
+  "history_tables": [
+    "adr_revisions",
+    "answers",
+    "architecture_decisions",
+    "architecture_projects",
+    "architecture_versions",
+    "assessment_sessions",
+    "career_attempts",
+    "career_jobs",
+    "career_profiles",
+    "career_reports",
+    "career_responses",
+    "career_roadmaps",
+    "career_sections",
+    "coding_drafts",
+    "coding_jobs",
+    "coding_reviews",
+    "coding_submissions",
+    "coding_test_results",
+    "design_evaluations",
+    "design_review_messages",
+    "design_reviews",
+    "eng_audit_events",
+    "eng_exercise_responses",
+    "eng_jobs",
+    "eng_pr_comments",
+    "eng_pr_revisions",
+    "eng_pull_requests",
+    "eng_reviews",
+    "eng_snapshots",
+    "eng_submissions",
+    "eng_test_results",
+    "eng_workspace_files",
+    "eng_workspaces",
+    "evaluation_results",
+    "failure_attempts",
+    "incident_actions",
+    "incident_evaluations",
+    "incident_evidence",
+    "incident_hypotheses",
+    "incident_messages",
+    "incident_rcas",
+    "incident_sessions",
+    "incident_snapshots",
+    "interview_challenges",
+    "interview_evaluations",
+    "interview_sessions",
+    "interview_turns",
+    "learner_goals",
+    "learners",
+    "lesson_reads",
+    "mastery_events",
+    "mastery_evidence",
+    "misconception_events",
+    "postmortem_revisions",
+    "postmortems",
+    "review_cards",
+    "review_events",
+    "session_items",
+    "skill_mastery",
+    "skill_progress"
+  ],
+  "baseline": {
+    "adr_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "answers": {
+      "count": 3,
+      "sha256": "92cbdd572394573ae773e49ffc34e0a68a5eabe3642937ff9a991014abc1949e"
+    },
+    "architecture_decisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "architecture_projects": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "architecture_versions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "assessment_sessions": {
+      "count": 3,
+      "sha256": "dffb09f7adea62c629eeda1e6a4f74a607d8ec6dabb8096202153b2334f38fd3"
+    },
+    "career_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_profiles": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_reports": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_responses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_roadmaps": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_sections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_drafts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_submissions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_test_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_review_messages": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_audit_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_exercise_responses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pr_comments": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pr_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pull_requests": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_snapshots": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_submissions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_test_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_workspace_files": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_workspaces": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "evaluation_results": {
+      "count": 3,
+      "sha256": "e37f5105a950671c1ebdfcca4620bed40c7bbcbf4892bc4784ef6dd368a93770"
+    },
+    "failure_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_hypotheses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_messages": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_rcas": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_snapshots": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_challenges": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_turns": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learner_goals": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learners": {
+      "count": 1,
+      "sha256": "7e1d69bdfc9fce62f6e958ef40335a90e6ba5c9c5fa6c1ae8b22ecaff72c4ced"
+    },
+    "lesson_reads": {
+      "count": 1,
+      "sha256": "48575e5e6a9f168e9d271f28a79bc898d83f345d3d689be70606298dbfcc9688"
+    },
+    "mastery_events": {
+      "count": 2,
+      "sha256": "e008e5beb6a7f4aad3b20b6f3490edbce10cd9a18ebbb07f034d8e4d1cdfd4f3"
+    },
+    "mastery_evidence": {
+      "count": 3,
+      "sha256": "6d569afd88a5523fce4b64c0bf61eff146e109db78fbff091bfe6701651dd379"
+    },
+    "misconception_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "postmortem_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "postmortems": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_cards": {
+      "count": 1,
+      "sha256": "affe481ec6a53c3e6d58da17a78e2d9b45c4a3242926f8bcb2cc5b410e0148b9"
+    },
+    "review_events": {
+      "count": 3,
+      "sha256": "67a51608b26889184230572972240af6ed3edbafc841edb57151f39d22d3419a"
+    },
+    "session_items": {
+      "count": 3,
+      "sha256": "80258ddd7f30c1d4e64ee90e22183d641e28413e038e8186565538df8f52aa3f"
+    },
+    "skill_mastery": {
+      "count": 1,
+      "sha256": "bbd0694692d06970069cfe783f1eb73c30f4777afe37e29feddf47d83d057875"
+    },
+    "skill_progress": {
+      "count": 1,
+      "sha256": "1626bab48f87c11b2a04b0f684972f9772ddc089ab3012ca85f7f52cb7a4f8ad"
+    },
+    "skills": {
+      "count": 15,
+      "sha256": "fe9acef34ea4fddcf31338470a5ff71046e90ca5ff938d020c44ce02da2a6da0"
+    },
+    "topics": {
+      "count": 45,
+      "sha256": "783e3dd6b79a48dc0e75db33ba065a27ec27e25d17899beced57ca1f79c1c834"
+    },
+    "questions": {
+      "count": 158,
+      "sha256": "03ce95997e9bb38b9ea08cd02b9f949af139f5d177025cfd896ce955142fbd1a"
+    },
+    "question_options": {
+      "count": 540,
+      "sha256": "e94f8bc400f5689040fd6afdc1b77f7e5832184588d1c1c96f35d16926e60350"
+    },
+    "skill_prerequisites": {
+      "count": 21,
+      "sha256": "2ff0fbb91b8779786af65bc14c09ab471635498c914ff224cdfed3e818b15973"
+    },
+    "lessons": {
+      "count": 25,
+      "sha256": "e934a5e55c61cda02ccd57bc9a8eadddca639b6af5ee29fff571df4a102ec8dd"
+    },
+    "lesson_questions": {
+      "count": 81,
+      "sha256": "a731bf6bdc0ed1e1a42f18a40b8cfb07b0eff9fbb177855b2d94b38a490c2a23"
+    },
+    "lesson_resources": {
+      "count": 86,
+      "sha256": "81f7e50f042831ea82332ea70ff955f5984b7a89de6c3bfd6628c053a24a3a8b"
+    },
+    "counts": {
+      "active_questions": 158,
+      "inactive_questions": 0,
+      "active_lessons": 25,
+      "covered_subskills": 25
+    },
+    "lesson_ids": {
+      "tracing-program-state": 1,
+      "http-requests-and-semantics": 2,
+      "fastapi-validation-and-dependencies": 3,
+      "postgres-transactions-and-concurrency": 4,
+      "react-state-and-rendering": 5,
+      "typescript-narrowing-and-unions": 6,
+      "unit-tests-that-matter": 7,
+      "security-auth-and-injection": 8,
+      "git-version-control": 9,
+      "linux-processes-files-permissions": 10,
+      "python-concurrency-models": 11,
+      "caching-and-scaling-reads": 12,
+      "timeouts-retries-idempotency": 13,
+      "safe-delivery-and-observability": 14,
+      "code-review-that-finds-risk": 15,
+      "choosing-data-structures": 16,
+      "reasoning-about-complexity": 17,
+      "python-objects-equality-and-copying": 18,
+      "python-functions-scope-and-closures": 19,
+      "sql-querying-joins-and-nulls": 20,
+      "postgres-indexes-and-query-plans": 21,
+      "typescript-runtime-boundaries": 22,
+      "typescript-generics-that-preserve-relationships": 23,
+      "http-caching-and-validation": 24,
+      "browser-origins-cors-and-csrf": 25
+    }
+  },
+  "first_seed": {
+    "adr_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "answers": {
+      "count": 3,
+      "sha256": "92cbdd572394573ae773e49ffc34e0a68a5eabe3642937ff9a991014abc1949e"
+    },
+    "architecture_decisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "architecture_projects": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "architecture_versions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "assessment_sessions": {
+      "count": 3,
+      "sha256": "dffb09f7adea62c629eeda1e6a4f74a607d8ec6dabb8096202153b2334f38fd3"
+    },
+    "career_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_profiles": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_reports": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_responses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_roadmaps": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_sections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_drafts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_submissions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_test_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_review_messages": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_audit_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_exercise_responses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pr_comments": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pr_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pull_requests": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_snapshots": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_submissions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_test_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_workspace_files": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_workspaces": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "evaluation_results": {
+      "count": 3,
+      "sha256": "e37f5105a950671c1ebdfcca4620bed40c7bbcbf4892bc4784ef6dd368a93770"
+    },
+    "failure_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_hypotheses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_messages": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_rcas": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_snapshots": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_challenges": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_turns": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learner_goals": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learners": {
+      "count": 1,
+      "sha256": "7e1d69bdfc9fce62f6e958ef40335a90e6ba5c9c5fa6c1ae8b22ecaff72c4ced"
+    },
+    "lesson_reads": {
+      "count": 1,
+      "sha256": "48575e5e6a9f168e9d271f28a79bc898d83f345d3d689be70606298dbfcc9688"
+    },
+    "mastery_events": {
+      "count": 2,
+      "sha256": "e008e5beb6a7f4aad3b20b6f3490edbce10cd9a18ebbb07f034d8e4d1cdfd4f3"
+    },
+    "mastery_evidence": {
+      "count": 3,
+      "sha256": "6d569afd88a5523fce4b64c0bf61eff146e109db78fbff091bfe6701651dd379"
+    },
+    "misconception_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "postmortem_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "postmortems": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_cards": {
+      "count": 1,
+      "sha256": "affe481ec6a53c3e6d58da17a78e2d9b45c4a3242926f8bcb2cc5b410e0148b9"
+    },
+    "review_events": {
+      "count": 3,
+      "sha256": "67a51608b26889184230572972240af6ed3edbafc841edb57151f39d22d3419a"
+    },
+    "session_items": {
+      "count": 3,
+      "sha256": "80258ddd7f30c1d4e64ee90e22183d641e28413e038e8186565538df8f52aa3f"
+    },
+    "skill_mastery": {
+      "count": 1,
+      "sha256": "bbd0694692d06970069cfe783f1eb73c30f4777afe37e29feddf47d83d057875"
+    },
+    "skill_progress": {
+      "count": 1,
+      "sha256": "1626bab48f87c11b2a04b0f684972f9772ddc089ab3012ca85f7f52cb7a4f8ad"
+    },
+    "skills": {
+      "count": 15,
+      "sha256": "fe9acef34ea4fddcf31338470a5ff71046e90ca5ff938d020c44ce02da2a6da0"
+    },
+    "topics": {
+      "count": 45,
+      "sha256": "783e3dd6b79a48dc0e75db33ba065a27ec27e25d17899beced57ca1f79c1c834"
+    },
+    "questions": {
+      "count": 158,
+      "sha256": "03ce95997e9bb38b9ea08cd02b9f949af139f5d177025cfd896ce955142fbd1a"
+    },
+    "question_options": {
+      "count": 540,
+      "sha256": "e94f8bc400f5689040fd6afdc1b77f7e5832184588d1c1c96f35d16926e60350"
+    },
+    "skill_prerequisites": {
+      "count": 21,
+      "sha256": "2ff0fbb91b8779786af65bc14c09ab471635498c914ff224cdfed3e818b15973"
+    },
+    "lessons": {
+      "count": 35,
+      "sha256": "228e944d0f2970a9bec4eefc5be772f818d36a564eb57e0d44f778fc60ec4bdb"
+    },
+    "lesson_questions": {
+      "count": 112,
+      "sha256": "be5a8341f3d6f624eef3249d4d3c828a85aa3477600318922e7d4aa282ec00b9"
+    },
+    "lesson_resources": {
+      "count": 123,
+      "sha256": "91c331fb74623ea90b178868508d18d83d2438efb56bd359062739cb2c019e5d"
+    },
+    "counts": {
+      "active_questions": 158,
+      "inactive_questions": 0,
+      "active_lessons": 35,
+      "covered_subskills": 35
+    },
+    "lesson_ids": {
+      "tracing-program-state": 1,
+      "http-requests-and-semantics": 2,
+      "fastapi-validation-and-dependencies": 3,
+      "postgres-transactions-and-concurrency": 4,
+      "react-state-and-rendering": 5,
+      "typescript-narrowing-and-unions": 6,
+      "unit-tests-that-matter": 7,
+      "security-auth-and-injection": 8,
+      "git-version-control": 9,
+      "linux-processes-files-permissions": 10,
+      "python-concurrency-models": 11,
+      "caching-and-scaling-reads": 12,
+      "timeouts-retries-idempotency": 13,
+      "safe-delivery-and-observability": 14,
+      "code-review-that-finds-risk": 15,
+      "choosing-data-structures": 16,
+      "reasoning-about-complexity": 17,
+      "python-objects-equality-and-copying": 18,
+      "python-functions-scope-and-closures": 19,
+      "sql-querying-joins-and-nulls": 20,
+      "postgres-indexes-and-query-plans": 21,
+      "typescript-runtime-boundaries": 22,
+      "typescript-generics-that-preserve-relationships": 23,
+      "http-caching-and-validation": 24,
+      "browser-origins-cors-and-csrf": 25,
+      "react-list-identity-and-derived-data": 26,
+      "react-effects-and-request-lifetimes": 27,
+      "fastapi-dependency-lifetimes-and-overrides": 28,
+      "fastapi-async-handlers-and-bounded-work": 29,
+      "test-doubles-fixtures-and-patching": 30,
+      "reliable-tests-time-state-and-order": 31,
+      "injection-safe-data-boundaries": 32,
+      "secrets-storage-rotation-and-exposure": 33,
+      "git-commits-index-and-object-identity": 34,
+      "linux-filesystem-paths-and-permissions": 35
+    }
+  },
+  "second_seed": {
+    "adr_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "answers": {
+      "count": 3,
+      "sha256": "92cbdd572394573ae773e49ffc34e0a68a5eabe3642937ff9a991014abc1949e"
+    },
+    "architecture_decisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "architecture_projects": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "architecture_versions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "assessment_sessions": {
+      "count": 3,
+      "sha256": "dffb09f7adea62c629eeda1e6a4f74a607d8ec6dabb8096202153b2334f38fd3"
+    },
+    "career_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_profiles": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_reports": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_responses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_roadmaps": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "career_sections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_drafts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_submissions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "coding_test_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_review_messages": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "design_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_audit_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_exercise_responses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pr_comments": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pr_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_pull_requests": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_snapshots": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_submissions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_test_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_workspace_files": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "eng_workspaces": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "evaluation_results": {
+      "count": 3,
+      "sha256": "e37f5105a950671c1ebdfcca4620bed40c7bbcbf4892bc4784ef6dd368a93770"
+    },
+    "failure_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_hypotheses": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_messages": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_rcas": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "incident_snapshots": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_challenges": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "interview_turns": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learner_goals": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "learners": {
+      "count": 1,
+      "sha256": "7e1d69bdfc9fce62f6e958ef40335a90e6ba5c9c5fa6c1ae8b22ecaff72c4ced"
+    },
+    "lesson_reads": {
+      "count": 1,
+      "sha256": "48575e5e6a9f168e9d271f28a79bc898d83f345d3d689be70606298dbfcc9688"
+    },
+    "mastery_events": {
+      "count": 2,
+      "sha256": "e008e5beb6a7f4aad3b20b6f3490edbce10cd9a18ebbb07f034d8e4d1cdfd4f3"
+    },
+    "mastery_evidence": {
+      "count": 3,
+      "sha256": "6d569afd88a5523fce4b64c0bf61eff146e109db78fbff091bfe6701651dd379"
+    },
+    "misconception_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "postmortem_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "postmortems": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_cards": {
+      "count": 1,
+      "sha256": "affe481ec6a53c3e6d58da17a78e2d9b45c4a3242926f8bcb2cc5b410e0148b9"
+    },
+    "review_events": {
+      "count": 3,
+      "sha256": "67a51608b26889184230572972240af6ed3edbafc841edb57151f39d22d3419a"
+    },
+    "session_items": {
+      "count": 3,
+      "sha256": "80258ddd7f30c1d4e64ee90e22183d641e28413e038e8186565538df8f52aa3f"
+    },
+    "skill_mastery": {
+      "count": 1,
+      "sha256": "bbd0694692d06970069cfe783f1eb73c30f4777afe37e29feddf47d83d057875"
+    },
+    "skill_progress": {
+      "count": 1,
+      "sha256": "1626bab48f87c11b2a04b0f684972f9772ddc089ab3012ca85f7f52cb7a4f8ad"
+    },
+    "skills": {
+      "count": 15,
+      "sha256": "fe9acef34ea4fddcf31338470a5ff71046e90ca5ff938d020c44ce02da2a6da0"
+    },
+    "topics": {
+      "count": 45,
+      "sha256": "783e3dd6b79a48dc0e75db33ba065a27ec27e25d17899beced57ca1f79c1c834"
+    },
+    "questions": {
+      "count": 158,
+      "sha256": "03ce95997e9bb38b9ea08cd02b9f949af139f5d177025cfd896ce955142fbd1a"
+    },
+    "question_options": {
+      "count": 540,
+      "sha256": "e94f8bc400f5689040fd6afdc1b77f7e5832184588d1c1c96f35d16926e60350"
+    },
+    "skill_prerequisites": {
+      "count": 21,
+      "sha256": "2ff0fbb91b8779786af65bc14c09ab471635498c914ff224cdfed3e818b15973"
+    },
+    "lessons": {
+      "count": 35,
+      "sha256": "228e944d0f2970a9bec4eefc5be772f818d36a564eb57e0d44f778fc60ec4bdb"
+    },
+    "lesson_questions": {
+      "count": 112,
+      "sha256": "be5a8341f3d6f624eef3249d4d3c828a85aa3477600318922e7d4aa282ec00b9"
+    },
+    "lesson_resources": {
+      "count": 123,
+      "sha256": "91c331fb74623ea90b178868508d18d83d2438efb56bd359062739cb2c019e5d"
+    },
+    "counts": {
+      "active_questions": 158,
+      "inactive_questions": 0,
+      "active_lessons": 35,
+      "covered_subskills": 35
+    },
+    "lesson_ids": {
+      "tracing-program-state": 1,
+      "http-requests-and-semantics": 2,
+      "fastapi-validation-and-dependencies": 3,
+      "postgres-transactions-and-concurrency": 4,
+      "react-state-and-rendering": 5,
+      "typescript-narrowing-and-unions": 6,
+      "unit-tests-that-matter": 7,
+      "security-auth-and-injection": 8,
+      "git-version-control": 9,
+      "linux-processes-files-permissions": 10,
+      "python-concurrency-models": 11,
+      "caching-and-scaling-reads": 12,
+      "timeouts-retries-idempotency": 13,
+      "safe-delivery-and-observability": 14,
+      "code-review-that-finds-risk": 15,
+      "choosing-data-structures": 16,
+      "reasoning-about-complexity": 17,
+      "python-objects-equality-and-copying": 18,
+      "python-functions-scope-and-closures": 19,
+      "sql-querying-joins-and-nulls": 20,
+      "postgres-indexes-and-query-plans": 21,
+      "typescript-runtime-boundaries": 22,
+      "typescript-generics-that-preserve-relationships": 23,
+      "http-caching-and-validation": 24,
+      "browser-origins-cors-and-csrf": 25,
+      "react-list-identity-and-derived-data": 26,
+      "react-effects-and-request-lifetimes": 27,
+      "fastapi-dependency-lifetimes-and-overrides": 28,
+      "fastapi-async-handlers-and-bounded-work": 29,
+      "test-doubles-fixtures-and-patching": 30,
+      "reliable-tests-time-state-and-order": 31,
+      "injection-safe-data-boundaries": 32,
+      "secrets-storage-rotation-and-exposure": 33,
+      "git-commits-index-and-object-identity": 34,
+      "linux-filesystem-paths-and-permissions": 35
+    }
+  },
+  "history_unchanged": true,
+  "logical_idempotency": true
+}

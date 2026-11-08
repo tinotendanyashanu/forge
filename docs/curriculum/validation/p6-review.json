@@ -1,0 +1,647 @@
+{
+  "model": "gpt-oss:120b",
+  "first_reviewed_at": "2026-11-08T14:34:47.730767+00:00",
+  "async_retry_at": "2026-11-08T14:39:12.715409+00:00",
+  "human_verified": false,
+  "findings": 56,
+  "results": [
+    {
+      "slug": "react-list-identity-and-derived-data",
+      "sha256": "82a63e2f360261bce94e286d5bfd169ce1492916d58d1bb7088138f925d4edc9",
+      "usage": {
+        "prompt_tokens": 2224,
+        "completion_tokens": 2206,
+        "total_tokens": 4430,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "error",
+            "claim": "The complete example uses React 19.3; the identity rules also apply to earlier modern React versions.",
+            "reason": "As of the current React release cycle (React 18.x), there is no React 19.3. Stating a non\u2011existent version misleads learners about the environment they need to run the code.",
+            "fix": "Replace the version reference with the actual supported version, e.g., \"The complete example uses React 18.2 (or the latest stable React 18 release)\".",
+            "finding_id": "react-list-identity-and-derived-data:1",
+            "author_resolution": "Rejected: installed React/ReactDOM 19.3.0 and current official React docs establish the version; all examples ran against it."
+          },
+          {
+            "severity": "important",
+            "claim": "Prerequisite list includes \"typescript-runtime-boundaries\" while the lesson code is plain JavaScript.",
+            "reason": "Learners who are not using TypeScript may be confused by a prerequisite that does not apply to the example, and the lesson does not demonstrate any TypeScript concepts.",
+            "fix": "Either convert the example to TypeScript (adding type annotations) or remove \"typescript-runtime-boundaries\" from the prerequisites and replace it with a more relevant prerequisite such as \"basic JavaScript ES6+\".",
+            "finding_id": "react-list-identity-and-derived-data:2",
+            "author_resolution": "Accepted: the plain-JavaScript lesson now requires only the state lesson; TypeScript boundary material is an optional reference."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"Common mistakes\" section warns about mutating the state array with reverse() directly, yet the provided code already creates a new array before calling reverse().",
+            "reason": "The warning could be interpreted as contradicting the code, causing unnecessary doubt for beginners.",
+            "fix": "Clarify the comment, e.g., \"Do not call reverse() on the state array itself; the example correctly spreads into a new array before reversing: setTasks(current => [...current].reverse()).\"",
+            "finding_id": "react-list-identity-and-derived-data:3",
+            "author_resolution": "Accepted clarification: the provided spread-before-reverse update is explicitly described as the correct pattern."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Reference to \"FORGE checks\" without any explanation or link.",
+            "reason": "Learners cannot locate or verify these checks, reducing the usefulness of the statement and potentially causing frustration.",
+            "fix": "Provide a brief description of what FORGE is (e.g., a custom validation suite) and, if publicly available, include a URL or repository link. If it is internal, rename the reference to something generic like \"the lesson\u2019s built\u2011in checks\".",
+            "finding_id": "react-list-identity-and-derived-data:4",
+            "author_resolution": "Context supplied: actual check IDs map to FORGE questions and titles/launch controls are rendered by the existing UI; no fabricated commands added."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson claims that a stable key does **not** preserve state after a component is removed from the tree, yet the misconception list includes \"A stable key preserves state after a component has been removed from the tree.\"",
+            "reason": "The wording could be misread; the misconception is correctly identified, but the surrounding text does not explicitly state that the misconception is false, which may leave learners uncertain.",
+            "fix": "Add an explicit clarification in the misconceptions section, e.g., \"A stable key **does not** preserve state after a component has been removed from the tree; the component is unmounted and its local state is discarded.\"",
+            "finding_id": "react-list-identity-and-derived-data:5",
+            "author_resolution": "Already addressed: false metadata statements are intentionally labeled Misconceptions to avoid; the body and exercise explicitly explain unmount state loss."
+          }
+        ],
+        "pedagogy": "The lesson presents a clear mental model, a runnable example, and targeted practice that align well with beginner objectives. It successfully demonstrates key React concepts (stable keys, derived data) and includes thoughtful feedback. Minor inaccuracies (React version, mismatched prerequisites) and ambiguous references slightly detract from its clarity, but overall the instructional flow and exercises are solid for the stated difficulty level.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "react-effects-and-request-lifetimes",
+      "sha256": "ca713ce987c0ef5a4abcedf1c5c4add11cc2af4bc68fbfacb602f99b1e0be490",
+      "usage": {
+        "prompt_tokens": 2232,
+        "completion_tokens": 2480,
+        "total_tokens": 4712,
+        "prompt_tokens_details": {
+          "cached_tokens": 48
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "error",
+            "claim": "The lesson states that the example runs in a React 19.3 client playground.",
+            "reason": "As of the current React releases, the latest stable major version is React 18 (e.g., 18.2). React 19 has not been released, so the version reference is inaccurate and could mislead learners about available APIs and behavior.",
+            "fix": "Update the statement to reference the correct version, e.g., \"The example runs in a React 18.2 client playground\" and adjust any version\u2011specific notes accordingly.",
+            "finding_id": "react-effects-and-request-lifetimes:1",
+            "author_resolution": "Rejected: React 19.3.0 is installed and documented; the actual browser checks passed."
+          },
+          {
+            "severity": "important",
+            "claim": "The code imports `StrictMode` from `react` and also wraps the component with `<StrictMode>`.",
+            "reason": "While this import is technically valid (`StrictMode` is a named export), most tutorials import it directly from the `react` package without destructuring, e.g., `import { StrictMode } from 'react';`. The current phrasing may confuse beginners who see `StrictMode` used as a component but are not familiar with it being a named export.",
+            "fix": "Add a brief note clarifying that `StrictMode` is a component exported from `react` and can be imported as shown, or alternatively import it as `import React from 'react';` and use `<React.StrictMode>`.",
+            "finding_id": "react-effects-and-request-lifetimes:2",
+            "author_resolution": "Rejected: the combined default/named import is valid and compiled/executed; StrictMode is already explained in the lesson."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not mention the need to memoize objects passed as dependencies (e.g., using `useMemo` or moving object creation inside the effect).",
+            "reason": "One of the common pitfalls is passing freshly created objects as dependencies, which causes unnecessary effect reruns. While the lesson mentions this issue, it does not provide concrete patterns for solving it, leaving learners without a clear remedy.",
+            "fix": "Add an example showing how to memoize an options object with `useMemo` or construct it inside the effect, e.g., `const options = useMemo(() => ({ foo, bar }), [foo, bar]);`.",
+            "finding_id": "react-effects-and-request-lifetimes:3",
+            "author_resolution": "Already addressed: primitive query is the dependency, and the prose explains constructing options inside the effect. Another memoization example is optional."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The practice exercise suggests using \u201ccontrolled deferred promises in automated tests\u201d but does not provide a minimal example or reference to a testing library.",
+            "reason": "Beginners may not know how to create a deferred promise or integrate it with a test runner like Jest or React Testing Library, reducing the usefulness of the exercise.",
+            "fix": "Include a short code snippet illustrating a deferred promise pattern and how to use it with `@testing-library/react` to assert that only the latest query updates the UI.",
+            "finding_id": "react-effects-and-request-lifetimes:4",
+            "author_resolution": "Deferred optional testing-library scaffold: controlled promises are an advanced transfer exercise and the retained browser validator demonstrates that technique without adding app dependencies."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson lists prerequisites but omits the need for basic knowledge of the AbortController API when extending the mock to real fetch calls.",
+            "reason": "Learners who replace the mock with `fetch` may encounter cancellation issues without prior exposure to AbortController, leading to confusion.",
+            "fix": "Add \"AbortController and fetch cancellation\" to the prerequisites or provide a brief sidebar explaining its usage.",
+            "finding_id": "react-effects-and-request-lifetimes:5",
+            "author_resolution": "Not required for the runnable mock: it is explicitly noncancellable. AbortController is discussed as an extension, with authoritative effect/fetch resources."
+          }
+        ],
+        "pedagogy": "The lesson presents a clear mental model separating rendering, event handling, and effects, and it uses a concise, runnable example that demonstrates stale\u2011result protection. The progression from conceptual explanation to concrete code, common mistakes, and a hands\u2011on practice aligns well with an intermediate audience. Minor factual inaccuracies (React version) and missing implementation details (memoization patterns, testing helpers) slightly reduce its completeness, but overall the material is well\u2011structured, accurate, and actionable.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "fastapi-dependency-lifetimes-and-overrides",
+      "sha256": "bd5e0737556e924f796cd924b891ad31195f59938a86b64ae87fa29e6a6fe7c5",
+      "usage": {
+        "prompt_tokens": 2088,
+        "completion_tokens": 4024,
+        "total_tokens": 6112,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "error",
+            "claim": "Modern FastAPI distinguishes function/request scopes, and streaming responses can outlive the endpoint function.",
+            "reason": "FastAPI does not expose explicit \"function\" vs \"request\" scopes for dependencies. The default behavior is per\u2011request execution with caching, and the only built\u2011in way to change caching is the `use_cache` flag. Scope terminology belongs to Starlette's lifespan events, not FastAPI's dependency system, so the statement is misleading and may confuse learners.",
+            "fix": "Replace the sentence with: \"FastAPI resolves dependencies per request and caches the result for the duration of that request (unless `use_cache=False`). For streaming responses, the cleanup of a dependency that uses `yield` runs after the response iterator is exhausted, which can be after the endpoint function returns.\"",
+            "finding_id": "fastapi-dependency-lifetimes-and-overrides:1",
+            "author_resolution": "Rejected: installed FastAPI 0.162.0 exposes scope and the official yield guide documents function/request scope. A runtime signature probe is retained."
+          },
+          {
+            "severity": "important",
+            "claim": "The example clears all overrides with `app.dependency_overrides.clear()` after the test.",
+            "reason": "Clearing the entire overrides dictionary removes any other overrides that might have been set elsewhere in the test suite, potentially causing hidden test interactions. The recommended practice is to remove only the override that was added, ensuring other overrides remain intact.",
+            "fix": "Replace the `finally` block with:\n```python\nfinally:\n    app.dependency_overrides.pop(get_store, None)\n```",
+            "finding_id": "fastapi-dependency-lifetimes-and-overrides:2",
+            "author_resolution": "Accepted with stronger preservation: copy and restore the entire previous override mapping, preserving an existing override for the same callable too."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not mention async dependencies or async generator dependencies.",
+            "reason": "FastAPI fully supports `async def` dependencies and `async def` generators with `yield`. Omitting this leaves intermediate learners without guidance on the most common pattern for async database clients, which can lead to runtime errors if they try to use async resources with a sync dependency definition.",
+            "fix": "Add a short subsection, e.g.: \"Async dependencies work the same way but must be declared with `async def`. When using an async generator, write `async def get_async_store(): ...; async with ...; yield ...` and FastAPI will await the generator and run its cleanup after the response.\"",
+            "finding_id": "fastapi-dependency-lifetimes-and-overrides:3",
+            "author_resolution": "Deferred a second async-generator lab: production guidance already distinguishes async clients and resource/thread ownership; the linked official yield guide covers async context management."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson implies that the described cleanup behavior is the same across all FastAPI versions.",
+            "reason": "FastAPI changed the timing of dependency cleanup for streaming responses in version 0.78.0 (aligned with Starlette 0.20). Earlier versions performed cleanup immediately after the endpoint function returned, which could close resources before a streamed response finished. Not stating the version range may mislead readers using older releases.",
+            "fix": "Add a version note: \"The cleanup\u2011after\u2011response behavior described here applies to FastAPI \u22650.78.0. If you are on an older version, streaming responses may trigger cleanup earlier, so test accordingly or upgrade.\"",
+            "finding_id": "fastapi-dependency-lifetimes-and-overrides:4",
+            "author_resolution": "Rejected: the original text explicitly says cleanup depends on version/scope. The suggested historical cutoff was not supported and was not added."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The explanation of `use_cache=False` could be clearer about its effect on sub\u2011dependencies.",
+            "reason": "Learners might think that setting `use_cache=False` on a parent dependency also disables caching for its sub\u2011dependencies, which is not the case. Each dependency controls its own caching independently.",
+            "fix": "Amend the paragraph to read: \"`use_cache=False` only disables caching for the dependency on which it is set; sub\u2011dependencies retain their default caching behavior unless they also specify `use_cache=False`.\"",
+            "finding_id": "fastapi-dependency-lifetimes-and-overrides:5",
+            "author_resolution": "Accepted: the text now explicitly says sub-dependencies keep their own cache settings."
+          }
+        ],
+        "pedagogy": "The lesson is well\u2011structured, provides a clear mental model, and includes a runnable example that demonstrates request\u2011scoped caching, cleanup, and test overrides. It effectively addresses common pitfalls and ties concepts to security and performance considerations, making it suitable for intermediate learners. Minor inaccuracies (dependency scope terminology, version\u2011specific behavior) and omissions (async dependencies, precise override cleanup) reduce its reliability slightly, but the overall pedagogical value remains high.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "test-doubles-fixtures-and-patching",
+      "sha256": "dfe502e39fdc6c66ca1023e42789800332187ee8e74cf156fedfca14d4af14f9",
+      "usage": {
+        "prompt_tokens": 2209,
+        "completion_tokens": 3869,
+        "total_tokens": 6078,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The lesson links to Python 3.12 documentation but the code works on earlier Python versions as well.",
+            "reason": "Readers using Python 3.8\u20113.11 might assume the examples require 3.12 and miss that they are compatible with older releases, potentially causing confusion.",
+            "fix": "Add a note such as: \"The examples use features available since Python 3.8 (unittest.mock.create_autospec, pytest fixtures). The linked docs are for Python 3.12 but the same behavior applies to earlier supported versions.\"",
+            "finding_id": "test-doubles-fixtures-and-patching:1",
+            "author_resolution": "Retained supported reference version: FORGE requires Python 3.12 or later; no claim is made that these concepts first appeared in 3.12."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The `spec_set=True` argument is passed to `create_autospec` for a function object.",
+            "reason": "`spec_set` restricts attribute access on the mock, which is only relevant for attribute mocks (e.g., classes). For a function mock it has no practical effect, so the argument is unnecessary and may distract learners.",
+            "fix": "Remove `spec_set=True` from the `create_autospec` call in the `catalog` fixture, or add a brief comment explaining that it is optional for function specs.",
+            "finding_id": "test-doubles-fixtures-and-patching:2",
+            "author_resolution": "Accepted: removed unnecessary function-level spec_set usage; autospec signature validation remains fully tested."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson states that \"Patch the consumer's looked\u2011up name\" but does not show an example for the alternative import style (`import price_gateway`).",
+            "reason": "Learners may be unclear about how to patch when the consumer imports the module rather than the function, leading to the common mistake of patching the wrong target.",
+            "fix": "Insert a short code snippet illustrating the alternative: `import price_gateway` in `billing.py` and then `monkeypatch.setattr(billing.price_gateway, \"lookup_price\", double)` in the test.",
+            "finding_id": "test-doubles-fixtures-and-patching:3",
+            "author_resolution": "Accepted: prose now gives the alternate billing.price_gateway.lookup_price lookup path."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The prerequisites list includes \"unit-tests-that-matter\" and \"python-functions-scope-and-closures\" without clarifying that these are separate lesson slugs.",
+            "reason": "New learners might not know where to find these prerequisite materials, which could hinder their ability to follow the current lesson.",
+            "fix": "Provide brief descriptions or links (e.g., \"unit-tests-that-matter \u2013 a lesson on writing effective unit tests; python-functions-scope-and-closures \u2013 a lesson on Python's lexical scoping and closures.\")",
+            "finding_id": "test-doubles-fixtures-and-patching:4",
+            "author_resolution": "Context supplied: both prerequisite slugs exist and the UI renders their lesson titles and links."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The practice exercise asks to \"Implement an exchange\u2011rate adapter\" but does not give any scaffolding or guidance on the expected interface.",
+            "reason": "Intermediate learners may spend excessive time designing the adapter rather than focusing on the intended testing concepts, reducing the exercise\u2019s effectiveness.",
+            "fix": "Add a minimal interface description, e.g., `def get_rate(base: str, target: str) -> Decimal:` and suggest using a simple stub or fake for the adapter in tests.",
+            "finding_id": "test-doubles-fixtures-and-patching:5",
+            "author_resolution": "Accepted: the exercise supplies the get_rate(base, target) -> Decimal adapter contract."
+          }
+        ],
+        "pedagogy": "The lesson presents a well\u2011structured intermediate tutorial on test doubles, clearly separating concepts (stubs, fakes, interaction mocks) and tying them to concrete pytest fixtures and `unittest.mock` usage. The example code is accurate, runnable, and demonstrates common pitfalls such as patching the wrong target and over\u2011specifying mocks. The progression from theory to a hands\u2011on example, followed by common mistakes, trade\u2011offs, and a practice exercise, supports learners in consolidating the material. Minor improvements\u2014adding version compatibility notes, a patching example for module imports, and clearer prerequisite references\u2014would make the lesson more self\u2011contained and reduce potential confusion.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "reliable-tests-time-state-and-order",
+      "sha256": "d6ea4006151ca033b66a6b17d144d29af80b9f107a27ed451afd980c3a0a61b5",
+      "usage": {
+        "prompt_tokens": 2106,
+        "completion_tokens": 2337,
+        "total_tokens": 4443,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The lesson references \"Python 3.12: Time and monotonic clocks\" but the example code never uses a monotonic clock.",
+            "reason": "Readers may expect the lesson to demonstrate how to inject a monotonic time source (e.g., time.monotonic) alongside the datetime\u2011based clock. Omitting it can cause confusion about the trade\u2011off between wall\u2011clock and monotonic sources.",
+            "fix": "Add a short code snippet showing how to replace ManualClock with a monotonic\u2011seconds source (e.g., a callable returning float) and adapt Cache to accept either datetime or float timestamps, explaining the contract conversion.",
+            "finding_id": "reliable-tests-time-state-and-order:1",
+            "author_resolution": "Deferred a second implementation: the complete datetime cache is explicitly contrasted with process-local monotonic time; mixing float and datetime contracts would distract from the boundary test."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The prerequisite \"unit-tests-that-matter\" is not a standard or clearly defined resource.",
+            "reason": "Learners may not know where to find this prerequisite, which could block progress or cause unnecessary searching.",
+            "fix": "Replace the placeholder with a concrete reference, such as a link to a beginner\u2011level unit\u2011testing tutorial or a short description of the expected knowledge (e.g., \"basic pytest fixtures and assertions\").",
+            "finding_id": "reliable-tests-time-state-and-order:2",
+            "author_resolution": "Rejected placeholder claim: unit-tests-that-matter is an existing FORGE lesson and resolves through the loader/API."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"checks\" identifiers (\"test-now-in-assertion\", \"test-flaky-investigation\", \"test-shared-state-order\") are listed without explanation or linkage to actual validation tools.",
+            "reason": "Without context, learners cannot determine how to run or interpret these checks, reducing the practical value of the checklist.",
+            "fix": "Provide a brief description for each check and, if applicable, a command or pytest marker that triggers the corresponding validation (e.g., a custom plugin or naming convention).",
+            "finding_id": "reliable-tests-time-state-and-order:3",
+            "author_resolution": "Context supplied: these are existing assessment question IDs, not commands or pytest markers; mappings are validated and rendered by the existing UI."
+          },
+          {
+            "severity": "important",
+            "claim": "The practice suggestion to run tests under different hash seeds implies that hash randomization will affect the cache behavior.",
+            "reason": "Python dicts preserve insertion order regardless of hash seed; only hash\u2011based collections like set or dict key iteration without insertion order would be affected. Changing the hash seed will not change the outcome of the provided cache tests, so the advice may mislead learners about the relevance of hash seeds.",
+            "fix": "Clarify that hash\u2011seed variation is relevant only when the code under test relies on unordered collections (e.g., set iteration) and suggest a more appropriate example, such as testing functions that return a set of keys.",
+            "finding_id": "reliable-tests-time-state-and-order:4",
+            "author_resolution": "Accepted: dictionary insertion order is explicitly distinguished from unordered-set/hash-seed concerns; these cache tests are expected to stay identical."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"Common mistakes\" bullet mentions \"Sorting in a test can hide a missing required product order\" without illustrating the risk.",
+            "reason": "Learners may not grasp why sorting could mask a defect, especially in APIs where order is part of the contract.",
+            "fix": "Add a concise example: a function returning a list of events that must be in chronological order; a test that sorts the result before asserting would pass even if the implementation returns them out of order.",
+            "finding_id": "reliable-tests-time-state-and-order:5",
+            "author_resolution": "Accepted: chronological-event ordering now illustrates how sorting in the assertion can hide a product defect."
+          }
+        ],
+        "pedagogy": "The lesson presents a clear, beginner\u2011friendly narrative with concrete code, good explanations of why manual clocks improve test reliability, and practical advice on shared state and test ordering. It balances theory and hands\u2011on practice, includes thoughtful misconceptions, and offers progressive exercises. Minor gaps (e.g., missing monotonic\u2011clock example, ambiguous prerequisites, and a misleading hash\u2011seed tip) can be fixed with brief additions, but overall the instructional design is solid and aligns well with the stated objectives.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "injection-safe-data-boundaries",
+      "sha256": "8955521c92e38d0e0ba890813ba2ff7b558bb92ae9db3bfad1e0446aa35ab6b8",
+      "usage": {
+        "prompt_tokens": 2329,
+        "completion_tokens": 2954,
+        "total_tokens": 5283,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "important",
+            "claim": "The lesson states that \"psycopg's value placeholders\" are used for parameterization.",
+            "reason": "psycopg (psycopg2/psycopg3) uses the ``%s`` (or ``%(name)s``) placeholder syntax, not a generic \"value placeholder\" term. The wording may mislead readers into thinking the placeholder style is the same as asyncpg's ``$1`` style, which could cause confusion when they try to apply the example to PostgreSQL.",
+            "fix": "Replace the sentence with a precise description, e.g.: \"psycopg2 uses ``%s`` (or named ``%(name)s``) placeholders, while asyncpg uses numbered ``$1``, ``$2`` placeholders. Always follow the placeholder convention of the driver you are using.\"",
+            "finding_id": "injection-safe-data-boundaries:1",
+            "author_resolution": "Accepted: exact asyncpg and psycopg placeholder syntax is stated, with driver-specific handling emphasized."
+          },
+          {
+            "severity": "important",
+            "claim": "Prerequisite list includes \"typescript-runtime-boundaries\" while the worked example and all code snippets are in Python.",
+            "reason": "Learners who have satisfied the TypeScript prerequisite may not have the necessary Python knowledge to run the example, and vice\u2011versa. This mismatch can cause confusion and impede the lesson\u2019s accessibility for its intended beginner audience.",
+            "fix": "Either provide a parallel TypeScript/Node.js example (e.g., using ``sqlite3`` or ``better-sqlite3``) or replace the TypeScript prerequisite with a Python\u2011specific prerequisite such as \"python-sqlite3-basics\".",
+            "finding_id": "injection-safe-data-boundaries:2",
+            "author_resolution": "Accepted: Python functions replaces the unnecessary TypeScript prerequisite for this Python lab."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"checks\" list references \"sec-react-xss-bio\" but the lesson contains no React code.",
+            "reason": "Including a check that expects React code may cause automated validation tools to flag the lesson as incomplete or misaligned, and learners may be unable to locate the relevant artifact to satisfy the check.",
+            "fix": "Add a small React snippet that demonstrates safe text rendering versus ``dangerouslySetInnerHTML``, or remove the React\u2011specific check from the list.",
+            "finding_id": "injection-safe-data-boundaries:3",
+            "author_resolution": "Retained correctly mapped check: the lesson explicitly teaches React text interpolation versus interpreting HTML; another snippet would duplicate the existing auth lesson."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Practice instruction: \"Extend the fixture with a second tenant...\" while the fixture already contains a second tenant (tenant_id = 2).",
+            "reason": "The instruction is redundant and may confuse learners who wonder why they need to add a tenant that already exists.",
+            "fix": "Modify the instruction to either add a third tenant or change the wording to \"verify the existing second tenant's isolation\".",
+            "finding_id": "injection-safe-data-boundaries:4",
+            "author_resolution": "Accepted: the exercise uses the existing second tenant and adds a third tenant."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson is labeled \"beginner\" but covers advanced topics such as SSRF redirect handling, connection\u2011policy enforcement, and CSP considerations.",
+            "reason": "Beginners may find the breadth of concepts overwhelming, especially when the practical exercises require designing a full avatar\u2011import test plan with redirect and size controls.",
+            "fix": "Re\u2011classify the lesson as \"intermediate\" or split the content: keep the core SQL\u2011parameterization and HTML\u2011escaping parts as a beginner module, and move the SSRF and CSP sections into a follow\u2011up intermediate module.",
+            "finding_id": "injection-safe-data-boundaries:5",
+            "author_resolution": "Accepted staging note: SQL is the entry topic and SSRF/rich-text controls are extensions after the complete value-boundary lab."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \"Trade\u2011offs and limits\" bullet mentions \"Passing an argument array with shell interpretation disabled can avoid shell metacharacter parsing...\" which is unrelated to the primary focus on data\u2011boundary injection.",
+            "reason": "Introducing shell\u2011command considerations in a lesson centered on SQL, HTML, and network boundaries adds noise and may distract learners from the core concepts.",
+            "fix": "Either remove this bullet or relocate it to a separate lesson on command\u2011injection and shell safety.",
+            "finding_id": "injection-safe-data-boundaries:6",
+            "author_resolution": "Retained brief transfer comparison: command arguments versus shell interpretation illustrate the same interpreter/capability boundary; no extra shell lab is introduced."
+          }
+        ],
+        "pedagogy": "The lesson presents a solid mental model of interpreter boundaries and clearly separates validation, parameterization, and authorization. It uses a concrete, runnable Python example that demonstrates safe SQL composition, whitelist\u2011based identifier selection, and HTML escaping. The progression from theory to code, followed by common mistakes and production hardening tips, supports deep understanding. However, the mismatch between prerequisites (TypeScript) and the Python example, the inclusion of checks and concepts that are not directly illustrated, and the breadth of advanced topics for a beginner label reduce clarity. Aligning prerequisites, providing matching code artifacts for all checks, and calibrating difficulty would improve the learning flow.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "secrets-storage-rotation-and-exposure",
+      "sha256": "c1f3a4c16e69d21edaefc55822240929267208a9d4a180989d5af73ce2d89ac1",
+      "usage": {
+        "prompt_tokens": 2151,
+        "completion_tokens": 1920,
+        "total_tokens": 4071,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "The example checks `len(temporary_token) >= 43` to verify token length.",
+            "reason": "`secrets.token_urlsafe(32)` returns a URL\u2011safe base64 string whose length is *implementation\u2011defined* (typically 43 or 44 characters). Checking only a lower bound does not guarantee the token meets the intended entropy or format requirements, and the comment may mislead learners to think any length >= 43 is sufficient.",
+            "fix": "Replace the length check with an explicit entropy verification, e.g., `assert len(temporary_token) == 43` for the current CPython implementation, or better, assert that the token was generated with the expected number of bytes: `assert len(secrets.token_bytes(32)) == 32` and document that the URL\u2011safe representation may vary.",
+            "finding_id": "secrets-storage-rotation-and-exposure:1",
+            "author_resolution": "Accepted refinement: decode and verify the requested 32-byte representation instead of relying on a string length threshold; explicitly not an entropy measurement."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson states that environment variables are safe as a delivery mechanism if not printed.",
+            "reason": "While the lesson warns about debugging output, it does not mention that on many operating systems environment variables are visible to other processes via `/proc/<pid>/environ` (Linux) or via system utilities (e.g., `ps e`). This omission can give a false sense of security for secrets delivered via env vars.",
+            "fix": "Add a note: \"Environment variables can be read by other processes on the same host; restrict process permissions and consider using a dedicated secret store or in\u2011memory injection for high\u2011value credentials.\"",
+            "finding_id": "secrets-storage-rotation-and-exposure:2",
+            "author_resolution": "Accepted with precise privilege scope: permitted/privileged processes and administrators can inspect environment/memory; no claim that every process can read every protected environment."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The code uses `@dataclass(frozen=True)` with a `repr=False` field to hide the secret.",
+            "reason": "The example correctly demonstrates that `repr` hiding is insufficient, but it does not show a concrete safe\u2011export function that excludes secret fields. Learners may assume that `asdict` can be safely used after removing the secret key manually.",
+            "fix": "Provide a helper, e.g., `def safe_export(cfg): return {k: v for k, v in asdict(cfg).items() if k != 'api_key'}` and demonstrate its use in the lesson.",
+            "finding_id": "secrets-storage-rotation-and-exposure:3",
+            "author_resolution": "Accepted using an explicit public-field allowlist, rather than the suggested exclusion list that could leak future secret fields."
+          },
+          {
+            "severity": "important",
+            "claim": "The lesson lists \u201cA fast unsalted hash is appropriate password storage\u201d as a misconception.",
+            "reason": "The misconception is correctly identified, but the lesson later says \u201cUse a maintained password\u2011hashing library with a deliberately configured slow, salted algorithm such as Argon2id\u201d. It does not explicitly warn that **unsalted** fast hashes (e.g., MD5, SHA\u20111) are insecure, nor does it explain why salting is required.",
+            "fix": "Add a brief explanation: \"Fast, unsalted hashes allow pre\u2011computed rainbow tables and do not protect against identical passwords; always use a slow, memory\u2011hard, salted algorithm like Argon2id, bcrypt, or scrypt.\"",
+            "finding_id": "secrets-storage-rotation-and-exposure:4",
+            "author_resolution": "Already addressed: the body rejects fast general-purpose hashes, explains salt and recommends a maintained slow salted password-hashing library. No unqualified algorithm equivalence added."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The \u201cPractice\u201d section asks learners to design a safe configuration export and rotation runbook but provides no concrete scaffolding.",
+            "reason": "Without a template or checklist, beginners may struggle to produce a complete answer, reducing the exercise\u2019s effectiveness.",
+            "fix": "Include a short checklist (e.g., identify secret owners, define version IDs, outline verification steps, document revocation API calls, and specify audit log entries) that learners can fill in.",
+            "finding_id": "secrets-storage-rotation-and-exposure:5",
+            "author_resolution": "Already addressed by the inventory, planned rotation, compromise response and practice acceptance criteria; a separate runbook template is optional."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson references Python 3.12 documentation for the `secrets` module.",
+            "reason": "The `secrets` module has been stable since Python 3.6; limiting the reference to 3.12 may unnecessarily restrict learners using older LTS versions.",
+            "fix": "Update the reference to \u201cPython 3.6+\u201d and optionally link to the generic `secrets` module page that covers all supported versions.",
+            "finding_id": "secrets-storage-rotation-and-exposure:6",
+            "author_resolution": "Retained current supported Python 3.12 documentation; earlier library availability is not a reason to imply support for unsupported application runtimes."
+          }
+        ],
+        "pedagogy": "The lesson presents a clear mental model, distinguishes between secret types, and emphasizes revocation over cosmetic cleanup, which aligns well with intermediate security learning goals. It progresses logically from concepts to a concrete code example, then to common mistakes and production considerations. The inclusion of misconceptions helps surface typical beginner errors. However, the practical exercise could benefit from a structured template to guide learners, and the security coverage would be stronger with explicit warnings about environment\u2011variable leakage and unsalted hash risks. Overall, the content is accurate, the code runs as described, and the pedagogical flow is appropriate for an intermediate audience.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "git-commits-index-and-object-identity",
+      "sha256": "c000b63632c56978d206b7b484ac7d25873794924b5f9bbeb4889c92e38dc4da",
+      "usage": {
+        "prompt_tokens": 2129,
+        "completion_tokens": 3253,
+        "total_tokens": 5382,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "important",
+            "claim": "The script uses `git init -q --initial-branch=main` without noting the required Git version.",
+            "reason": "`--initial-branch` was introduced in Git 2.28 (2020). Users with older Git will see an error and the lesson will fail to run.",
+            "fix": "Add a version note, e.g., \"Requires Git\u202f\u2265\u202f2.28, or use `git init` followed by `git branch -M main` for older versions.\"",
+            "finding_id": "git-commits-index-and-object-identity:1",
+            "author_resolution": "Accepted: minimum Git 2.28 is explicit for initial-branch."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The term \"object\u2011inspection extension\" appears without explanation.",
+            "reason": "Learners unfamiliar with the phrase may not understand which commands or tools it refers to, reducing clarity.",
+            "fix": "Replace with a clear phrase such as \"object\u2011inspection commands (e.g., `git cat-file`, `git rev-parse`...)\" and optionally list them.",
+            "finding_id": "git-commits-index-and-object-identity:2",
+            "author_resolution": "Accepted: object-inspection commands are named plainly."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Prerequisite \"tracing-program-state\" is vague and not a standard Git skill.",
+            "reason": "The phrase does not convey a concrete requirement, which can confuse beginners.",
+            "fix": "Replace with a concrete prerequisite like \"ability to run `git status`, `git diff`, and `git ls-files` to inspect repository state.\"",
+            "finding_id": "git-commits-index-and-object-identity:3",
+            "author_resolution": "Context supplied: tracing-program-state is a real foundational lesson; terminal requirements are stated. Requiring the Git operations being introduced would be circular."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "\"git-hash-chain\" is listed as a check but is never described in the lesson.",
+            "reason": "Learners cannot locate or understand this check, limiting its usefulness.",
+            "fix": "Add a brief description of the \"git-hash-chain\" check (e.g., verifying that a commit\u2019s tree hash matches its parent\u2019s tree when expected) or provide a link to its definition.",
+            "finding_id": "git-commits-index-and-object-identity:4",
+            "author_resolution": "Already addressed: the exact FORGE question tests parent-dependent commit identity, explained in the text. The proposed parent-tree comparison is not that question."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The script uses `git ls-files --error-unmatch note.txt >/dev/null` without explaining its purpose.",
+            "reason": "Because `set -e` aborts on non\u2011zero exit status, the command is used as a test, not for output. Without comment, learners may think it prints something.",
+            "fix": "Insert an inline comment such as `# Verify that note.txt is still tracked; command exits non\u2011zero if not`.",
+            "finding_id": "git-commits-index-and-object-identity:5",
+            "author_resolution": "Accepted: the tracking assertion now explains its nonzero exit behavior."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Explanation of object\u2011ID format omits that the hash algorithm is fixed at repository creation and cannot be changed later.",
+            "reason": "Learners might assume they can switch from SHA\u20111 to SHA\u2011256 after init, leading to confusion.",
+            "fix": "Clarify that the hash algorithm is chosen when the repository is initialized (e.g., `git init --hash=sha256`) and cannot be altered for an existing repository.",
+            "finding_id": "git-commits-index-and-object-identity:6",
+            "author_resolution": "Rejected: suggested --hash flag is invalid; official spelling is --object-format. No unnecessary absolute claim about future repository conversion support added."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson mentions stopping tracking of a file but does not explicitly show the required command (`git rm --cached`).",
+            "reason": "While the concept is correct, providing the exact command helps learners apply the knowledge.",
+            "fix": "Add a short example: `git rm --cached note.txt && git commit -m \"Stop tracking note.txt\"` after adding it to `.gitignore`.",
+            "finding_id": "git-commits-index-and-object-identity:7",
+            "author_resolution": "Deferred optional untracking lab: the lesson distinguishes the operation from ignore rules and links the official documentation; the complete lab remains focused on staged snapshots and object identity."
+          }
+        ],
+        "pedagogy": "The lesson presents a clear mental model of the three Git states (working tree, index, HEAD) and reinforces it with a concise, reproducible script. Objectives align with the content, and common misconceptions are addressed directly. Minor gaps\u2014such as missing version requirements, undefined terminology, and incomplete prerequisite descriptions\u2014reduce accessibility for absolute beginners but are easily fixable. Overall, the instructional flow is logical, the exercises are practical, and the reasoning checks are appropriate for the stated beginner difficulty.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "linux-filesystem-paths-and-permissions",
+      "sha256": "883e51e14fe7413fef3f0b377e8f3466d0279f14317fa4f37e622cd4a9671401",
+      "usage": {
+        "prompt_tokens": 2196,
+        "completion_tokens": 4049,
+        "total_tokens": 6245,
+        "prompt_tokens_details": {
+          "cached_tokens": 208
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "error",
+            "claim": "directory.chmod(0o600)  # owner can list, but cannot search this directory",
+            "reason": "On Linux, read permission on a directory without execute does not allow listing its contents; both read and execute are required for a successful ls. Therefore the comment incorrectly states that the owner can list the directory.",
+            "fix": "Change the comment to reflect the actual behavior, e.g., \"owner can read attributes but cannot list or traverse the directory\".",
+            "finding_id": "linux-filesystem-paths-and-permissions:1",
+            "author_resolution": "Rejected after execution: directory mode 600 permits enumeration of names but denies leaf lookup. Added enumeration output to make the distinction explicit."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Run as an unprivileged Linux user with Python 3.12 or later.",
+            "reason": "The example uses only standard library features (pathlib, os, stat, tempfile) that have been available since Python 3.5. Requiring 3.12 unnecessarily limits the audience.",
+            "fix": "Update the requirement to \"Python 3.5 or later\" (or the minimum version supported by the platform) and remove the explicit 3.12 mention.",
+            "finding_id": "linux-filesystem-paths-and-permissions:2",
+            "author_resolution": "Retained supported Python 3.12-or-later scope; no historical introduction claim is made."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "For directories, read permits listing names, execute permits searching/traversing known names.",
+            "reason": "The description omits the common Linux nuance that read alone does not permit listing; the kernel checks both read and execute for directory enumeration. This can mislead beginners.",
+            "fix": "Add a clarifying sentence: \"On most Linux filesystems, both read and execute are needed to list a directory; read alone only allows obtaining metadata about the directory itself.\"",
+            "finding_id": "linux-filesystem-paths-and-permissions:3",
+            "author_resolution": "Rejected after the same unprivileged Linux probe: directory-name enumeration and subsequent lookup/stat are distinct operations."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "A root process with bypass capabilities can invalidate the permission experiment.",
+            "reason": "The statement is vague and may cause confusion about what capabilities are needed. Root can bypass discretionary access control, but capabilities such as CAP_DAC_OVERRIDE are required for specific checks.",
+            "fix": "Replace with a precise note: \"A process with the CAP_DAC_OVERRIDE capability (commonly granted to the root user) can bypass the permission checks performed in the example, so the experiment must be run as an unprivileged user without such capabilities.\"",
+            "finding_id": "linux-filesystem-paths-and-permissions:4",
+            "author_resolution": "Already addressed: the statement explicitly qualifies root with bypass capabilities, and QA runs as UID/GID 65534 with all capabilities dropped."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Practice section does not mention sticky\u2011bit behavior when unlinking files in world\u2011writable directories.",
+            "reason": "Sticky bit (e.g., /tmp) restricts unlinking to the file owner or directory owner, which is an important nuance for real\u2011world log rotation scenarios.",
+            "fix": "Add a brief note in the practice or common\u2011mistakes section: \"When a directory has the sticky bit set, only the file's owner, the directory's owner, or a privileged process may unlink a file, regardless of directory write permission.\"",
+            "finding_id": "linux-filesystem-paths-and-permissions:5",
+            "author_resolution": "Already addressed: sticky-bit restrictions are explicitly named alongside directory write/search requirements."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson assumes all Linux filesystems behave identically regarding open\u2011file lifetime after unlink.",
+            "reason": "Some network or overlay filesystems (e.g., NFS, CIFS, overlayfs) may have delayed reclamation or different semantics for deleted\u2011open files, which could affect the observed behavior.",
+            "fix": "Add an optional disclaimer: \"The described open\u2011file lifetime holds for most local Linux filesystems (ext4, xfs, btrfs). Behaviour may differ on network or overlay filesystems.\"",
+            "finding_id": "linux-filesystem-paths-and-permissions:6",
+            "author_resolution": "No universal storage-timing guarantee is asserted: the lab is scoped to its Linux context and describes reclaimability, not immediate reclamation on every mount or remote filesystem."
+          }
+        ],
+        "pedagogy": "The lesson follows a clear beginner\u2011to\u2011intermediate progression: it first establishes the mental model, then demonstrates concrete behavior with a short, self\u2011contained Python script, and finally asks reflective questions and a hands\u2011on practice. Objectives align with the content, and the prerequisite of a prior processes/files lesson is appropriate. The exercises are useful for reinforcing the concepts of directory traversal, mode bits, and open\u2011file lifetime. Reasoning feedback is provided for each comprehension question, and the practice task encourages experimentation with permutations of directory modes and hard links, which deepens understanding. Overall the pedagogical flow is sound for a beginner audience, with only minor clarifications needed for accuracy.",
+        "reasoning_answers_checked": true
+      }
+    },
+    {
+      "slug": "fastapi-async-handlers-and-bounded-work",
+      "sha256": "1146aa304c105d958b48cbd2e73d44efcdbf202069f49e98f4aff10102a183b2",
+      "usage": {
+        "prompt_tokens": 2178,
+        "completion_tokens": 3381,
+        "total_tokens": 5559,
+        "prompt_tokens_details": {
+          "cached_tokens": 2160
+        }
+      },
+      "review": {
+        "ready": true,
+        "findings": [
+          {
+            "severity": "suggestion",
+            "claim": "AnyIO's default thread limiter is 40 tokens.",
+            "reason": "The default of 40 tokens applies to AnyIO 4.x and later; earlier AnyIO versions used a different default, and FastAPI may bundle a specific AnyIO version. Without specifying the library version, readers might assume the number is universal.",
+            "fix": "Add a note specifying the AnyIO version (e.g., AnyIO >=4.0) for which the 40-token default applies, and advise checking the actual limiter value in the target environment.",
+            "finding_id": "fastapi-async-handlers-and-bounded-work:1",
+            "author_resolution": "Already addressed: the default is measured in the example, documented as configurable and scoped to the installed framework, not asserted universally across historical versions."
+          },
+          {
+            "severity": "important",
+            "claim": "The sync route's offloaded check reliably returns True, proving it runs on a different thread.",
+            "reason": "The check compares threading.get_ident() with a global loop_thread captured in the main coroutine. If the thread pool reuses the same thread identifier (unlikely but possible in constrained environments), the result could be False, misleading learners about offloading guarantees.",
+            "fix": "Replace the identity comparison with a more robust test, such as calling anyio.to_thread.run_sync inside the sync endpoint and confirming it executes in a thread pool, or explicitly document that the result is best\u2011effort and may vary with thread\u2011pool configuration.",
+            "finding_id": "fastapi-async-handlers-and-bounded-work:2",
+            "author_resolution": "Rejected: the loop thread remains alive, so recycling after thread exit does not apply. The worker and loop have distinct live IDs and actual execution returned True."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson does not specify required library versions for FastAPI, Starlette, httpx, and AnyIO.",
+            "reason": "Behavior of async transport, thread\u2011pool limits, and ASGI integration can differ across versions (e.g., httpx.ASGITransport was added in httpx 0.23). Without version constraints, the example may fail for readers using older releases.",
+            "fix": "Add a prerequisites entry with exact version ranges, such as FastAPI>=0.100,<0.110, Starlette>=0.30, httpx>=0.23, AnyIO>=4.0.",
+            "finding_id": "fastapi-async-handlers-and-bounded-work:3",
+            "author_resolution": "Accepted: exact tested FastAPI, Starlette and httpx versions are named; AnyIO 4.16.0 is recorded in execution evidence. Obsolete guessed version ranges were not adopted."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "The lesson mentions offloading blocking calls but does not demonstrate the recommended anyio.to_thread.run_sync helper.",
+            "reason": "Using anyio.to_thread.run_sync (or FastAPI's built\u2011in run_in_threadpool) is the idiomatic way to offload blocking code from an async endpoint, ensuring the AnyIO limiter is respected.",
+            "fix": "Include a short code snippet showing how to wrap a blocking SDK call with await anyio.to_thread.run_sync(blocking_func, arg1, arg2) inside an async route.",
+            "finding_id": "fastapi-async-handlers-and-bounded-work:4",
+            "author_resolution": "Deferred optional second offload snippet: the complete def endpoint demonstrates framework offloading, while the exercise asks learners to implement the explicit-offload variant."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Statement \"FastAPI handles ordinary def endpoints through a thread\u2011pool path\" could be misinterpreted as immutable behavior.",
+            "reason": "FastAPI delegates to Starlette, which uses anyio's thread pool by default, but developers can override the executor or run FastAPI in a custom server that executes sync endpoints differently.",
+            "fix": "Clarify that FastAPI's default behavior is to run sync endpoints in a thread pool via Starlette, but this can be customized via the 'executor' argument or server configuration.",
+            "finding_id": "fastapi-async-handlers-and-bounded-work:5",
+            "author_resolution": "Rejected suggested executor option: no unsupported configuration knob was added. The lesson describes and measures the documented framework behavior."
+          },
+          {
+            "severity": "suggestion",
+            "claim": "Practice acceptance criteria lack a concrete method to verify that no blocking client runs on the event\u2011loop thread.",
+            "reason": "Learners may not know how to assert that offloading succeeded beyond visual inspection.",
+            "fix": "Recommend adding an assertion inside the blocking function that checks threading.current_thread() is not the event\u2011loop thread (e.g., compare with asyncio.get_running_loop()._thread_id) and raise if it is.",
+            "finding_id": "fastapi-async-handlers-and-bounded-work:6",
+            "author_resolution": "Already addressed through the public thread-ID capture in the runnable example. Rejected private loop attributes and calling get_running_loop from a worker thread."
+          }
+        ],
+        "pedagogy": "The lesson provides a clear mental model, a runnable example, and practical guidance on async vs sync handling in FastAPI. It balances theory with hands\u2011on code and highlights common pitfalls. Minor gaps in version specificity and offloading best practices can be addressed to improve reliability for learners across environments.",
+        "reasoning_answers_checked": true
+      }
+    }
+  ]
+}
