@@ -1,12 +1,12 @@
 # P6: React, FastAPI, testing, security and engineering foundations
 
-Date: 2026-11-08. **Validated locally; NOT DEPLOYED. Separate user approval is required for P6 deployment.**
+Date: 2026-11-08. **Deployed and verified** at `25c4b6f`. See [P6 deployment result](P6_DEPLOYMENT.md). The sections below are the preparation record. **None of the ten lessons is human-verified.**
 
 P5 was successfully deployed at **`f26daf2`** after a fresh uploaded encrypted backup, with 158 active questions, 25 lessons, 45 subskills, unchanged prerequisite relationships and matching learner-history fingerprints. All ten new pages and their 37 assessment associations were verified. Production remains private/local-only with the coding sandbox disabled. See [P5 deployment result](P5_DEPLOYMENT.md) and [preservation evidence](validation/p5-deployment.json).
 
 P6 adds **ten original lessons, 11,968 words**, filling the next ten existing curriculum subskills. The batch follows the requested priority order: React lists/effects, FastAPI dependencies/async handlers, testing doubles/reliability, security injection/secrets, then Git commits and Linux filesystems. It introduces no new skill, question, prerequisite edge in the curriculum graph, application feature, UI change or mastery rule.
 
-All ten are `reviewed`: AI-assisted writing, independent advisory critique and technical validation. **None is human-verified.** No P6 seed, restart, checkout or configuration change was performed on production.
+All ten are `reviewed`: AI-assisted writing, independent advisory critique and technical validation. **None is human-verified.** The later production seed changed lesson content only; question IDs, mastery evidence and learner history were unchanged.
 
 ## Lessons and exact mappings
 
@@ -106,7 +106,7 @@ The ten gaps remaining after P6 would be:
 
 ## Release boundary and reproduction
 
-The [P6 manifest](validation/p6-manifest.json) freezes all ten final lesson hashes, prerequisite/check mappings and expected counts. **P6 is not deployed.** A later approved release must verify that manifest, take a fresh uploaded encrypted backup, capture current preservation fingerprints, seed/restart through the established process and verify the ten new pages and assessment mappings. The P5 backup and fingerprints are historical evidence, not substitutes for that future release's fresh checks.
+The [P6 manifest](validation/p6-manifest.json) freezes all ten final lesson hashes, prerequisite/check mappings and expected counts. It is retained as the preparation record. The approved release verified that manifest, took a fresh uploaded encrypted backup, captured preservation fingerprints, seeded through the established process and verified the ten new pages. See [P6 deployment result](P6_DEPLOYMENT.md).
 
 Run content validation from `api/` with the existing virtual environment:
 
