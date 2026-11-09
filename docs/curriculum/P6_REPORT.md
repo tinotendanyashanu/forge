@@ -2,6 +2,8 @@
 
 Date: 2026-11-08. **Deployed and verified** at `25c4b6f`. See [P6 deployment result](P6_DEPLOYMENT.md). The sections below are the preparation record. **None of the ten lessons is human-verified.**
 
+Production was rechecked on November 9: P6 was already deployed, so no seed or checkout was repeated. A fresh encrypted off-VM backup was verified, all requested counts and preservation fingerprints matched, and all ten pages passed. See the [current verification evidence](validation/p6-recheck-20261109.json).
+
 P5 was successfully deployed at **`f26daf2`** after a fresh uploaded encrypted backup, with 158 active questions, 25 lessons, 45 subskills, unchanged prerequisite relationships and matching learner-history fingerprints. All ten new pages and their 37 assessment associations were verified. Production remains private/local-only with the coding sandbox disabled. See [P5 deployment result](P5_DEPLOYMENT.md) and [preservation evidence](validation/p5-deployment.json).
 
 P6 adds **ten original lessons, 11,968 words**, filling the next ten existing curriculum subskills. The batch follows the requested priority order: React lists/effects, FastAPI dependencies/async handlers, testing doubles/reliability, security injection/secrets, then Git commits and Linux filesystems. It introduces no new skill, question, prerequisite edge in the curriculum graph, application feature, UI change or mastery rule.

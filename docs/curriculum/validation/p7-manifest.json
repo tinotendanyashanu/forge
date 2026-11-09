@@ -1,0 +1,244 @@
+{
+  "batch": "P7",
+  "date": "2026-11-09",
+  "status": "validated locally; NOT DEPLOYED; separate approval required",
+  "human_verified": false,
+  "baseline_commit": "25c4b6ff80b418b298d11f530f582072a240b617",
+  "curriculum_version": "2026.11.2",
+  "curriculum_checksum": "4f4eb928bee1243b526cb3bfdbc725f0b894acb5b63fe8b8f6a9b0063fdc0941",
+  "lessons": [
+    {
+      "slug": "container-image-layers-and-signals",
+      "skill": "devops",
+      "topic": "containers",
+      "title": "Containers: image layers, writable state and process signals",
+      "difficulty": "beginner",
+      "checks": [
+        "devops-docker-layer-order",
+        "devops-container-ephemeral-fs",
+        "devops-shell-form-sigterm"
+      ],
+      "prerequisites": [
+        "safe-delivery-and-observability",
+        "linux-processes-files-permissions"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 35,
+      "path": "api/app/seed/lessons/36-container-image-layers-and-signals.md",
+      "sha256": "f30512aa6460e5c6e9d852b9c46a694873f2d8a50785e73210ef35190027fe45",
+      "words": 2008
+    },
+    {
+      "slug": "observability-tails-traces-and-cardinality",
+      "skill": "devops",
+      "topic": "observability",
+      "title": "Observability: latency tails, traces and label cardinality",
+      "difficulty": "intermediate",
+      "checks": [
+        "devops-p99-vs-average",
+        "devops-traces-for-latency",
+        "devops-label-cardinality"
+      ],
+      "prerequisites": [
+        "safe-delivery-and-observability"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/37-observability-tails-traces-and-cardinality.md",
+      "sha256": "fd7346b2bf8df601a0b304665efef9624096dd9474961c471334dd529f6656d7",
+      "words": 1590
+    },
+    {
+      "slug": "scaling-capacity-replicas-and-hotspots",
+      "skill": "system-design",
+      "topic": "scaling",
+      "title": "Scaling: stateless capacity, replicas and hot partitions",
+      "difficulty": "intermediate",
+      "checks": [
+        "sd-stateless-scaling",
+        "sd-read-replicas",
+        "sd-capacity-estimate",
+        "sd-hot-tenant-shard",
+        "sd-consistent-hashing"
+      ],
+      "prerequisites": [
+        "caching-and-scaling-reads",
+        "http-requests-and-semantics"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 34,
+      "path": "api/app/seed/lessons/38-scaling-capacity-replicas-and-hotspots.md",
+      "sha256": "db0ac426c0d5ab8ac0a224f49421efc47a4459b95e903b50f7371bcdad8c8d51",
+      "words": 1657
+    },
+    {
+      "slug": "reliability-jitter-queues-and-availability",
+      "skill": "system-design",
+      "topic": "reliability",
+      "title": "Reliability: jitter, queues and availability math",
+      "difficulty": "intermediate",
+      "checks": [
+        "sd-backoff-jitter",
+        "sd-queue-load-leveling",
+        "sd-availability-series-parallel"
+      ],
+      "prerequisites": [
+        "timeouts-retries-idempotency",
+        "caching-and-scaling-reads"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/39-reliability-jitter-queues-and-availability.md",
+      "sha256": "177000fae8eedc33286b4cebbd99a95ceabf313ff328fab3a9f84c28ea610730",
+      "words": 1600
+    },
+    {
+      "slug": "consistency-replica-lag-and-conflicts",
+      "skill": "distributed-systems",
+      "topic": "consistency",
+      "title": "Consistency: replica lag and conflict resolution",
+      "difficulty": "intermediate",
+      "checks": [
+        "ds-eventual-consistency",
+        "ds-read-your-writes",
+        "ds-lww-clock-skew"
+      ],
+      "prerequisites": [
+        "postgres-transactions-and-concurrency",
+        "timeouts-retries-idempotency"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/40-consistency-replica-lag-and-conflicts.md",
+      "sha256": "7b01a02f700c2e7193816db1ae8e48116e70702650414999a94d6d55d187b46f",
+      "words": 1553
+    },
+    {
+      "slug": "messaging-delivery-outbox-and-order",
+      "skill": "distributed-systems",
+      "topic": "messaging",
+      "title": "Messaging: delivery, outbox and partition order",
+      "difficulty": "intermediate",
+      "checks": [
+        "ds-at-least-once-meaning",
+        "ds-dual-write-outbox",
+        "ds-idempotent-ordered-consumer",
+        "ds-kafka-partition-ordering"
+      ],
+      "prerequisites": [
+        "timeouts-retries-idempotency",
+        "postgres-transactions-and-concurrency"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 34,
+      "path": "api/app/seed/lessons/41-messaging-delivery-outbox-and-order.md",
+      "sha256": "c6113f723d9f77b27987a404d382a7ccd2849dcdf5ef3c7ba6a06c55b08348a2",
+      "words": 1595
+    },
+    {
+      "slug": "technical-decisions-records-and-reversibility",
+      "skill": "senior-practices",
+      "topic": "decision-making",
+      "title": "Technical decisions: records, reversibility and replacement",
+      "difficulty": "intermediate",
+      "checks": [
+        "sp-adr-contents",
+        "sp-queue-choice-reasoning",
+        "sp-one-way-door",
+        "sp-rewrite-vs-incremental"
+      ],
+      "prerequisites": [
+        "code-review-that-finds-risk"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 30,
+      "path": "api/app/seed/lessons/42-technical-decisions-records-and-reversibility.md",
+      "sha256": "9de120a0a0ebd75376c5f1f59658baeda196b600edf5a61df2ce190df9ce464d",
+      "words": 1552
+    },
+    {
+      "slug": "incident-response-mitigation-and-follow-up",
+      "skill": "senior-practices",
+      "topic": "incidents",
+      "title": "Incidents: mitigation, roles and follow-up",
+      "difficulty": "intermediate",
+      "checks": [
+        "sp-incident-first-action",
+        "sp-lead-incident",
+        "sp-postmortem-action-item"
+      ],
+      "prerequisites": [
+        "safe-delivery-and-observability",
+        "code-review-that-finds-risk"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/43-incident-response-mitigation-and-follow-up.md",
+      "sha256": "037872cc10aa36aee2edd3240a1d79b52aee722c5cc057f48146b66ba2c2b9b6",
+      "words": 1612
+    },
+    {
+      "slug": "git-history-amend-revert-and-recovery",
+      "skill": "git",
+      "topic": "history",
+      "title": "Git history: amend, revert and local recovery",
+      "difficulty": "intermediate",
+      "checks": [
+        "git-amend-unpushed",
+        "git-revert-shared",
+        "git-reflog-recover",
+        "git-force-pushed-main"
+      ],
+      "prerequisites": [
+        "git-commits-index-and-object-identity"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 34,
+      "path": "api/app/seed/lessons/44-git-history-amend-revert-and-recovery.md",
+      "sha256": "65175bb667df1d80c8ba15a53d66390b4d7272f8520be6be0fdb210a220cad24",
+      "words": 2547
+    },
+    {
+      "slug": "linux-shell-redirection-pipelines-and-expansion",
+      "skill": "linux",
+      "topic": "shell",
+      "title": "Shell: redirection, pipeline status and expansion",
+      "difficulty": "intermediate",
+      "checks": [
+        "linux-redirect-truncate",
+        "linux-pipefail",
+        "linux-unset-variable-rm"
+      ],
+      "prerequisites": [
+        "linux-filesystem-paths-and-permissions"
+      ],
+      "status": "reviewed",
+      "estimated_minutes": 32,
+      "path": "api/app/seed/lessons/45-linux-shell-redirection-pipelines-and-expansion.md",
+      "sha256": "3ee017d1dd64d5009e4c3921eeb82479ef0c77d7767a5ba9b9195d9bf7172ad5",
+      "words": 2547
+    }
+  ],
+  "expected_counts": {
+    "skills": 15,
+    "subskills": 45,
+    "prerequisite_edges": 21,
+    "active_questions": 158,
+    "inactive_questions": 0,
+    "active_lessons": 45,
+    "covered_subskills": 45,
+    "lesson_checks": 147,
+    "lesson_resources": 157
+  },
+  "validation": {
+    "backend": "404 passed in 108.71s (final 2026-11-09 run)",
+    "frontend": "lint, typecheck and production webpack build passed",
+    "urls_checked": 263,
+    "urls_ok": 263,
+    "warnings": "30 unchanged assessment warnings",
+    "independent_advisory_model": "gpt-oss:120b",
+    "human_verified": false,
+    "linux_shell": "Bash 5.2.37, UID/GID 65534; offline read-only container; exact stdout matched",
+    "rechecked_at": "2026-11-09T10:43:05.801341+00:00"
+  }
+}

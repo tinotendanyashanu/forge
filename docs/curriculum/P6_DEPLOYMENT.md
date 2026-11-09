@@ -28,3 +28,15 @@ An independent check after restart confirmed the same counts, production setting
 The production checkout's pre-existing `web/package-lock.json` change remains root package version and license metadata only. No frontend source changed, so the existing web bundle was retained.
 
 Detailed evidence: [p6-deployment.json](validation/p6-deployment.json).
+
+## November 9 production recheck
+
+The new deployment request assumed that production was still on P5. A live check found the already completed P6 release at `25c4b6ff80b418b298d11f530f582072a240b617`, with all three services active. The historical November 8 record above confirms that P5 was the baseline before that release. **No checkout, seed, migration or application restart was repeated. P7 was not deployed.**
+
+A fresh run of the established `forge-backup.service` succeeded at 10:41 UTC. The encrypted file **`forge-20261109T104123Z.dump.age`**, **620,964 bytes**, has an age v1 header. The off-VM blob returned HTTP 200 on HEAD with the same length; downloading the encrypted object for hashing produced the same SHA-256 as the VM file: `39e4c73faa7110c2a543e3b373afe509be28ac209471c88b6c2fa2dce3642cab`. No decrypted backup or learner rows were exported.
+
+The final consistent, read-only database snapshots match the recorded P6 release exactly: 158 active and zero inactive questions, 35 active lessons, 45 subskills, 112 lesson-check links, 123 resource associations, and schema `0009`. All 60 learner-dependent table fingerprints, protected question/option IDs and contents, mastery evidence, 35 lesson IDs and contents, and existing lesson progress match. Lesson reads remain zero. The ten P6 source hashes match the manifest on the VM. All ten API details and web pages return 200 with the expected check lists and skill/difficulty assessment forms; API health reports `database: ok`. These checks created no learner, assessment or lesson-read event.
+
+The investigation recovered the original lesson-fingerprint formula from the retained Azure release script: it hashes the lesson plus joined skill/topic slugs using Python's datetime/string serialization, excluding `updated_at`. An initial new probe omitted those details. The corrected probe reproduces every recorded hash; the apparent mismatch was in the probe, and no stored content was changed. The service environment was read directly with the settings parser to preserve its JSON values.
+
+All protected configuration hashes and the accepted lockfile metadata difference remain unchanged. Azure infrastructure, Tailscale restrictions, coding-sandbox settings and database architecture were not changed. Detailed current evidence, including the matched per-table fingerprints and backup object verification: [p6-recheck-20261109.json](validation/p6-recheck-20261109.json).

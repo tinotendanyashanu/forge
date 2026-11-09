@@ -1,0 +1,571 @@
+{
+  "model": "gpt-oss:120b",
+  "reviewed_at": "2026-11-08T18:06:27.118284+00:00",
+  "scaling_retried_at": "2026-11-08T18:06:50.753264+00:00",
+  "malformed_responses_discarded": 1,
+  "human_verified": false,
+  "results": [
+    {
+      "slug": "container-image-layers-and-signals",
+      "draft_sha256": "7d8dec6d7448784418f9efdc5055c852225ff5310b0c01e134afe5b497b02b88",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "After sending SIGTERM to a container built with shell\u2011form CMD, the container remains in a \"running\" state.",
+          "reason": "Docker always sends the signal to PID\u202f1, which in shell\u2011form is the /bin/sh process. The default behavior of /bin/sh on SIGTERM is to terminate, causing the container to stop. The child Python process does not receive the signal, but the container does not stay running. Empirical tests on Docker\u202f20.10+ with the python:3.12\u2011slim image show the container exits (status\u202f0) after the kill command.",
+          "fix": "Update the lesson text and the sample output to reflect that the container exits after SIGTERM, e.g., change \"shell_state running\" to \"shell_state exited\" and note that the container stops because PID\u202f1 (the shell) terminates, not because the signal reaches Python.",
+          "disposition": "rejected_execution",
+          "resolution": "Docker 29.8.1 on python:3.12-slim left the shell-form container running 0.8s after SIGTERM, with the Python handler absent. The text fence records that observation. The reviewer's claim that the container exits was not substituted for the run."
+        },
+        {
+          "severity": "important",
+          "claim": "The script uses the `--pull=never` flag on `docker run` and `docker build` without mentioning version requirements.",
+          "reason": "`--pull` for `docker run` and `docker build` was introduced in Docker\u202f20.10. Users with older Docker releases will see an \"unknown flag: --pull\" error, breaking the lesson.",
+          "fix": "Add a prerequisite note that Docker\u202f20.10 or newer is required, or replace the flag with a version\u2011agnostic approach (e.g., rely on the image already being present and omit the flag).",
+          "disposition": "rejected_execution",
+          "resolution": "docker build uses --pull=false, the Buildx spelling. docker run uses --pull=never. Both forms ran against the local image. No unsupported flag was added."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The `layer_result` function parses build logs with a simple awk pattern looking for the literal word \"CACHED\".",
+          "reason": "Docker's build output format can vary (e.g., \"Using cache\" or \"CACHED\" depending on the client version and the `--progress` mode). The current parser may misclassify a layer as \"unknown\" or give false positives/negatives when the output changes.",
+          "fix": "Make the parser more robust by checking for both \"CACHED\" and \"Using cache\" strings, or use `docker build --quiet` with `--progress=plain` and parse the JSON output via `docker buildx` if available.",
+          "disposition": "deferred",
+          "resolution": "The awk parser keys off the BuildKit step id. It produced source_layer rebuilt on the validation run. A second parser was not added for a log format this run did not emit."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson does not discuss the limitation of PID\u202f1 regarding signal forwarding to child processes when the application spawns its own subprocesses.",
+          "reason": "Even with exec\u2011form, if the Python process forks workers, those workers will not automatically receive SIGTERM because PID\u202f1 does not forward signals. This is a common source of graceful\u2011shutdown bugs in containers.",
+          "fix": "Add a brief note in the \"How it works\" or \"Common mistakes\" section recommending the use of a minimal init system (e.g., Docker's `--init` flag or `tini`) when the container runs more than one process.",
+          "disposition": "already_addressed",
+          "resolution": "The trade-offs section already says exec form does not stop child processes by itself and names a minimal init as a later choice."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The \"Common mistakes\" bullet about testing only `docker kill` of the child process could be clearer.",
+          "reason": "Learners might misinterpret that `docker kill` can target a child PID, whereas Docker always targets PID\u202f1 of the container.",
+          "fix": "Rephrase the bullet to: \"Running the server under a shell and assuming `docker kill` will signal the child process is wrong; Docker always sends the signal to PID\u202f1, so the child only receives it if PID\u202f1 forwards it.\"",
+          "disposition": "deferred",
+          "resolution": "The lesson already says the platform signals PID 1. The bullet was left as written."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The \"In production\" section mentions pinning base images by digest but does not show how to do it.",
+          "reason": "Beginners may not know the syntax for using a digest, which reduces the practical usefulness of the advice.",
+          "fix": "Add an example Dockerfile line such as `FROM python@sha256:3b1e...` and explain how to obtain the digest via `docker pull --quiet python:3.12-slim && docker inspect --format='{{index .RepoDigests 0}}' python:3.12-slim`.",
+          "disposition": "deferred",
+          "resolution": "Digest pinning is named as production practice. A digest example was not added because this batch does not change image-pull policy."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "Prerequisite identifiers (`safe-delivery-and-observability`, `linux-processes-files-permissions`) are opaque to learners.",
+          "reason": "Without a short description, learners cannot gauge whether they already meet the prerequisites.",
+          "fix": "Append a brief description to each prerequisite, e.g., \"safe-delivery-and-observability \u2013 understanding immutable artifact promotion\" and \"linux-processes-files-permissions \u2013 basics of Unix processes, signals, and file permissions.\"",
+          "disposition": "rejected_policy",
+          "resolution": "Prerequisite values are existing lesson slugs. They are not placeholders, and they were not rewritten as prose descriptions."
+        }
+      ]
+    },
+    {
+      "slug": "observability-tails-traces-and-cardinality",
+      "draft_sha256": "bec9c5f28528e6622d3a14927cc4ed8addf068c2a0715fa204de5bd1eab6b3de",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "The sample code was executed with CPython 3.14.",
+          "reason": "As of the knowledge cutoff (2024\u201106) the latest stable CPython release is 3.12; 3.13 is in development and 3.14 has not been released. Stating a non\u2011existent version is factually incorrect and may mislead readers about language features or performance characteristics.",
+          "fix": "Change the claim to a released version, e.g., \"executed with CPython 3.12\" (or \"3.13 beta\" if you want to note a future version).",
+          "disposition": "rejected_execution",
+          "resolution": "The percentile script was executed with CPython 3.14.7 on 2026-11-08. The reviewer's 2024 cutoff was not used."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The narrative mentions a dashboard showing 120\u202fms latency while the worked example computes an average of 128.4\u202fms.",
+          "reason": "The two numbers refer to different scenarios but are presented back\u2011to\u2011back without clarification, which can confuse learners about whether the example matches the opening story.",
+          "fix": "Add a brief note linking the two, e.g., \"In the opening story the dashboard reports ~120\u202fms; the concrete example below yields 128.4\u202fms, illustrating that the average can shift slightly depending on the exact request mix.\"",
+          "disposition": "incorporated",
+          "resolution": "The opening now says the 120 ms dashboard figure is a separate story from the sample that prints 128.4 ms."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson states that the p99 is obtained by taking the value at index\u202f98 (0\u2011based) for 100 observations, calling this the \"nearest\u2011rank\" method.",
+          "reason": "While correct for the nearest\u2011rank definition, many monitoring systems (Prometheus, OpenTelemetry) use linear interpolation between buckets, which can produce a slightly different value. Not mentioning this nuance may lead learners to expect identical results across tools.",
+          "fix": "Add a sentence noting that the example uses the nearest\u2011rank definition and that production systems may interpolate, so the exact numeric result can differ.",
+          "disposition": "already_addressed",
+          "resolution": "The lesson already says index 98 is a nearest-rank teaching definition and that histogram buckets are a different estimate."
+        }
+      ]
+    },
+    {
+      "slug": "scaling-capacity-replicas-and-hotspots",
+      "draft_sha256": "db0ac426c0d5ab8ac0a224f49421efc47a4459b95e903b50f7371bcdad8c8d51",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "The code was executed with CPython 3.14.",
+          "reason": "As of the current Python release schedule, CPython 3.14 has not been released; the latest stable version is 3.13 (or 3.12 at the time of writing). Stating a non\u2011existent interpreter version is factually incorrect and may mislead readers about compatibility.",
+          "fix": "Change the provenance line to reference a real interpreter version, e.g., \"Executed with CPython 3.13\" or \"Executed with CPython 3.12 or later\".",
+          "disposition": "rejected_execution",
+          "resolution": "The placement script was executed with CPython 3.14.7. The version claim was kept."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "Prerequisites list does not include knowledge of consistent hashing.",
+          "reason": "The lesson relies on understanding how a ring with virtual nodes works, which is a core concept of consistent hashing. Learners without this background may struggle with the placement example and the rationale behind the move fractions.",
+          "fix": "Add \"consistent-hashing\" (or a similar identifier) to the prerequisites array.",
+          "disposition": "rejected_policy",
+          "resolution": "There is no consistent-hashing lesson slug. The lesson teaches the ring it measures. An invented prerequisite was not added."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The guidance on adding a peak multiplier is vague.",
+          "reason": "The lesson mentions adding a peak factor but does not provide concrete methods (e.g., using historical 95th\u2011percentile traffic, business\u2011hour spikes, or a safety factor) for choosing it. This can lead to under\u2011 or over\u2011provisioning.",
+          "fix": "Include a short paragraph describing common approaches to derive a peak multiplier, such as analyzing recent traffic patterns, applying a 1.5\u20112\u00d7 safety factor, or using the 95th percentile of observed load.",
+          "disposition": "already_addressed",
+          "resolution": "The lesson already says the printed rate is an average and that a peak multiplier is not invented by the script."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The observed ring move fraction (0.094) is said to be \"close\" to the theoretical 1/11 (0.091) without explanation.",
+          "reason": "Learners may wonder why the measured fraction is slightly higher. The difference arises from the finite key sample size and the specific virtual\u2011node count, which affect the granularity of the hash ring.",
+          "fix": "Add a brief note after the output explaining that the deviation is expected due to randomness in the synthetic key set and the discrete placement of 100 virtual nodes per server; larger key samples or more virtual nodes would converge toward the theoretical value.",
+          "disposition": "already_addressed",
+          "resolution": "The lesson already says 0.094 is close to 1/11 and that close is not identical."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson assumes readers understand how to translate a monthly volume into per\u2011second rates but does not explicitly address diurnal or weekly traffic patterns.",
+          "reason": "Capacity planning based solely on a monthly average can hide significant peak loads that occur during business hours or promotional events, potentially leading to insufficient provisioning.",
+          "fix": "Insert a sentence in the \"How it works\" section reminding learners to consider peak\u2011hour factors or to compute a separate peak\u2011load estimate (e.g., using the highest daily or hourly rate) in addition to the average.",
+          "disposition": "already_addressed",
+          "resolution": "Peaks, business hours, and the missing peak factor are already in the estimate section and the common mistakes."
+        }
+      ]
+    },
+    {
+      "slug": "reliability-jitter-queues-and-availability",
+      "draft_sha256": "1742f0b6fc9d98850c0ef5ba5457e2e679f3aeeb001b8dda3962a9656c3dc1df",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "Executed with CPython 3.14",
+          "reason": "As of the current Python releases, CPython 3.14 does not exist; the latest stable series is 3.13 (and 3.12 LTS). Stating a non\u2011existent version misleads readers about the runtime environment and may cause confusion when they try to reproduce the example.",
+          "fix": "Change the claim to a real version, e.g., \"Executed with CPython 3.13\" (or \"3.12\" if you tested on that version).",
+          "disposition": "rejected_execution",
+          "resolution": "The jitter script was executed with CPython 3.14.7. Floats are reported as this interpreter's output."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "random.Random(7) is the standard library generator, so another Python version could in principle draw different floats.",
+          "reason": "The Mersenne\u2011Twister implementation used by `random.Random` has been stable across recent Python releases, so the output is effectively reproducible for the same seed on 3.8+. Saying that another version could draw different floats may unnecessarily alarm readers about reproducibility.",
+          "fix": "Rephrase to something like: \"The Mersenne\u2011Twister algorithm used by `random.Random` is deterministic across current Python releases, so the jitter values are reproducible for the same seed on supported versions.\"",
+          "disposition": "rejected_execution",
+          "resolution": "No other Python version was executed. The caveat that another interpreter might draw different floats stays. The formula is the part the lesson tells the reader to rely on."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "Parallel replicas of one role fail the role only when the required set fails.",
+          "reason": "The phrase \"required set\" is vague and can be misinterpreted as a subset of replicas rather than \"all replicas\". This may confuse learners about the condition for a parallel group to be considered failed.",
+          "fix": "Replace with clearer wording: \"Parallel replicas of a role fail the role only when *all* replicas in that group fail (i.e., when the intersection of failures occurs).\"",
+          "disposition": "incorporated",
+          "resolution": "The parallel rule now says the role fails only when every replica in the group has failed, matching the 0.001 squared calculation."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "Practice exercise asks to count how many clients retry in the same tenth of a second.",
+          "reason": "The instruction does not explain how to measure \u201cthe same tenth of a second\u201d (e.g., rounding, binning) and may leave learners uncertain about the method, reducing the exercise\u2019s effectiveness.",
+          "fix": "Add a brief clarification, e.g., \"Group the jittered retry times into 0.1\u202fs bins (e.g., floor(time\u202f/\u202f0.1)) and count how many clients fall into each bin; report the maximum count per bin.\"",
+          "disposition": "incorporated",
+          "resolution": "The exercise now says to group delays with floor(delay / 0.1)."
+        }
+      ]
+    },
+    {
+      "slug": "consistency-replica-lag-and-conflicts",
+      "draft_sha256": "85dd89827ca2edf0c33626d40882852316a900442dbc43a6f2bff39444345778",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "The script was executed with CPython 3.14.",
+          "reason": "As of the knowledge cutoff (2024) the latest released CPython version is 3.12; 3.14 does not exist, so the version claim is factually incorrect.",
+          "fix": "Change the claim to a released version, e.g., \"Executed with CPython 3.12\" or remove the version reference entirely.",
+          "disposition": "rejected_execution",
+          "resolution": "The model was executed with CPython 3.14.7."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The example uses two numbers on purpose: real time 130 loses to clock 100 because the rule compares clocks and 90 is smaller.",
+          "reason": "The narrative mentions a real\u2011time value (130) that never appears in the code, and the comparison described is confusing (130 vs 100 vs 90). This can mislead readers about which numbers are being compared.",
+          "fix": "Rewrite the sentence to match the code, e.g., \"If we added a real\u2011time field with value 130 to the second edit, it would still lose because the LWW rule only looks at the 'clock' field (90 < 100).\"",
+          "disposition": "incorporated",
+          "resolution": "The sentence that mentioned a real-time value of 130, which is not in the script, now says the later story edit is the one stamped 90 and the rule keeps 100."
+        },
+        {
+          "severity": "important",
+          "claim": "Read\u2011your\u2011writes can be achieved simply by reading the primary for that session.",
+          "reason": "While reading the primary guarantees read\u2011your\u2011writes, it is not the only technique; version\u2011vector tracking or waiting for replica LSN advancement can also provide the guarantee without always hitting the primary.",
+          "fix": "Add a brief note that alternative approaches (e.g., waiting for replica LSN, using session tokens) exist and may be preferable for latency or availability reasons.",
+          "disposition": "already_addressed",
+          "resolution": "The lesson already names three ways to get read-your-writes: read the primary, wait for the write position, or stick the session to a copy that has the write."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson does not mention how to measure replica lag in PostgreSQL.",
+          "reason": "Learners may need concrete tools (e.g., pg_stat_replication, pg_last_xlog_replay_timestamp) to implement the session\u2011rule described in the practice.",
+          "fix": "Include a short bullet pointing to PostgreSQL\u2019s built\u2011in lag metrics and an example query.",
+          "disposition": "deferred",
+          "resolution": "No SQL lag query was added. The lesson does not connect to PostgreSQL, and the hot-standby reference remains the pointer."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The practice asks to \u201cstep one writer's clock forward by an hour\u201d.",
+          "reason": "In a real system you cannot arbitrarily change wall\u2011clock values; the exercise should clarify that this is a simulated step in the model, not a production operation.",
+          "fix": "Add a parenthetical clarification: \"(in the simulated script, manually set the 'clock' field to a larger value)\".",
+          "disposition": "already_addressed",
+          "resolution": "The practice says to extend the script and step a clock in that model."
+        }
+      ]
+    },
+    {
+      "slug": "messaging-delivery-outbox-and-order",
+      "draft_sha256": "fca8ed2f89e82e4b5a8955a4ed8a9557aa226607cda0f1a7e4c0a00772878824",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "The example was executed with CPython 3.14.",
+          "reason": "Python 3.14 has not been released as of the current date (2026). The latest stable release is Python 3.13, so referencing 3.14 is factually incorrect and may confuse readers about language features.",
+          "fix": "Change the version reference to a released version, e.g., \"Executed with CPython 3.13\" or \"Executed with Python 3.12+\".",
+          "disposition": "rejected_execution",
+          "resolution": "The outbox model was executed with CPython 3.14.7. It does not connect to a broker."
+        },
+        {
+          "severity": "important",
+          "claim": "A timeout makes the broker deliver the message again.",
+          "reason": "In most broker implementations (Kafka, SQS, RabbitMQ) redelivery is triggered by a missing acknowledgment or a visibility\u2011timeout expiry, not by a generic \"timeout\". The wording can mislead beginners into thinking the broker initiates a timer independent of consumer acknowledgments.",
+          "fix": "Replace the sentence with something like: \"If the consumer does not acknowledge the message before the broker\u2019s visibility timeout expires, the broker will redeliver the message.\"",
+          "disposition": "incorporated",
+          "resolution": "The opening now says the consumer never acknowledges the delivery, so the broker delivers it again. It no longer calls that a generic timeout."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson uses an in\u2011memory `set` to model a durable idempotency store and later warns that the set vanishes on restart.",
+          "reason": "While the warning is correct, the example does not show how to replace the in\u2011memory set with a persistent store, leaving a gap for learners who need a concrete pattern.",
+          "fix": "Add a short code snippet that uses a SQLite (or PostgreSQL) table with a unique constraint to store processed IDs, and show the `apply` function performing an `INSERT \u2026 ON CONFLICT DO NOTHING`.",
+          "disposition": "deferred",
+          "resolution": "A SQLite idempotency table was not added. The lesson already shows that an in-memory set is not durable and asks the exercise to keep a saved id."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The outbox publisher is described only as a separate process that reads rows and marks them sent.",
+          "reason": "Learners may wonder how to guarantee exactly\u2011once publishing from the outbox. The lesson mentions possible duplicate publishes but does not outline best\u2011practice techniques (e.g., Kafka transactional producer, idempotent producer, or a \u201csent\u201d flag updated in the same transaction as the publish acknowledgement).",
+          "fix": "Include a brief note: \"When using Kafka, configure the producer with `transactional.id` and commit the transaction after the publish succeeds; for other brokers, store a 'sent' flag atomically with the publish acknowledgement to avoid duplicates.\"",
+          "disposition": "deferred",
+          "resolution": "Kafka transactional producers are named as a finer guarantee to read in the current documentation, not as behavior the script demonstrates."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The explanation of partition ordering states that events with the same key stay in order if the producer does not retry in a way that appends twice.",
+          "reason": "Retrying with the same key can still cause out\u2011of\u2011order records if the broker reassigns partitions on each attempt (e.g., when using a custom partitioner). This nuance is omitted, which could cause confusion when learners test retries.",
+          "fix": "Add a clarification: \"When retrying, ensure the producer uses the same partition (by fixing the key and disabling any custom partitioner that may change the target partition) so that duplicate attempts are appended to the same partition and preserve order.\"",
+          "disposition": "deferred",
+          "resolution": "The lesson already limits order to one key and one partition and warns about a producer retry that appends twice."
+        }
+      ]
+    },
+    {
+      "slug": "technical-decisions-records-and-reversibility",
+      "draft_sha256": "9de120a0a0ebd75376c5f1f59658baeda196b600edf5a61df2ce190df9ce464d",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "The checker was executed with CPython 3.14.",
+          "reason": "As of the current Python release schedule, CPython 3.14 has not been released; the latest stable version is 3.12 and 3.13 is still in development. Stating execution with a non\u2011existent version is factually incorrect and may mislead learners about tool availability.",
+          "fix": "Change the claim to reference an actual released version, e.g., \"Executed with CPython 3.12\" or \"Executed with the latest stable CPython version at the time of writing (3.12).\"",
+          "disposition": "rejected_execution",
+          "resolution": "The record checker was executed with CPython 3.14.7."
+        },
+        {
+          "severity": "important",
+          "claim": "The provenance line states \"no human subject\u2011matter verification\" while the lesson is being reviewed by a human.",
+          "reason": "This creates a contradictory statement that could confuse readers about the reliability of the content. It also undermines confidence in the lesson\u2019s authority.",
+          "fix": "Update the provenance to reflect that the record checker was run automatically, but the lesson itself has been reviewed by subject\u2011matter experts, e.g., \"record checker executed with CPython 3.12; advisory review performed by senior engineers; human verification applied.\"",
+          "disposition": "rejected_policy",
+          "resolution": "Advisory review is not human subject-matter verification. The provenance line stays explicit, and status stays reviewed."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The example checker only validates that the four required fields are non\u2011empty.",
+          "reason": "While technically correct, the lesson could guide learners toward a more robust validation (e.g., ensuring \"alternatives\" and \"consequences\" are non\u2011empty lists, not just any truthy value). This would prevent accidental acceptance of malformed records such as a single string in \"alternatives\".",
+          "fix": "Add a brief note or optional extension to the checker code that checks the type and non\u2011emptiness of list fields, for example:\n```python\nif not isinstance(document.get(\"alternatives\"), list) or not document[\"alternatives\"]:\n    gaps.append(\"alternatives\")\n```",
+          "disposition": "deferred",
+          "resolution": "The checker remains a non-empty field check. The lesson already says a human must read the words and that nonsense can pass."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson assumes readers are comfortable with feature\u2011flagging and interface\u2011based seams without providing concrete steps.",
+          "reason": "Intermediate learners may not yet have practical experience implementing reversible experiments. The lack of a concrete, step\u2011by\u2011step example could reduce the lesson\u2019s effectiveness.",
+          "fix": "Include a short, concrete example of adding a feature flag or interface wrapper for a public API decision, showing the code change and how the flag toggles between old and new implementations.",
+          "disposition": "deferred",
+          "resolution": "A feature-flag implementation was not added. Reversibility is taught with the two constants the checker prints."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The prerequisite list only mentions \"code-review-that-finds-risk\".",
+          "reason": "Understanding ADRs and incremental replacement also requires familiarity with version control branching strategies and basic CI/CD concepts, which are not listed.",
+          "fix": "Expand the prerequisites to include items such as \"basic Git branching and pull\u2011request workflow\" and \"experience with feature\u2011flag systems or toggle frameworks.\"",
+          "disposition": "rejected_policy",
+          "resolution": "Extra prerequisite phrases are not lesson slugs. The existing code-review lesson remains the prerequisite."
+        }
+      ]
+    },
+    {
+      "slug": "incident-response-mitigation-and-follow-up",
+      "draft_sha256": "037872cc10aa36aee2edd3240a1d79b52aee722c5cc057f48146b66ba2c2b9b6",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "The mitigation and action examples were executed with CPython 3.14.",
+          "reason": "As of the current Python releases, CPython 3.14 does not exist (the latest stable release is 3.12, with 3.13 in development). Stating execution with a non\u2011existent version is factually incorrect and may mislead learners about compatibility.",
+          "fix": "Replace the version claim with a real interpreter version (e.g., CPython 3.12) or remove the version reference entirely.",
+          "disposition": "rejected_execution",
+          "resolution": "The mitigation function was executed with CPython 3.14.7."
+        },
+        {
+          "severity": "important",
+          "claim": "Provenance states there was no human subject\u2011matter verification of the lesson content.",
+          "reason": "Relying solely on AI\u2011generated material for incident\u2011response guidance can propagate subtle inaccuracies (e.g., missing edge cases for data\u2011migration rollbacks). Without expert review, learners may adopt unsafe practices.",
+          "fix": "Add a step in the review process where an experienced SRE or incident\u2011response practitioner validates the lesson, especially the rollback criteria and role\u2011separation recommendations.",
+          "disposition": "rejected_policy",
+          "resolution": "The lesson was not marked human-verified. An SRE sign-off was not claimed."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The `system_action` helper determines a \u201cblame\u201d action by checking `text.lower().startswith(\"remind the engineer\")`.",
+          "reason": "This na\u00efve string check fails for many legitimate blame statements (e.g., \"Please remind the engineer...\", \"Remind engineers...\"), leading to false negatives and potentially misclassifying actions.",
+          "fix": "Replace the simple `startswith` with a more tolerant pattern, such as a regular expression that matches any phrase containing the word \"remind\" and \"engineer\" in any order, or explicitly document the limitation and advise against using the helper in production.",
+          "disposition": "already_addressed",
+          "resolution": "The lesson already says startswith will fool the helper and that the helper must not be a production controller."
+        },
+        {
+          "severity": "important",
+          "claim": "The lesson does not provide concrete guidance on assessing rollback safety when the recent change is a data migration.",
+          "reason": "Rollback of a version that performed a schema change can corrupt data or make the previous version unreadable. The lesson mentions this risk only in passing, leaving learners without a practical checklist.",
+          "fix": "Add a concise checklist (e.g., verify backward\u2011compatible migrations, confirm no data loss, test rollback in a staging environment) and include an example of a safe rollback path for a column drop scenario.",
+          "disposition": "already_addressed",
+          "resolution": "The dropped-column follow-up is already the expand, migrate readers, then contract sequence."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The hard\u2011coded thresholds in `first_mitigation` (error_rate\u202f\u2265\u202f5\u202f%, previous_error_rate\u202f<\u202f1\u202f%, deploy\u202f\u2264\u202f30\u202fmin) are presented as universal.",
+          "reason": "Different services have varying error budgets and deployment cadences; a one\u2011size\u2011fits\u2011all rule may cause unnecessary rollbacks or missed mitigations.",
+          "fix": "Clarify that these thresholds are illustrative and should be tuned per service, and provide guidance on how to derive appropriate thresholds from service\u2011level objectives or error budgets.",
+          "disposition": "already_addressed",
+          "resolution": "The thresholds are described as this scenario's rule, not a universal incident bot."
+        }
+      ]
+    },
+    {
+      "slug": "git-history-amend-revert-and-recovery",
+      "draft_sha256": "2a9654fb630732f47ae824b8ee9346eccdafd387f71c51af5c4e70671aa02ea1",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "important",
+          "claim": "The lesson\u2019s description of the required Git version is ambiguous.",
+          "reason": "It says the lesson uses Git\u202f2.28 or later because the example asks `git init` for the name `main`. The actual flag used is `--initial-branch=main`, which was introduced in Git\u202f2.28. The wording could be misread as a generic requirement rather than a specific flag requirement.",
+          "fix": "Rephrase to: \"The script uses `git init --initial-branch=main`, a feature added in Git\u202f2.28, so the lesson requires Git\u202f2.28 or newer.\"",
+          "disposition": "incorporated",
+          "resolution": "The version sentence now names git init --initial-branch=main and Git 2.28."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The `checks` list includes `git-force-pushed-main` but the lesson never explains what this check does.",
+          "reason": "Readers may be confused about the purpose of that check and how it relates to the lesson\u2019s objectives.",
+          "fix": "Add a brief description, e.g., \"`git-force-pushed-main` verifies that a force\u2011push to a protected main branch is rejected, reinforcing the rule that amend should not be used on shared branches.\"",
+          "disposition": "rejected_policy",
+          "resolution": "git-force-pushed-main is an existing free-text assessment. The lesson does not claim an automated check that rejects a push, and it does not demonstrate a force-push."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The behavior of `git revert -n` is not explicitly explained.",
+          "reason": "Learners might think `-n` (or `--no-commit`) automatically creates a revert commit, whereas it actually stages the changes without committing, which is why the script runs a separate `git commit`.",
+          "fix": "Insert a sentence after the `git revert -n` command: \"The `-n` option stages the inverse changes but does not create a commit; the subsequent `git commit` finalizes the revert with a new commit.\"",
+          "disposition": "already_addressed",
+          "resolution": "The lesson already defines git revert -n as applying the inverse without creating the commit."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson states that the script prints labels instead of raw object IDs, but does not show the actual commit and tree IDs, which could reinforce the concept of new objects.",
+          "reason": "Seeing the SHA\u20111/SHA\u2011256 values helps learners understand that a new commit ID is generated even when the tree is unchanged.",
+          "fix": "Offer an optional verbose mode (e.g., `VERBOSE=1`) that prints `before`, `after`, `before_tree`, and `after_tree` values, or add a comment indicating that learners can add `echo $before $after` for debugging.",
+          "disposition": "deferred",
+          "resolution": "Object ids stay out of the text fence so the contract is stable. The lesson already explains that the commit id changes when the tree does not."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The prerequisite \"git-commits-index-and-object-identity\" is mentioned without a link or further guidance.",
+          "reason": "Learners unfamiliar with that topic may not know where to find the required background material.",
+          "fix": "Provide a hyperlink to the relevant section of the Pro Git book or the official Git documentation, e.g., \"Prerequisite: understand commits, the index, and object identity (see Pro Git chapter\u202f2.4).\"",
+          "disposition": "rejected_policy",
+          "resolution": "The prerequisite is the existing commits lesson slug."
+        }
+      ]
+    },
+    {
+      "slug": "linux-shell-redirection-pipelines-and-expansion",
+      "draft_sha256": "3ee017d1dd64d5009e4c3921eeb82479ef0c77d7767a5ba9b9195d9bf7172ad5",
+      "ready": true,
+      "reasoning_answers_checked": true,
+      "findings": [
+        {
+          "severity": "error",
+          "claim": "When the script is executed with `bash -c` the guard statuses become 127 instead of 1.",
+          "reason": "In Bash 3.2 and later, a failed redirection or an unbound\u2011variable error exits with status 1. The status 127 is reserved for \u201ccommand not found\u201d. Running the same script via `bash -c` does not change the exit status of the subshells that fail because of `set -u`; they still return 1. The lesson\u2019s claim is therefore inaccurate.",
+          "fix": "Replace the sentence with: \u201cWhen the script is run via `bash -c` the guard statuses remain 1; the numeric value is consistent across invocation methods.\u201d",
+          "disposition": "rejected_execution",
+          "resolution": "Executing the file with Bash 3.2.57 prints guard statuses 1. bash -c on the same Bash prints 127. Both were measured. The reviewer's claim that bash -c still prints 1 was rejected."
+        },
+        {
+          "severity": "important",
+          "claim": "The lesson states that `noclobber` \u201cdoes not change `>>`\u201d.",
+          "reason": "While technically true, the lesson does not explain that `noclobber` can be overridden for a single redirection using the `>|` operator. Learners may assume `noclobber` is a blanket protection and be surprised when a needed overwrite fails.",
+          "fix": "Add a brief note: \u201c`noclobber` only affects `>`; to force an overwrite while `noclobber` is set, use `>|`.\u201d",
+          "disposition": "already_addressed",
+          "resolution": "The trade-offs section already documents >| as the Bash override for one redirection while noclobber is on."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "Prerequisites list only \"linux-filesystem-paths-and-permissions\".",
+          "reason": "The lesson relies on understanding Bash parameter expansion, the `set` builtin options, and redirection syntax, which are not covered by a pure filesystem lesson. A learner without prior shell exposure may struggle with the examples.",
+          "fix": "Add a prerequisite such as \"basic-bash-syntax\" or \"shell-parameter-expansion-and-options\".",
+          "disposition": "rejected_policy",
+          "resolution": "The prerequisite is the existing filesystem lesson. Invented shell slugs were not added."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The practice exercise asks the learner to print expansions of a potentially dangerous `rm -rf $BUILD_DIR/*` line.",
+          "reason": "If a learner runs the provided script as root, the unquoted expansion could inadvertently delete the root filesystem if they modify the script incorrectly. Even though the lesson emphasizes printing only, the presence of the literal command may encourage unsafe experimentation.",
+          "fix": "Explicitly warn: \u201cRun the exercise as a non\u2011privileged user and never remove the `rm -rf` line; replace it with `printf` or `echo` before testing.\u201d",
+          "disposition": "already_addressed",
+          "resolution": "The practice and the script comments require printing the expansion. The only rm -rf targets the temporary directory."
+        },
+        {
+          "severity": "suggestion",
+          "claim": "The lesson disables `-e` around the pipeline to show both statuses.",
+          "reason": "A more idiomatic approach for production scripts is to keep `-e` enabled and capture the pipeline\u2019s individual exit codes via `${PIPESTATUS[@]}`. This demonstrates a realistic technique and avoids the confusing temporary toggle of `-e`.",
+          "fix": "Show an alternative snippet: `set -euo pipefail; false | true; echo \"pipeline status ${PIPESTATUS[0]} ${PIPESTATUS[1]}\"` and explain that `${PIPESTATUS}` works even with `-e` on.",
+          "disposition": "deferred",
+          "resolution": "PIPESTATUS was not added. The measured contract is the pipeline status with and without pipefail."
+        },
+        {
+          "severity": "important",
+          "claim": "The lesson says `--preserve-root=all` rejects a command\u2011line argument that is not on the same file system as its parent.",
+          "reason": "The coreutils manual specifies that `--preserve-root=all` prevents removal of any directory that is a mount point, not merely a directory on a different filesystem. The wording in the lesson is slightly misleading and could cause confusion about the exact protection offered.",
+          "fix": "Rephrase to: \u201c`--preserve-root=all` refuses to remove any directory that is a mount point (i.e., a root of a separate filesystem), providing a broader safeguard than the default `--preserve-root` which only protects `/`.\u201d",
+          "disposition": "rejected_documentation",
+          "resolution": "The sentence quotes the coreutils 9.12 rm manual for --preserve-root=all. That command was not executed. The reviewer's mount-point paraphrase was not substituted for the manual's sentence."
+        }
+      ]
+    }
+  ],
+  "final_sha256": {
+    "36-container-image-layers-and-signals.md": "f30512aa6460e5c6e9d852b9c46a694873f2d8a50785e73210ef35190027fe45",
+    "37-observability-tails-traces-and-cardinality.md": "fd7346b2bf8df601a0b304665efef9624096dd9474961c471334dd529f6656d7",
+    "38-scaling-capacity-replicas-and-hotspots.md": "db0ac426c0d5ab8ac0a224f49421efc47a4459b95e903b50f7371bcdad8c8d51",
+    "39-reliability-jitter-queues-and-availability.md": "177000fae8eedc33286b4cebbd99a95ceabf313ff328fab3a9f84c28ea610730",
+    "40-consistency-replica-lag-and-conflicts.md": "7b01a02f700c2e7193816db1ae8e48116e70702650414999a94d6d55d187b46f",
+    "41-messaging-delivery-outbox-and-order.md": "c6113f723d9f77b27987a404d382a7ccd2849dcdf5ef3c7ba6a06c55b08348a2",
+    "42-technical-decisions-records-and-reversibility.md": "9de120a0a0ebd75376c5f1f59658baeda196b600edf5a61df2ce190df9ce464d",
+    "43-incident-response-mitigation-and-follow-up.md": "037872cc10aa36aee2edd3240a1d79b52aee722c5cc057f48146b66ba2c2b9b6",
+    "44-git-history-amend-revert-and-recovery.md": "65175bb667df1d80c8ba15a53d66390b4d7272f8520be6be0fdb210a220cad24",
+    "45-linux-shell-redirection-pipelines-and-expansion.md": "3ee017d1dd64d5009e4c3921eeb82479ef0c77d7767a5ba9b9195d9bf7172ad5"
+  },
+  "summary": {
+    "lessons": 10,
+    "findings": 50,
+    "severities": {
+      "error": 9,
+      "important": 9,
+      "suggestion": 32
+    },
+    "dispositions": {
+      "rejected_execution": 11,
+      "deferred": 11,
+      "already_addressed": 13,
+      "rejected_policy": 8,
+      "incorporated": 6,
+      "rejected_documentation": 1
+    },
+    "ready_true": 10
+  },
+  "initial_final_sha256": {
+    "36-container-image-layers-and-signals.md": "7d8dec6d7448784418f9efdc5055c852225ff5310b0c01e134afe5b497b02b88",
+    "37-observability-tails-traces-and-cardinality.md": "fd7346b2bf8df601a0b304665efef9624096dd9474961c471334dd529f6656d7",
+    "38-scaling-capacity-replicas-and-hotspots.md": "db0ac426c0d5ab8ac0a224f49421efc47a4459b95e903b50f7371bcdad8c8d51",
+    "39-reliability-jitter-queues-and-availability.md": "177000fae8eedc33286b4cebbd99a95ceabf313ff328fab3a9f84c28ea610730",
+    "40-consistency-replica-lag-and-conflicts.md": "7b01a02f700c2e7193816db1ae8e48116e70702650414999a94d6d55d187b46f",
+    "41-messaging-delivery-outbox-and-order.md": "c6113f723d9f77b27987a404d382a7ccd2849dcdf5ef3c7ba6a06c55b08348a2",
+    "42-technical-decisions-records-and-reversibility.md": "9de120a0a0ebd75376c5f1f59658baeda196b600edf5a61df2ce190df9ce464d",
+    "43-incident-response-mitigation-and-follow-up.md": "037872cc10aa36aee2edd3240a1d79b52aee722c5cc057f48146b66ba2c2b9b6",
+    "44-git-history-amend-revert-and-recovery.md": "65175bb667df1d80c8ba15a53d66390b4d7272f8520be6be0fdb210a220cad24",
+    "45-linux-shell-redirection-pipelines-and-expansion.md": "3ee017d1dd64d5009e4c3921eeb82479ef0c77d7767a5ba9b9195d9bf7172ad5"
+  },
+  "follow_up_reviews": [
+    {
+      "model": "gpt-oss:120b",
+      "reviewed_at": "2026-11-09T10:40:23.456272+00:00",
+      "sha256": "f30512aa6460e5c6e9d852b9c46a694873f2d8a50785e73210ef35190027fe45",
+      "slug": "container-image-layers-and-signals",
+      "review": {
+        "text": "**Readiness:**\u202fThe lesson is largely complete and can be used after minor fixes. It correctly covers layer caching, writable\u2011layer ephemerality, and PID\u202f1 signal handling, and the provided script demonstrates the concepts.  \n\n**Concrete findings**\n\n| # | Severity | Issue (evidence) | Why it matters | Suggested fix |\n|---|----------|-------------------|----------------|--------------|\n| 1 | **High** | The \u201csingle\u2011stage practice\u201d claims \u201cseparate cache layers do not make a multi\u2011stage build.\u201d The exercise asks learners to \u201cconfirm the install layer is cached\u201d but never tells them how to inspect the cache (e.g., `docker build --progress=plain` or `docker history`). Without an explicit verification step, a learner cannot be sure the build actually reused the layer, so the practice does not reliably demonstrate the distinction between build stages and cache layers. | Learners may finish the exercise believing caching works when it may not, undermining the core learning objective. | Add a step that parses the build output (or runs `docker history p7-cache:1`) and asserts that the `RUN` line shows \u201cCACHED\u201d. Provide the exact command and expected output. |\n| 2 | **Medium** | In the \u201cshell\u2011form vs exec\u2011form\u201d part the script kills the container with `docker kill --signal=TERM` and then sleeps only\u202f0.8\u202fs before checking the logs. On slower hosts the signal may not have been delivered yet, leading to a false\u2011negative \u201cshell_signal absent\u201d. The lesson does not mention the need for a longer wait or a loop that retries until the container stops or a timeout expires. | The observed \u201cshell_state running\u201d could be an artifact of the short wait rather than a true signal\u2011handling failure, which could confuse learners. | Replace the fixed `sleep 0.8` with a loop that polls `docker inspect` until the container state is `exited` or a reasonable timeout (e.g., 5\u202fs) is reached, then evaluate the log. |\n| 3 | **Low** | The \u201cupload\u201d demonstration uses a temporary container based on `python:3.12-slim` that writes to `/tmp/upload`. The lesson later says \u201cA volume mount and a host path are not portable across machines,\u201d but the example never shows a volume mount, so the contrast is missing. This leaves the learner without a concrete illustration of the correct durable\u2011storage pattern. | Missed opportunity to reinforce the volume concept and to show the failure when the file is written to the writable layer versus a volume. | Add a variant that runs the same container with `-v p7-data:/tmp` and shows that the file persists across container restarts, then explain why a plain writable layer does not. |\n\n**Reasoning feedback assessment**  \nThe \u201cCheck your understanding\u201d feedback correctly points learners to the underlying mental model (layer order, writable layer, PID\u202f1). The explanations are concise and accurate. No misleading statements were found.\n\n**Practice wording assessment**  \nThe practice description is clear about the three mini\u2011exercises, but as noted in Finding\u202f1 it lacks an explicit verification of cache reuse. Adding a concrete command to inspect the build cache will make the exercise self\u2011checking and ensure the learner can demonstrate the intended behavior. The other two exercises (writable\u2011layer test and PID\u202f1 inspection) are well\u2011worded once the timing issue in Finding\u202f2 is fixed.\n\n**Overall recommendation**  \nAddress the three findings (especially the cache\u2011verification step) and the script\u2019s timing, then the lesson can be released as \u201cready for learners.\u201d"
+      },
+      "usage": {
+        "prompt_tokens": 3618,
+        "completion_tokens": 823,
+        "total_tokens": 4441,
+        "prompt_tokens_details": {
+          "cached_tokens": 48
+        }
+      },
+      "human_verified": false,
+      "malformed_json_attempts_discarded": 3,
+      "change_reviewed": "Practice distinguishes one build stage from separate cache layers; executable fences unchanged.",
+      "dispositions": [
+        {
+          "finding": 1,
+          "disposition": "already_addressed",
+          "resolution": "The worked example supplies layer_result, reads the build log, and prints cached/rebuilt results. The practice asks learners to repeat those observations. Docker documentation supports the explicit stage/layer distinction."
+        },
+        {
+          "finding": 2,
+          "disposition": "already_addressed",
+          "resolution": "The lesson scopes the signal result to the tested image and says it did not wait for the full stop timeout. The 0.8-second observation is not a portable deadline or a guarantee for slow hosts. Exact final stdout was reproduced; timing remains a report limitation."
+        },
+        {
+          "finding": 3,
+          "disposition": "deferred",
+          "resolution": "A volume-persistence demo is an optional extension. This example demonstrates writable-layer loss; Docker documentation supports the volume guarantee. No real volume or production storage is touched."
+        }
+      ]
+    }
+  ],
+  "final_rechecked_at": "2026-11-09T10:43:05.801973+00:00"
+}

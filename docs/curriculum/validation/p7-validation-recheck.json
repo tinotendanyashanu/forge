@@ -1,0 +1,65 @@
+{
+  "batch": "P7",
+  "checked_at": "2026-11-09T10:51:51.235774+00:00",
+  "status": "validated locally; NOT DEPLOYED; separate production approval required",
+  "human_verified": false,
+  "lessons": 10,
+  "words": 18261,
+  "source_hashes_match_manifest": true,
+  "previous_content_files_unchanged": 75,
+  "coverage": {
+    "skills": 15,
+    "subskills": 45,
+    "lessons": 45,
+    "covered_subskills": 45,
+    "questions": 158,
+    "lesson_checks": 147,
+    "lesson_resources": 157,
+    "new_check_links": 35,
+    "new_resources": 34
+  },
+  "qa": {
+    "errors": 0,
+    "warnings": 30,
+    "warnings_identical_to_p6": true,
+    "urls_ok": 263,
+    "urls_checked": 263
+  },
+  "backend": {
+    "passed": 404,
+    "skipped": 0,
+    "seconds": 108.71,
+    "database": "forge_p7_tests_20261109"
+  },
+  "frontend": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "webpack_production_build": "passed"
+  },
+  "rehearsal": {
+    "database": "forge_p7_rehearsal_final_20261109",
+    "full_imports": 2,
+    "history_tables": 60,
+    "history_unchanged": true,
+    "question_and_option_ids_unchanged": true,
+    "existing_lesson_ids_unchanged": true,
+    "logical_idempotency": true
+  },
+  "independent_review": {
+    "model": "gpt-oss:120b",
+    "initial_lessons": 10,
+    "initial_findings": 50,
+    "all_initial_dispositions_recorded": true,
+    "follow_up_lessons": 1,
+    "follow_up_findings": 3,
+    "final_hashes_match": true,
+    "human_verified": false
+  },
+  "limitations": [
+    "Three real learners and zero lesson reads in the recorded P6 baseline cannot establish instructional effectiveness.",
+    "Local simulations demonstrate calculations, not full distributed-system guarantees.",
+    "Container SIGTERM result is a 0.8-second observation on the recorded image, not a portable shutdown guarantee.",
+    "Review is automated advisory review; no human verification.",
+    "Loader regenerates association/resource surrogate IDs; logical content and learner references are preserved."
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "baseline": "25c4b6ff80b418b298d11f530f582072a240b617",
+  "existing_files_unchanged": 75,
+  "curriculum_checksum": "4f4eb928bee1243b526cb3bfdbc725f0b894acb5b63fe8b8f6a9b0063fdc0941",
+  "human_verified": false,
+  "examples": [
+    {
+      "slug": "container-image-layers-and-signals",
+      "mapping": [
+        "devops",
+        "containers"
+      ],
+      "checks": [
+        "devops-docker-layer-order",
+        "devops-container-ephemeral-fs",
+        "devops-shell-form-sigterm"
+      ],
+      "words": 2008,
+      "resources": 3,
+      "isolation": {
+        "engine": "local docker",
+        "image": "python:3.12-slim",
+        "pull": false,
+        "sandbox": "FORGE coding sandbox not used"
+      },
+      "stdout": "dependency_layer cached\nsource_layer rebuilt\nsame_container photo\nnew_container False\nexec_pid1 python\nexec_signal got-term\nexec_state exited\nshell_pid1 /bin/sh\nshell_signal absent\nshell_state running"
+    },
+    {
+      "slug": "observability-tails-traces-and-cardinality",
+      "mapping": [
+        "devops",
+        "observability"
+      ],
+      "checks": [
+        "devops-p99-vs-average",
+        "devops-traces-for-latency",
+        "devops-label-cardinality"
+      ],
+      "words": 1590,
+      "resources": 3,
+      "stdout": "requests 100\naverage_ms 128.4\np99_ms 2400\nuser_label_series 12000000\nroute_status_series 60"
+    },
+    {
+      "slug": "scaling-capacity-replicas-and-hotspots",
+      "mapping": [
+        "system-design",
+        "scaling"
+      ],
+      "checks": [
+        "sd-stateless-scaling",
+        "sd-read-replicas",
+        "sd-capacity-estimate",
+        "sd-hot-tenant-shard",
+        "sd-consistent-hashing"
+      ],
+      "words": 1657,
+      "resources": 3,
+      "stdout": "assumed_month_seconds 2592000\navg_writes_per_second 3.86\navg_reads_per_second 385.8\nretained_links 600000000\nstorage_gb_at_500_bytes 300.0\nmodulo_moved_fraction 0.908\nring_moved_fraction 0.094\nring_target_share 0.091"
+    },
+    {
+      "slug": "reliability-jitter-queues-and-availability",
+      "mapping": [
+        "system-design",
+        "reliability"
+      ],
+      "checks": [
+        "sd-backoff-jitter",
+        "sd-queue-load-leveling",
+        "sd-availability-series-parallel"
+      ],
+      "words": 1600,
+      "resources": 3,
+      "stdout": "backoff_without_jitter [1, 2, 4]\nbackoff_with_jitter_client [0.82, 1.3, 4.6]\nparallel_b_availability 0.999999\nseries_path_availability 0.998999"
+    },
+    {
+      "slug": "consistency-replica-lag-and-conflicts",
+      "mapping": [
+        "distributed-systems",
+        "consistency"
+      ],
+      "checks": [
+        "ds-eventual-consistency",
+        "ds-read-your-writes",
+        "ds-lww-clock-skew"
+      ],
+      "words": 1553,
+      "resources": 3,
+      "stdout": "read_your_writes_from_replica Ada\nread_after_catchup Amina\nlww_keeps dark"
+    },
+    {
+      "slug": "messaging-delivery-outbox-and-order",
+      "mapping": [
+        "distributed-systems",
+        "messaging"
+      ],
+      "checks": [
+        "ds-at-least-once-meaning",
+        "ds-dual-write-outbox",
+        "ds-idempotent-ordered-consumer",
+        "ds-kafka-partition-ordering"
+      ],
+      "words": 1595,
+      "resources": 3,
+      "stdout": "first applied 25\nredelivery duplicate 25\ndual committed-without-event published []\noutbox committed-with-outbox outbox ['order-2']"
+    },
+    {
+      "slug": "technical-decisions-records-and-reversibility",
+      "mapping": [
+        "senior-practices",
+        "decision-making"
+      ],
+      "checks": [
+        "sp-adr-contents",
+        "sp-queue-choice-reasoning",
+        "sp-one-way-door",
+        "sp-rewrite-vs-incremental"
+      ],
+      "words": 1552,
+      "resources": 3,
+      "stdout": "weak_gaps ['context', 'alternatives', 'consequences']\ncomplete_gaps []\npublic_api_reversible False\nlogging_library_reversible True"
+    },
+    {
+      "slug": "incident-response-mitigation-and-follow-up",
+      "mapping": [
+        "senior-practices",
+        "incidents"
+      ],
+      "checks": [
+        "sp-incident-first-action",
+        "sp-lead-incident",
+        "sp-postmortem-action-item"
+      ],
+      "words": 1612,
+      "resources": 3,
+      "stdout": "mitigation roll back the deployment\nblame_action not-a-system-fix\nmigration_action system-fix"
+    },
+    {
+      "slug": "git-history-amend-revert-and-recovery",
+      "mapping": [
+        "git",
+        "history"
+      ],
+      "checks": [
+        "git-amend-unpushed",
+        "git-revert-shared",
+        "git-reflog-recover",
+        "git-force-pushed-main"
+      ],
+      "words": 2547,
+      "resources": 5,
+      "stdout": "amend_same_tree yes\namend_new_commit yes\namend_subject Add note\nold_tip_still_in_object_db commit\ncommits_after_revert 3\nfile_after_revert one\nbad_commit_type commit\ncommits_after_reset 2\ncommits_after_reflog_reset 3\nsubject_after_recovery Revert bad line"
+    },
+    {
+      "slug": "linux-shell-redirection-pipelines-and-expansion",
+      "mapping": [
+        "linux",
+        "shell"
+      ],
+      "checks": [
+        "linux-redirect-truncate",
+        "linux-pipefail",
+        "linux-unset-variable-rm"
+      ],
+      "words": 2547,
+      "resources": 5,
+      "empty_variable_probe": {
+        "stdout": "rm -rf /*",
+        "status": 0,
+        "rm_executed": false
+      },
+      "bash_c_stdout": "truncated_lines 1\ntruncated_text restarted\nappended_text week of logs|restarted\nplain_pipeline 0\npipefail_pipeline 1\nunset_expansion rm -rf /*\nnounset 127\nrequired_guard 127\nnoclobber 1",
+      "linux_bash": {
+        "version": "GNU bash, version 5.2.37(1)-release (aarch64-unknown-linux-gnu)",
+        "stdout": "truncated_lines 1\ntruncated_text restarted\nappended_text week of logs|restarted\nplain_pipeline 0\npipefail_pipeline 1\nunset_expansion rm -rf /*\nnounset 1\nrequired_guard 1\nnoclobber 1",
+        "network": "none",
+        "user": "65534:65534",
+        "read_only_root": true
+      },
+      "stdout": "truncated_lines 1\ntruncated_text restarted\nappended_text week of logs|restarted\nplain_pipeline 0\npipefail_pipeline 1\nunset_expansion rm -rf /*\nnounset 1\nrequired_guard 1\nnoclobber 1"
+    }
+  ],
+  "runtime_versions": {
+    "fastapi": "0.162.0",
+    "starlette": "1.10.0",
+    "anyio": "4.16.0",
+    "httpx": "0.28.1",
+    "pytest": "9.2.0",
+    "python": "3.14.7",
+    "git": "git version 2.55.0",
+    "bash": "GNU bash, version 3.2.57(1)-release (arm64-apple-darwin26)"
+  },
+  "linux_image_id": "sha256:02108f5d322dd89f1c9e552442c25acb0543dfdbc455693a5599624f20d9155d",
+  "max_body_similarity_to_existing": 0.057,
+  "coverage": {
+    "skills": 15,
+    "subskills": 45,
+    "lessons": 45,
+    "covered_subskills": 45,
+    "questions": 158,
+    "lesson_checks": 147,
+    "lesson_resources": 157,
+    "new_check_links": 35,
+    "new_resources": 34
+  }
+}

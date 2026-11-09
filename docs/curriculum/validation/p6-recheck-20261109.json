@@ -1,0 +1,578 @@
+{
+  "checked_at": "2026-11-09T10:51:18.011210+00:00",
+  "operation": "read-only P6 recheck; no checkout, seed, migration or restart",
+  "commit": "25c4b6ff80b418b298d11f530f582072a240b617",
+  "config_hashes": {
+    "/etc/forge/api.env": "3b7d9b570d283efd3e9883628ef2a2a61edef0b84a8d3e475a9d45de33813c8a",
+    "/etc/systemd/system/forge-api.service": "17310726835d1f75ca6e1144837eae7e5af5bea7400267058e57c7a96ac627b8",
+    "/etc/systemd/system/forge-web.service": "b363bb3288c29158f96492e0ab5a13e79888b20e72b2f40a64589378da4fd30a",
+    "/opt/forge/app/web/package-lock.json": "f6f0e72dd5a90bdddf2e98460c2f39695bef2f9e9b2b4695702337c43d02a9e1",
+    "/opt/forge/app/api/app/mastery/algorithm.py": "b294d4ec13b07b8aac5d5ae1ed727f79e21c98c096123da48b21f94368add7fd",
+    "/opt/forge/app/api/app/curriculum/curriculum.json": "4f4eb928bee1243b526cb3bfdbc725f0b894acb5b63fe8b8f6a9b0063fdc0941"
+  },
+  "configuration": {
+    "environment": "production",
+    "local_only": true,
+    "sandbox_backend": "disabled",
+    "sandbox_allow_container_isolation": false
+  },
+  "differences_from_recorded_p6": {
+    "history": [],
+    "protected_content": [],
+    "lessons": [],
+    "counts": []
+  },
+  "counts": {
+    "skills": 15,
+    "subskills": 45,
+    "prerequisite_edges": 21,
+    "active_questions": 158,
+    "inactive_questions": 0,
+    "active_lessons": 35,
+    "lesson_checks": 112,
+    "lesson_resources": 123
+  },
+  "history_tables": 60,
+  "history_sha256": "66949254f06b18cfca6f7153dc011baf0a8da50178cec6d02fc451edd4a661e6",
+  "protected_content_sha256": "e625d965a585ca1a1fdc262206c5a9a9396f59f3b46542f88c45e74d17ab14f5",
+  "lessons_sha256": "a030bd27d322c44f638969866ccd56c0f95de25c69056f19fd3885864338f14b",
+  "lesson_progress": {
+    "count": 0,
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "pages": [
+    {
+      "slug": "react-list-identity-and-derived-data",
+      "api": 200,
+      "web": 200,
+      "checks": 2,
+      "assessment_form": true
+    },
+    {
+      "slug": "react-effects-and-request-lifetimes",
+      "api": 200,
+      "web": 200,
+      "checks": 4,
+      "assessment_form": true
+    },
+    {
+      "slug": "fastapi-dependency-lifetimes-and-overrides",
+      "api": 200,
+      "web": 200,
+      "checks": 3,
+      "assessment_form": true
+    },
+    {
+      "slug": "fastapi-async-handlers-and-bounded-work",
+      "api": 200,
+      "web": 200,
+      "checks": 3,
+      "assessment_form": true
+    },
+    {
+      "slug": "test-doubles-fixtures-and-patching",
+      "api": 200,
+      "web": 200,
+      "checks": 4,
+      "assessment_form": true
+    },
+    {
+      "slug": "reliable-tests-time-state-and-order",
+      "api": 200,
+      "web": 200,
+      "checks": 3,
+      "assessment_form": true
+    },
+    {
+      "slug": "injection-safe-data-boundaries",
+      "api": 200,
+      "web": 200,
+      "checks": 3,
+      "assessment_form": true
+    },
+    {
+      "slug": "secrets-storage-rotation-and-exposure",
+      "api": 200,
+      "web": 200,
+      "checks": 3,
+      "assessment_form": true
+    },
+    {
+      "slug": "git-commits-index-and-object-identity",
+      "api": 200,
+      "web": 200,
+      "checks": 3,
+      "assessment_form": true
+    },
+    {
+      "slug": "linux-filesystem-paths-and-permissions",
+      "api": 200,
+      "web": 200,
+      "checks": 3,
+      "assessment_form": true
+    }
+  ],
+  "health": {
+    "status": "ok",
+    "version": "1.0.0",
+    "environment": "production",
+    "database": "ok"
+  },
+  "history_preserved_during_checks": true,
+  "lesson_fingerprint_method": "Original P6 release SQL join and Python json.dumps(default=str, sort_keys=True), excluding updated_at; recovered from retained release script 24",
+  "backup_script_metadata": {
+    "variable_names": [
+      "OUT",
+      "SA",
+      "TOKEN",
+      "TS"
+    ],
+    "source_paths": [],
+    "upload_tools": [
+      "curl"
+    ]
+  },
+  "backup": {
+    "name": "forge-20261109T104123Z.dump.age",
+    "bytes": 620964,
+    "encrypted_format": "age v1",
+    "upload_service_result": "success",
+    "off_vm_head": 200,
+    "off_vm_sha256": "39e4c73faa7110c2a543e3b373afe509be28ac209471c88b6c2fa2dce3642cab",
+    "local_sha256": "39e4c73faa7110c2a543e3b373afe509be28ac209471c88b6c2fa2dce3642cab",
+    "bytes_identical": true
+  },
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "matched_snapshot": {
+    "history": {
+      "adr_revisions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "answers": {
+        "count": 3,
+        "sha256": "38f6174d31221201fa3fd57b90f66cb824e96b3eeec8d936ec4c99cb8758c8ef"
+      },
+      "architecture_decisions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "architecture_projects": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "architecture_versions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "assessment_sessions": {
+        "count": 3,
+        "sha256": "8af3ea8be65f3ddaa74ce2196cf0165366c8987aff9a01a27e85dbd93b3bbd6b"
+      },
+      "career_attempts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "career_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "career_profiles": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "career_reports": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "career_responses": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "career_roadmaps": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "career_sections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "coding_drafts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "coding_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "coding_reviews": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "coding_submissions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "coding_test_results": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "design_evaluations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "design_review_messages": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "design_reviews": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_audit_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_exercise_responses": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_pr_comments": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_pr_revisions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_pull_requests": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_reviews": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_snapshots": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_submissions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_test_results": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_workspace_files": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "eng_workspaces": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "evaluation_results": {
+        "count": 3,
+        "sha256": "5e6a9b1dbd81c5f30b11e69225206e0a63735be25e291c5721eb3c49c6a879a1"
+      },
+      "failure_attempts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_actions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_evaluations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_evidence": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_hypotheses": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_messages": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_rcas": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_sessions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "incident_snapshots": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "interview_challenges": {
+        "count": 2,
+        "sha256": "e3b4f548b9f1b4462768ecf8b6d72c1ea24fee34be4c5a5dd4b57e8df4ce25fd"
+      },
+      "interview_evaluations": {
+        "count": 2,
+        "sha256": "749632393d02217e276f01ebf2ddafc53bc9f8d3127bb94bcaf3bdb9395c5463"
+      },
+      "interview_sessions": {
+        "count": 2,
+        "sha256": "55da216620941c7337ae7b9a2ab0e72d6adfeab2ce6f57e71ed183ffeb01fbc3"
+      },
+      "interview_turns": {
+        "count": 6,
+        "sha256": "2e3009aef985b49ed5d6065c69ff00e699165a1aa5baef26d8f79973e1707204"
+      },
+      "learner_goals": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "learners": {
+        "count": 3,
+        "sha256": "05a12fff66f99ad79bdf8cc5a029c7f68404df5a6ff75ad1c006ecefe34ea5da"
+      },
+      "lesson_reads": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "mastery_events": {
+        "count": 3,
+        "sha256": "e507e580addbb5580ff10f828e049c15b3d2c83747af44796718d3a835f867ca"
+      },
+      "mastery_evidence": {
+        "count": 3,
+        "sha256": "a04ef544e32e4ed8ffd9a4c518aac9c408135bf986e8b3d9932a1703946c39c7"
+      },
+      "misconception_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "postmortem_revisions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "postmortems": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_cards": {
+        "count": 3,
+        "sha256": "841427a61cd3abd9f03fcd72fe949efaf4f68af6ef1cc87999760a6fabb31907"
+      },
+      "review_events": {
+        "count": 3,
+        "sha256": "5eaa9d6bf214d9b0483a9f471977b05694176a2cadaa7bf9ae2ec25dc8463c47"
+      },
+      "session_items": {
+        "count": 3,
+        "sha256": "dbf8e78bf24a35946ffd5b07e25c9c6dc7759bdfe15db0be6bf488e9b660ac81"
+      },
+      "skill_mastery": {
+        "count": 3,
+        "sha256": "e44980b0fe16dc05b16567fe6e2ec2cbdca9cccf0b713edf8def4e0311e66bc5"
+      },
+      "skill_progress": {
+        "count": 3,
+        "sha256": "20c8eec210ecee19ebb7bfb8f4bf37d60a17a5d534c6772cc0a6a00d82220533"
+      }
+    },
+    "protected_content": {
+      "skills": {
+        "count": 15,
+        "sha256": "3f869a9fe6a090407fac39a9d34dbd092dd4b20d9d8ad688df138733f09c6918"
+      },
+      "topics": {
+        "count": 45,
+        "sha256": "783e3dd6b79a48dc0e75db33ba065a27ec27e25d17899beced57ca1f79c1c834"
+      },
+      "questions": {
+        "count": 158,
+        "sha256": "411cf6a822200e17672463fce7d4c00bcbea153a238a08e9d9537603e0feb1aa"
+      },
+      "question_options": {
+        "count": 540,
+        "sha256": "e908694f828530f8591a6a01bf4699b93da7c269d43eb0f13fd7fb8a07a8a772"
+      },
+      "skill_prerequisites": {
+        "count": 21,
+        "sha256": "5e45788218b654e1faa995a07804d7ba4246962fdc2937ecb9fbc5eb61ba908e"
+      },
+      "skill_levels": {
+        "count": 45,
+        "sha256": "c8735b8eeeb4592b70caddadefd6023136155d091272591608c7f35e47f55c94"
+      },
+      "curriculum_versions": {
+        "count": 2,
+        "sha256": "deda434c3b0763f03a7ffb39622b6c5b1796f3914fb981a2585c579bc4bdfb57"
+      }
+    },
+    "counts": {
+      "skills": 15,
+      "subskills": 45,
+      "prerequisite_edges": 21,
+      "active_questions": 158,
+      "inactive_questions": 0,
+      "active_lessons": 35,
+      "lesson_checks": 112,
+      "lesson_resources": 123
+    },
+    "lessons": {
+      "tracing-program-state": {
+        "id": 1,
+        "sha256": "52aff7ebe1d729a2855a8d827457d7d902b34ffebfd4645052127fe4d1c46993"
+      },
+      "http-requests-and-semantics": {
+        "id": 2,
+        "sha256": "902dcbe7d369bb53701cdc12edd94841570b69a8ac2d16685b74f459806ebcb5"
+      },
+      "fastapi-validation-and-dependencies": {
+        "id": 3,
+        "sha256": "37007925b4104771f263c46af47c80294607ae723e3e793dfae60011f1636382"
+      },
+      "postgres-transactions-and-concurrency": {
+        "id": 4,
+        "sha256": "08299dc908f124eff80c8c9c3b1c8ef4a96d0674f4cb0730455acff19c8e476e"
+      },
+      "react-state-and-rendering": {
+        "id": 5,
+        "sha256": "e4050738084b4baf25851d48d23d5d06b5470a9ef974eebb0b73dbd3be7d0768"
+      },
+      "typescript-narrowing-and-unions": {
+        "id": 6,
+        "sha256": "a6faa7f2e1cea0a50cc0105ae14e2452632b9050a639a945c5a1bbda96b08c58"
+      },
+      "unit-tests-that-matter": {
+        "id": 7,
+        "sha256": "5596a1fed43917c8b49440e6140af4525284164205792b32b807e12b176ba3ea"
+      },
+      "security-auth-and-injection": {
+        "id": 8,
+        "sha256": "ac7d2979c46c2bd8780f810d27d9f785afe4d90730dcfebd124bd4bb899ba8df"
+      },
+      "git-version-control": {
+        "id": 9,
+        "sha256": "fa3424366448f6cd22b4f9ace5b9de3ca0e6091b28253923e90d21007d1702cb"
+      },
+      "linux-processes-files-permissions": {
+        "id": 10,
+        "sha256": "7162922a8d06340d8cc4021de357e1ba77a3b4e3a26d9aefdd9abf89d19de8dc"
+      },
+      "python-concurrency-models": {
+        "id": 11,
+        "sha256": "2c286a1c66cbe7b4e54cb3687abfe6a2c4bd1acddb38d27072ee6fd2302d6228"
+      },
+      "caching-and-scaling-reads": {
+        "id": 12,
+        "sha256": "14c83253e6c1ad04bc6ca1dcc3e53abe06faa581b0c34bcdfb5f48bc3fc636bc"
+      },
+      "timeouts-retries-idempotency": {
+        "id": 13,
+        "sha256": "acaea20295cb322ab654fd8e141d136877965c278947d38a5efc02814163f81f"
+      },
+      "safe-delivery-and-observability": {
+        "id": 14,
+        "sha256": "4f0a496daf737cfad8c12d4965e12312ad1e63dcc31bca807d1839bf3b02a9a6"
+      },
+      "code-review-that-finds-risk": {
+        "id": 15,
+        "sha256": "f6418d06192e0067aff56b95981246a0dfce9c1e25a2b46abc9ef32049c439a7"
+      },
+      "choosing-data-structures": {
+        "id": 16,
+        "sha256": "45ee08cf00b7b512638ff0f1a910471ee134e02dcaa428b34a67a395c8238251"
+      },
+      "reasoning-about-complexity": {
+        "id": 17,
+        "sha256": "021f65cd372fe8e07981e98ce3880f3fc6ab273c0e981161731f6b88091634b4"
+      },
+      "python-objects-equality-and-copying": {
+        "id": 18,
+        "sha256": "1dcd07719cfa041bea46e17c2db302c82f617b1ae80d34586267bde42b99e69b"
+      },
+      "python-functions-scope-and-closures": {
+        "id": 19,
+        "sha256": "55a7086f20dcf867f4154a6962efd72c9ee528c205836a742c781de055a6e93a"
+      },
+      "sql-querying-joins-and-nulls": {
+        "id": 20,
+        "sha256": "47a03466ca261e628be0262072184481d9891276052bd99e1acb7bc01ce93e08"
+      },
+      "postgres-indexes-and-query-plans": {
+        "id": 21,
+        "sha256": "3e771ff4a3abb83270b3dde8db289e28c4ba69c1637e06164b20970f2a9603e5"
+      },
+      "typescript-runtime-boundaries": {
+        "id": 22,
+        "sha256": "55e63befa49f5169ef6448e2571438fd3fbd68b6955893f1aa36b6a58c65a1aa"
+      },
+      "typescript-generics-that-preserve-relationships": {
+        "id": 23,
+        "sha256": "c6b0d155a43506aa414a7a1418795a793a7daebeb1e04a211267ea1921436c05"
+      },
+      "http-caching-and-validation": {
+        "id": 24,
+        "sha256": "589a28745150967bbf2c3e8329d7676e8a35a2c8fafac6d0abc236591871c5f2"
+      },
+      "browser-origins-cors-and-csrf": {
+        "id": 25,
+        "sha256": "8008c74d7c38b914094ca9d15141c2910c2dd3b260110b9de9a18d95a840bbc4"
+      },
+      "react-list-identity-and-derived-data": {
+        "id": 26,
+        "sha256": "845511335cf42982d7a58212f327d22fddbfb9172ddad2ecc884cd96479c4f41"
+      },
+      "react-effects-and-request-lifetimes": {
+        "id": 27,
+        "sha256": "aa15fc8f0a4a587f01fc8704799e6ed9d66b81a67b0ad09f8e04a717b253407b"
+      },
+      "fastapi-dependency-lifetimes-and-overrides": {
+        "id": 28,
+        "sha256": "6c61a002d4abcf041b583d0588bce229518a5c3ebf45156a1e76ce3974f040af"
+      },
+      "fastapi-async-handlers-and-bounded-work": {
+        "id": 29,
+        "sha256": "bbac85b0261533f4517fc66704874a142f2f6b45a3f9b843837a53dea354b3de"
+      },
+      "test-doubles-fixtures-and-patching": {
+        "id": 30,
+        "sha256": "8aca8f598fa7b396d8bd4a2aed936ea84c84f739ca2d81beede0cb1101658bb7"
+      },
+      "reliable-tests-time-state-and-order": {
+        "id": 31,
+        "sha256": "c12ae2d4ea5b11ecf974ed9f2b47363b60013a06a4b85415e98e88c87830f529"
+      },
+      "injection-safe-data-boundaries": {
+        "id": 32,
+        "sha256": "dac6d71aa161a2e200c9771f4f44fafb9e62f9adbf0717fd663fca63d1af3439"
+      },
+      "secrets-storage-rotation-and-exposure": {
+        "id": 33,
+        "sha256": "fad7b87aad25d63cda4691220691ba847f8f5315018834373d5b63ca6164f83b"
+      },
+      "git-commits-index-and-object-identity": {
+        "id": 34,
+        "sha256": "0353cb400a7234ca2fdd17d775a43356aeb4fe05cfe8b77eeff3c1c5ce31cde4"
+      },
+      "linux-filesystem-paths-and-permissions": {
+        "id": 35,
+        "sha256": "e083b34c1a1fc140055868d1af25a0fea0e7d30d11f510bd014204e29ba59e79"
+      }
+    },
+    "schema": "0009"
+  },
+  "compared_with": "p6-deployment.json:after"
+}
