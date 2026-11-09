@@ -1,0 +1,84 @@
+{
+  "baseline": [
+    {
+      "learners": 3,
+      "assessment_sessions": 3,
+      "served_items": 3,
+      "answers": 3,
+      "graded_answers": 3,
+      "mastery_evidence": 3,
+      "lesson_reads": 0,
+      "lesson_completions": 0,
+      "review_events": 3,
+      "review_cards": 3
+    }
+  ],
+  "first_scored_attempts": [
+    {
+      "learner_question_pairs": 3,
+      "correct": 0,
+      "incorrect": 3
+    }
+  ],
+  "repeated_topic_errors": [
+    {
+      "learner_topic_pairs_with_repeated_errors": 0,
+      "across_multiple_questions": 0
+    }
+  ],
+  "post_completion_attempts": [
+    {
+      "after_completion": false,
+      "graded_attempts": 3,
+      "correct": 0
+    }
+  ],
+  "exposure": [
+    {
+      "served_items": 3,
+      "learner_question_pairs": 3,
+      "repeat_serves": 0
+    }
+  ],
+  "first_recorded_assessment_exposure": [
+    {
+      "graded_first_exposures": 3,
+      "correct": 0
+    }
+  ],
+  "review_observations": [
+    {
+      "events": 3,
+      "initial_events": 3,
+      "later_due_events": 0,
+      "later_due_objective_at_least_one_day": 0,
+      "successful_later_due_objective_at_least_one_day": 0
+    }
+  ],
+  "mastery_states": [
+    {
+      "state": "insufficient_evidence",
+      "skills_with_state": 3
+    }
+  ],
+  "bank_formats": [
+    {
+      "format": "free_text",
+      "active_questions": 23
+    },
+    {
+      "format": "single_choice",
+      "active_questions": 135
+    }
+  ],
+  "topic_level_coverage": [
+    {
+      "topic_level_cells": 135,
+      "empty_scored_cells": 27,
+      "fewer_than_two_scored": 110
+    }
+  ],
+  "checked_at": "2026-11-09T11:06:44.771439+00:00",
+  "operation": "read-only aggregate audit; no learner endpoint called",
+  "query_sha256": "16d49d902e741daa823e67facf51a74098f59586e7baee1bbfa5b1024b3b0b39"
+}

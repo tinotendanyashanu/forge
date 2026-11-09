@@ -1,0 +1,465 @@
+{
+  "checked_at": "2026-11-09T11:09:48.912238+00:00",
+  "release_commit": "2e080e2468d9bc7cab15a969939709828537517d",
+  "questions": 158,
+  "question_metadata": 118,
+  "questions_without_metadata": 40,
+  "question_metadata_statuses": {
+    "reviewed": 118
+  },
+  "lesson_statuses": {
+    "reviewed": 45
+  },
+  "coverage": [
+    {
+      "skill": "programming-fundamentals",
+      "topic": "control-flow",
+      "scored": {
+        "beginner": 2,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "programming-fundamentals",
+      "topic": "data-structures",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "programming-fundamentals",
+      "topic": "complexity",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 1,
+        "advanced": 2
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "python",
+      "topic": "data-model",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "python",
+      "topic": "functions",
+      "scored": {
+        "beginner": 2,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "python",
+      "topic": "concurrency",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 1,
+        "advanced": 2
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "typescript",
+      "topic": "narrowing",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "typescript",
+      "topic": "generics",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "typescript",
+      "topic": "type-system",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 2
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "http",
+      "topic": "semantics",
+      "scored": {
+        "beginner": 2,
+        "intermediate": 0,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "http",
+      "topic": "caching",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "http",
+      "topic": "browser-security",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 2,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "sql",
+      "topic": "querying",
+      "scored": {
+        "beginner": 3,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "sql",
+      "topic": "indexing",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 2,
+        "advanced": 2
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "sql",
+      "topic": "transactions",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 0,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "react",
+      "topic": "state",
+      "scored": {
+        "beginner": 2,
+        "intermediate": 0,
+        "advanced": 2
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "react",
+      "topic": "lists",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "react",
+      "topic": "effects",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 2,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "fastapi",
+      "topic": "request-validation",
+      "scored": {
+        "beginner": 3,
+        "intermediate": 0,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "fastapi",
+      "topic": "dependencies",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 2,
+        "advanced": 0
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "fastapi",
+      "topic": "async-handlers",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 1,
+        "advanced": 2
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "testing",
+      "topic": "test-design",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 0,
+        "advanced": 2
+      },
+      "free_text": 2
+    },
+    {
+      "skill": "testing",
+      "topic": "test-doubles",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 2,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "testing",
+      "topic": "reliability",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "security",
+      "topic": "auth",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "security",
+      "topic": "injection",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "security",
+      "topic": "secrets",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "devops",
+      "topic": "ci-cd",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 1,
+        "advanced": 2
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "devops",
+      "topic": "containers",
+      "scored": {
+        "beginner": 2,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "devops",
+      "topic": "observability",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "system-design",
+      "topic": "scaling",
+      "scored": {
+        "beginner": 2,
+        "intermediate": 0,
+        "advanced": 2
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "system-design",
+      "topic": "caching",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "system-design",
+      "topic": "reliability",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 2,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "distributed-systems",
+      "topic": "consistency",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "distributed-systems",
+      "topic": "messaging",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "distributed-systems",
+      "topic": "partial-failure",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "senior-practices",
+      "topic": "code-review",
+      "scored": {
+        "beginner": 2,
+        "intermediate": 1,
+        "advanced": 0
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "senior-practices",
+      "topic": "decision-making",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 2
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "senior-practices",
+      "topic": "incidents",
+      "scored": {
+        "beginner": 0,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "git",
+      "topic": "commits",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "git",
+      "topic": "branching",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "git",
+      "topic": "history",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "linux",
+      "topic": "processes",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 1
+    },
+    {
+      "skill": "linux",
+      "topic": "filesystem",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    },
+    {
+      "skill": "linux",
+      "topic": "shell",
+      "scored": {
+        "beginner": 1,
+        "intermediate": 1,
+        "advanced": 1
+      },
+      "free_text": 0
+    }
+  ]
+}

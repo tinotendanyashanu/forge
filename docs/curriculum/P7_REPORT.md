@@ -1,10 +1,10 @@
 # P7: dedicated lessons for the last ten subskills
 
-Date: 2026-11-09 (initial validation: 2026-11-08). **Validated locally. Not deployed.** Separate approval is required before any production checkout or seed. **None of the ten lessons is human-verified.**
+Date: 2026-11-09 (initial validation: 2026-11-08). **Deployed and verified** at `2e080e2468d9bc7cab15a969939709828537517d` after explicit user approval. See [P7 deployment result](P7_DEPLOYMENT.md). **None of the ten lessons is human-verified.** The validation sections below retain the preparation evidence.
 
-P6 is the production baseline at **`25c4b6f`**, with 158 active questions, 35 lessons, 45 subskills, 112 lesson-check links, 123 resources, and unchanged learner history. See [P6 deployment result](P6_DEPLOYMENT.md). P7 does not change that checkout. The later docs commit `ee265c0` is also not a production seed.
+P6 was the pre-release baseline at **`25c4b6f`**, with 158 active questions, 35 lessons, 45 subskills, 112 lesson-check links, 123 resources, and unchanged learner history. See [P6 deployment result](P6_DEPLOYMENT.md). The approved P7 release advanced that checkout to `2e080e2`; P6 was not redeployed.
 
-The November 9 live [P6 recheck](validation/p6-recheck-20261109.json) confirmed that baseline, all ten lesson pages and assessment forms, exact preservation fingerprints, and a fresh encrypted backup whose off-VM bytes match. P6 was already deployed when this request resumed; no deployment was repeated. Production remains at 35 lessons while the local P7 rehearsal reaches 45.
+The earlier November 9 [P6 recheck](validation/p6-recheck-20261109.json) confirmed the baseline without repeating its deployment. A separate fresh backup preceded P7. Production now has 45 lessons, 147 lesson-check associations and 157 resource associations, with unchanged question IDs, prerequisite edges and learner/mastery history. See [complete P7 release evidence](validation/p7-deployment.json).
 
 P7 adds **ten original lessons, 18,261 words**, one for each subskill that still lacked a dedicated lesson. It introduces no new skill, question, curriculum prerequisite edge, application feature, UI change, or mastery rule.
 
@@ -80,9 +80,9 @@ Both runs produced 158 active questions, zero inactive questions, 45 lessons, 45
 
 Evidence: [fresh backend log](validation/p7-backend-tests-recheck.txt), [fresh production build](validation/p7-web-build-recheck.txt), [fresh seed rehearsal](validation/p7-seed-rehearsal-recheck.json).
 
-## Coverage if a later release is approved
+## Coverage delivered by the approved release
 
-| Metric | Production now, after P6 | Proposed P7 |
+| Metric | P6 baseline | Deployed P7 |
 | --- | --- | --- |
 | Skills / subskills / curriculum prerequisite edges | 15 / 45 / 21 | unchanged |
 | Active / inactive questions | 158 / 0 | unchanged |
@@ -95,7 +95,7 @@ Evidence: [fresh backend log](validation/p7-backend-tests-recheck.txt), [fresh p
 
 ## Release boundary
 
-The [P7 manifest](validation/p7-manifest.json) freezes the ten lesson hashes, mappings, and expected counts. **Do not deploy this batch from this report.** Production should stay on `25c4b6f` until a separate approval runs the established backup, fingerprint, checkout, and seed procedure. These files remain local and are not deployed. The manifest records the corrected practice wording; the initial review hashes are retained separately.
+The [P7 manifest](validation/p7-manifest.json) freezes the approved ten lesson hashes, mappings and expected counts. Its validation-time `NOT DEPLOYED` label is retained as a preparation record. The user's later explicit approval authorized release `2e080e2`, whose [deployment record](P7_DEPLOYMENT.md) confirms backup, exact counts, preservation and health. The manifest itself was not rewritten after approval. Further major features or content batches require separate approval; no post-curriculum proposal below changes production automatically.
 
 Run the local checks from `api/` with the existing virtual environment:
 
@@ -115,3 +115,5 @@ Production, as recorded at the P6 release, has three learners, three answers, th
 Use the attempts once they exist: which checks are missed, whether the linked lesson was opened, and whether the explanation matches the miss. Revise the example, the feedback, or the distractor that the attempts expose. A human pass over the existing lessons, especially incidents, shell expansion, and the container signal example, is a quality check on material that is already written. Another batch of lessons is not the next step. Dedicated coverage of this 45-subskill map is complete.
 
 With more attempts, review first-attempt errors, repeated errors after reading, and later review answers for the same concept. Show attempt and learner counts beside each rate; this small baseline cannot support reliable rankings or causal claims about reading a lesson. Use failed transfer exercises and human review to choose revisions, then compare later attempts with the same limitations stated. Prioritize clearer worked examples, reasoning feedback and misleading distractors when that evidence points to a problem. No new content batch, tracking infrastructure or mastery-rule change is proposed here.
+
+The subsequent [post-curriculum report](POST_CURRICULUM_REPORT.md) audits all seven requested learning measures against the actual models and workflows, documents the tiny production baseline, prioritizes gaps, and provides the next month's study/evaluation plan. Use the [human review checklist](HUMAN_REVIEW.md) for revision-specific sign-off; no human-verified status was awarded by this release.

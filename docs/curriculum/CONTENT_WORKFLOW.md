@@ -2,6 +2,8 @@
 
 How FORGE assessment content is authored, checked and published. The goal is to grow the bank in small batches without lowering quality.
 
+P7 has completed dedicated lesson coverage for all 45 mapped subskills. The next phase prioritizes observed learner attempts, instructional quality and human review; another large content batch is not the default. See the [post-curriculum audit and monthly plan](POST_CURRICULUM_REPORT.md), [human verification checklist](HUMAN_REVIEW.md), and [unsigned review template](reviews/TEMPLATE.md). No template or automated advisory result awards verification.
+
 ## Files
 
 | Path | Purpose |
@@ -30,7 +32,7 @@ Question slugs are stable identifiers. The seed loader upserts by slug and **dea
    1. Run the nightly backup job on demand and confirm the encrypted copy uploaded.
    2. Record learner-history counts (`answers`, `assessment_sessions`, `interview_sessions`, `mastery_evidence`).
    3. Deploy the commit and run `python -m app.seed` once.
-   4. Re-check the counts (must be unchanged) and the number of active questions (must increase by the batch size).
+   4. Re-check protected learner/mastery fingerprints and the manifest's exact expected counts. A lesson-only batch must leave question/option IDs and active question counts unchanged; question batches must match their approved count change. Do not modify history or deactivate unrelated questions to force a count match.
 
 ## Rules that protect learners
 

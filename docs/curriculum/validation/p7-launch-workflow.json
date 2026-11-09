@@ -1,0 +1,150 @@
+{
+  "checked_at": "2026-11-09T11:09:02.594951+00:00",
+  "release_commit": "2e080e2468d9bc7cab15a969939709828537517d",
+  "database": "forge_p7_quality_20261109",
+  "synthetic_only": true,
+  "production_records_created": 0,
+  "launches": [
+    {
+      "lesson": "container-image-layers-and-signals",
+      "skill": "devops",
+      "difficulty": "beginner",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "devops-docker-layer-order",
+      "first_question_topic": "containers",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "observability-tails-traces-and-cardinality",
+      "skill": "devops",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "devops-build-once-promote",
+      "first_question_topic": "ci-cd",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "scaling-capacity-replicas-and-hotspots",
+      "skill": "system-design",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "sd-backoff-jitter",
+      "first_question_topic": "reliability",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "reliability-jitter-queues-and-availability",
+      "skill": "system-design",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "sd-backoff-jitter",
+      "first_question_topic": "reliability",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "consistency-replica-lag-and-conflicts",
+      "skill": "distributed-systems",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "ds-read-your-writes",
+      "first_question_topic": "consistency",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "messaging-delivery-outbox-and-order",
+      "skill": "distributed-systems",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "ds-read-your-writes",
+      "first_question_topic": "consistency",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "technical-decisions-records-and-reversibility",
+      "skill": "senior-practices",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "sp-queue-choice-reasoning",
+      "first_question_topic": "decision-making",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "incident-response-mitigation-and-follow-up",
+      "skill": "senior-practices",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "sp-queue-choice-reasoning",
+      "first_question_topic": "decision-making",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "git-history-amend-revert-and-recovery",
+      "skill": "git",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "git-fast-forward",
+      "first_question_topic": "branching",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    },
+    {
+      "lesson": "linux-shell-redirection-pipelines-and-expansion",
+      "skill": "linux",
+      "difficulty": "intermediate",
+      "launch": 201,
+      "serve": 200,
+      "stable_unanswered_item": true,
+      "first_question": "linux-directory-execute",
+      "first_question_topic": "filesystem",
+      "answer": 201,
+      "duplicate_answer": 409,
+      "completion_adds_mastery_evidence": false
+    }
+  ],
+  "scheduling_probe": {
+    "first_interval_days": 1,
+    "early_success_does_not_extend_interval": true,
+    "next_due_success_interval_days": 6,
+    "failure_reschedules_days": 1
+  },
+  "limitations": [
+    "API launches use the same skill/difficulty payload as the inspected Next.js action; no synthetic production form was submitted.",
+    "First question need not match the lesson topic: the existing launch contract is skill and difficulty.",
+    "Synthetic results validate workflows, not learning outcomes."
+  ]
+}
